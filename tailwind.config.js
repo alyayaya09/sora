@@ -20,9 +20,9 @@ module.exports = {
       },
       fontFamily: {
         sans: ["'Plus Jakarta Sans'", "sans-serif"],
-        serif: ["'Playfair Display'", "'Noto Serif'", "serif"],
-        noto: ["'Noto Serif'", "serif"],
-        bubble: ["'Outfit'", "'Fredoka One'", "sans-serif"],
+        serif: ["'Plus Jakarta Sans'", "sans-serif"],
+        noto: ["'Plus Jakarta Sans'", "sans-serif"],
+        bubble: ["'Plus Jakarta Sans'", "sans-serif"],
       },
     },
   },

@@ -165,11 +165,11 @@ export default function TourDetailPage({ params }: TourPageProps) {
           {/* Center Hero Monumental Title & Narrative Lead */}
           <div className="relative z-10 max-w-5xl mx-auto w-full text-center flex flex-col items-center gap-3 my-auto pb-6 pt-16">
             <div className="space-y-2 max-w-4xl">
-              <h1 className="text-3xl sm:text-5xl md:text-5xl text-white font-medium leading-tight tracking-tight drop-shadow-lg serif-heading">
+              <h1 className="text-3xl sm:text-5xl md:text-5xl text-white font-medium leading-tight tracking-tight drop-shadow-lg">
                 {tour.title}
               </h1>
               <p className="text-sm sm:text-base md:text-lg text-neutral-300 font-normal max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-                <span className="text-amber-400 font-medium font-serif italic">
+                <span className="text-amber-400 font-medium italic">
                   Kemilau Peradaban Sriwijaya&nbsp;
                 </span>
                 {tour.subtitle}
@@ -293,7 +293,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
               <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
                 Bagian 01 / 03
               </span>
-              <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight serif-heading">
+              <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec1Title}
               </h2>
               <p className="text-base sm:text-lg text-neutral-200 leading-relaxed font-normal">
@@ -324,7 +324,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
               <span className="text-xs font-bold uppercase tracking-widest text-cyan-400">
                 Bagian 02 / 03
               </span>
-              <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight serif-heading">
+              <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec2Title}
               </h2>
               <p className="text-base sm:text-lg text-neutral-200 leading-relaxed font-normal">
@@ -355,7 +355,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
               <span className="text-xs font-bold uppercase tracking-widest text-rose-400">
                 Bagian 03 / 03
               </span>
-              <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight serif-heading">
+              <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec3Title}
               </h2>
               <p className="text-base sm:text-lg text-neutral-200 leading-relaxed font-normal">
@@ -375,7 +375,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
         >
           <section className="relative w-full flex-1 flex flex-col justify-center px-6 md:px-12 py-8 md:py-12 max-w-7xl mx-auto">
             <div className="flex flex-col items-center justify-center text-center w-full mb-6">
-              <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl text-neutral-200 font-normal tracking-wide drop-shadow-md">
+              <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl text-neutral-200 font-normal tracking-wide drop-shadow-md">
                 Jelajahi kategori terkait...
               </h2>
             </div>
@@ -390,7 +390,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
                 <span className="text-amber-400 text-xs md:text-sm font-semibold tracking-widest uppercase mb-3">
                   {tour.relCat}
                 </span>
-                <h3 className="font-serif text-3xl md:text-4xl lg:text-5xl text-white font-normal md:font-medium tracking-normal mb-3 drop-shadow-md">
+                <h3 className="font-sans text-3xl md:text-4xl lg:text-5xl text-white font-normal md:font-medium tracking-normal mb-3 drop-shadow-md">
                   {tour.relTitle}
                 </h3>
                 <p className="text-neutral-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-6 font-light drop-shadow-sm">

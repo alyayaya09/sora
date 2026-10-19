@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import AmbientBackground from "../../components/AmbientBackground";
 
 export default function TentangPage() {
   useEffect(() => {
@@ -35,12 +36,14 @@ export default function TentangPage() {
   }, []);
 
   return (
-    <div className="text-gray-200 font-sans antialiased selection:bg-[#00f2fe] selection:text-black min-h-screen">
+    <div className="text-gray-200 font-sans antialiased selection:bg-[#00f2fe] selection:text-black min-h-screen relative">
+      {/* ── Ambient Background persis seperti halaman Jelajahi ── */}
+      <AmbientBackground />
         
         {/* ========================================================
             HERO WRAPPER: Cinematic Cultural AI Studio Header
             ======================================================== */}
-        <div className="relative bg-slate-950 min-h-[580px] lg:min-h-[660px] flex flex-col justify-between overflow-visible">
+        <div className="relative bg-transparent min-h-[580px] lg:min-h-[660px] flex flex-col justify-between overflow-visible">
           {/* Hero Background Image */}
           <div className="absolute inset-0 z-0 overflow-hidden">
             <img
@@ -51,16 +54,13 @@ export default function TentangPage() {
                 (e.target as HTMLImageElement).src = "/images/ampera_hero.jpg";
               }}
             />
-            {/* Soft gradient overlay matching PRD burgundy-obsidian palette */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-[#1c1013]" />
+            {/* Soft gradient overlay fading to ambient background */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
           </div>
 
           {/* Center Hero Slogan Text (#SORACulture replacing #144ontour) */}
           <div className="relative z-20 my-auto text-center px-4 pt-28 pb-16 max-w-5xl mx-auto">
-            <span className="inline-block uppercase tracking-[0.25em] text-xs font-semibold text-[#fbc270] bg-[#6b1d2f]/70 border border-[#dda758]/30 px-4 py-1.5 rounded-full mb-4 shadow-lg backdrop-blur-md">
-              Empowering Culture Through AI-Driven Innovation
-            </span>
-            <h1 className="text-white text-5xl md:text-7xl lg:text-8xl font-brush drop-shadow-2xl font-bold tracking-tight">
+            <h1 className="text-white text-5xl md:text-7xl lg:text-8xl drop-shadow-2xl font-bold tracking-tight">
               #SORACulture
             </h1>
             <p className="mt-4 text-sm sm:text-base md:text-lg text-white/85 max-w-2xl mx-auto font-light leading-relaxed drop-shadow">
@@ -170,7 +170,7 @@ export default function TentangPage() {
               <span className="text-xs uppercase tracking-widest text-amber-300 font-semibold mb-2">
                 Inisiasi &amp; Visi Riset
               </span>
-              <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-wider uppercase mb-6 noto-heading">
+              <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-wider uppercase mb-6">
                 Siapa Kami di Balik SORA
               </h2>
               <div className="space-y-4 text-sm text-gray-200/90 font-normal leading-relaxed text-justify">
@@ -210,7 +210,7 @@ export default function TentangPage() {
                   }}
                 >
                   <div className="w-10 h-0.5 bg-white mb-4" />
-                  <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider leading-tight mb-4 text-white noto-heading">
+                  <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider leading-tight mb-4 text-white">
                     INOVASI KECERDASAN BUATAN<br />UNTUK BUDAYA LOKAL
                   </h3>
                   <p className="text-xs md:text-sm font-normal leading-relaxed mb-8 max-w-md text-white/95">
@@ -234,7 +234,7 @@ export default function TentangPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                     <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end text-white">
-                      <h3 className="text-xl md:text-2xl font-extrabold uppercase tracking-wide leading-tight mb-3 drop-shadow noto-heading">
+                      <h3 className="text-xl md:text-2xl font-extrabold uppercase tracking-wide leading-tight mb-3 drop-shadow">
                         DEDICATED CARDS<br />&amp; TUR DIGITAL<br />SINEMATIK
                       </h3>
                       <p className="text-xs md:text-sm text-white/90 leading-relaxed mb-6 max-w-xs drop-shadow">
@@ -263,10 +263,7 @@ export default function TentangPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/85" />
                   <div className="relative z-20 px-8 py-16 md:px-12 text-white flex flex-col items-center">
-                    <span className="text-[11px] font-bold tracking-widest uppercase text-amber-300 mb-3 bg-[#6b1d2f]/70 border border-amber-400/30 px-3 py-1 rounded-full">
-                      Integritas &amp; Transparansi
-                    </span>
-                    <h3 className="text-2xl md:text-3xl font-extrabold uppercase tracking-widest leading-snug mb-5 drop-shadow-md noto-heading">
+                    <h3 className="text-2xl md:text-3xl font-extrabold uppercase tracking-widest leading-snug mb-5 drop-shadow-md">
                       ETIKA AI &amp;<br />VERIFIKASI SUMBER
                     </h3>
                     <p className="text-xs md:text-sm text-white/90 leading-relaxed max-w-sm mx-auto mb-8 font-light drop-shadow text-justify">
@@ -371,7 +368,7 @@ export default function TentangPage() {
               <span className="text-xs uppercase tracking-widest text-amber-300 font-semibold mb-2">
                 Pusaka Maritim Nusantara
               </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-wider uppercase mb-5 noto-heading">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-wider uppercase mb-5">
                 JEJAK BATANGHARI SEMBILAN
               </h2>
               <p className="text-sm text-gray-200/90 font-normal leading-relaxed text-justify mb-8">

@@ -134,10 +134,10 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
           <div className="relative w-64 h-56 md:w-72 md:h-60 bg-[#FFCA00] rounded-[48px] rounded-bl-sm flex flex-col items-center justify-center p-6 shadow-xl transform hover:scale-105 transition-transform duration-300">
             {/* Curved speech bubble tail */}
             <div className="absolute -bottom-4 left-6 w-0 h-0 border-t-[20px] border-t-[#FFCA00] border-r-[22px] border-r-transparent"></div>
-            <h1 className="text-white font-bubble text-4xl md:text-5xl font-black uppercase tracking-tight text-center leading-none drop-shadow-sm select-none">
+            <h1 className="text-white font-sans text-4xl md:text-5xl font-black uppercase tracking-tight text-center leading-none drop-shadow-sm select-none">
               Tari &amp; Musik
             </h1>
-            <p className="text-white font-bubble text-lg md:text-xl font-extrabold uppercase tracking-wide mt-2 text-center leading-tight drop-shadow-sm select-none">
+            <p className="text-white font-sans text-lg md:text-xl font-extrabold uppercase tracking-wide mt-2 text-center leading-tight drop-shadow-sm select-none">
               Sumatera<br />Selatan
             </p>
           </div>

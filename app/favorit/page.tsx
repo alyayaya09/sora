@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AmbientBackground from "../../components/AmbientBackground";
 
 interface FavoriteItem {
   id: string;
@@ -87,13 +88,8 @@ export default function FavoritPage() {
 
   return (
     <>
-      {/* ── Ambient Heritage Lighting Background (matching favorit.md & PRD) ── */}
-      <div aria-hidden="true" className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-[15%] -left-[10%] w-[850px] h-[750px] rounded-full bg-gradient-to-br from-[#6b1d2f]/60 via-[#40101b]/40 to-transparent blur-[120px]" />
-        <div className="absolute top-[18%] -right-[12%] w-[800px] h-[750px] rounded-full bg-gradient-to-bl from-[#e9c176]/35 via-[#af8d11]/25 to-transparent blur-[130px]" />
-        <div className="absolute top-[45%] left-[20%] w-[700px] h-[600px] rounded-full bg-gradient-to-tr from-[#6b1d2f]/45 via-[#e9c176]/20 to-transparent blur-[140px]" />
-        <div className="absolute -bottom-[20%] -right-[5%] w-[900px] h-[650px] rounded-full bg-gradient-to-tl from-[#6b1d2f]/50 via-[#af8d11]/25 to-transparent blur-[140px]" />
-      </div>
+      {/* ── Ambient Background persis seperti halaman Jelajahi ── */}
+      <AmbientBackground />
 
 
       {/* ── Main Content Area ── */}
@@ -122,7 +118,7 @@ export default function FavoritPage() {
             <nav aria-label="Tabs Kurasi" className="flex space-x-12 items-center">
               <button
                 type="button"
-                className="relative font-serif font-medium text-base sm:text-lg tracking-wider py-1.5 px-3 transition-colors duration-300 cursor-pointer focus:outline-none text-[#f3d38c] hover:text-[#ffe088]"
+                className="relative font-sans font-medium text-base sm:text-lg tracking-wider py-1.5 px-3 transition-colors duration-300 cursor-pointer focus:outline-none text-[#f3d38c] hover:text-[#ffe088]"
               >
                 Favorit
                 <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
@@ -135,10 +131,10 @@ export default function FavoritPage() {
         <section className="mt-4 mb-8 max-w-7xl mx-auto w-full">
           <div className="flex items-center justify-between mb-5 pb-1">
             <div className="flex items-baseline gap-3">
-              <h2 className="font-serif text-2xl sm:text-3xl font-semibold tracking-wide text-[#F9F8F6] drop-shadow-sm">
+              <h2 className="font-sans text-2xl sm:text-3xl font-semibold tracking-wide text-[#F9F8F6] drop-shadow-sm">
                 Stories
               </h2>
-              <span className="font-serif text-xs text-[#e2be74] font-medium px-2.5 py-0.5 rounded-full bg-[#6b1d2f]/40 border border-amber-400/30">
+              <span className="font-sans text-xs text-[#e2be74] font-medium px-2.5 py-0.5 rounded-full bg-[#6b1d2f]/40 border border-amber-400/30">
                 {favorites.length}
               </span>
             </div>
@@ -150,7 +146,7 @@ export default function FavoritPage() {
                 <span className="material-symbols-outlined text-3xl">bookmark_border</span>
               </div>
               <div className="max-w-md">
-                <h3 className="font-serif text-xl font-semibold text-white mb-1">
+                <h3 className="font-sans text-xl font-semibold text-white mb-1">
                   Belum Ada Cerita Favorit
                 </h3>
                 <p className="text-sm text-white/60 leading-relaxed">
@@ -215,7 +211,7 @@ export default function FavoritPage() {
 
                   {/* Bottom Text Content */}
                   <div className="relative z-20 flex flex-col items-center text-center mt-auto">
-                    <h3 className="font-serif font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug mb-1.5 sm:text-lg">
+                    <h3 className="font-sans font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug mb-1.5 sm:text-lg">
                       {item.title}
                     </h3>
                     <p className="text-[#cbbba7] leading-relaxed font-sans line-clamp-2 text-sm">

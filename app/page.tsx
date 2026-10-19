@@ -7,6 +7,7 @@ import { themes } from "../data/sora-content";
 
 export default function HomePage() {
   const router = useRouter();
+  const videoRef = React.useRef<HTMLVideoElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -180,59 +181,60 @@ export default function HomePage() {
         className="relative min-h-screen h-screen w-full flex flex-col justify-end px-6 pb-8 overflow-hidden select-none"
         id="hero-ampera"
       >
-        {/* Full Background Image: Jembatan Ampera (Palembang) */}
-        <div className="absolute inset-0 z-0">
-          <img
-            alt="Jembatan Ampera Malam Hari"
+        {/* Full Background Video: HERO.mp4 */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
             className="w-full h-full object-cover object-center transform transition-transform duration-700 ease-out"
             id="ampera-bg"
-            src="/images/ampera_hero.jpg"
+            src="/images/HERO.mp4"
             style={{
               transform: `scale(${1 + scrollY * 0.0004}) translateY(${scrollY * 0.25}px)`,
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1c1013] via-black/35 to-black/30 pointer-events-none"></div>
         </div>
 
         {/* Bottom Hero Content: Prompt Bar & Scroll Guide */}
         <div className="relative z-10 max-w-4xl mx-auto w-full flex flex-col items-center gap-4 mb-2">
-          {/* AI Search Prompt Bar */}
+          {/* AI Search Prompt Bar — Clean Transparent Glass Style (matching Jelajahi) */}
           <form
             onSubmit={handleSearchSubmit}
-            className="w-full flex items-center justify-between gap-3 px-5 py-3.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 shadow-2xl hover:border-cyan-400/60 transition-all duration-300 group"
+            className="w-full flex items-center justify-between gap-3 px-5 py-3 rounded-full bg-white/[0.05] border border-white/15 shadow-xl backdrop-blur-2xl hover:border-white/30 transition-all duration-300 group"
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <span className="p-1.5 rounded-full bg-white/10 text-cyan-300">
+              <span className="p-1.5 rounded-full bg-white/[0.08] text-white/60 group-hover:text-white transition-colors">
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
                 </svg>
               </span>
               <input
-                className="bg-transparent border-none outline-none text-sm text-white placeholder-white/70 w-full focus:placeholder-white/40 focus:ring-0"
+                className="bg-transparent border-none outline-none text-sm md:text-base text-white placeholder-white/40 w-full focus:placeholder-white/20 focus:ring-0 font-medium"
                 placeholder="Tanya apa saja tentang seni & budaya Sumsel..."
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="p-1 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-colors shrink-0 cursor-pointer"
+                  title="Hapus pencarian"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 text-white/80">
+            <div className="flex items-center gap-2 sm:gap-2.5 text-white/70">
               <button
-                className="hover:text-white p-1.5 hover:bg-white/15 rounded-full transition-colors cursor-pointer"
-                title="Unggah Gambar (Segera Hadir)"
-                type="button"
-                onClick={() => triggerToast("Pencarian gambar segera hadir")}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  ></path>
-                </svg>
-              </button>
-              <button
-                className={`hover:text-white p-1.5 hover:bg-white/15 rounded-full transition-colors cursor-pointer ${
+                className={`hover:text-white p-1.5 hover:bg-white/10 rounded-full transition-colors cursor-pointer ${
                   isListening ? "bg-red-500/80 text-white animate-pulse" : ""
                 }`}
                 title="Pencarian Suara"
@@ -249,7 +251,7 @@ export default function HomePage() {
                 </svg>
               </button>
               <button
-                className="w-8 h-8 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 flex items-center justify-center transition-all transform active:scale-95 shadow-lg shadow-cyan-500/30 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-all transform active:scale-95 border border-white/20 shadow-md cursor-pointer"
                 title="Cari Budaya"
                 type="submit"
               >
@@ -287,8 +289,15 @@ export default function HomePage() {
             title="Mute/Unmute audio"
             type="button"
             onClick={() => {
-              setIsMuted(!isMuted);
-              triggerToast(isMuted ? "Audio suasana diaktifkan" : "Audio dibisukan");
+              const nextMuted = !isMuted;
+              setIsMuted(nextMuted);
+              if (videoRef.current) {
+                videoRef.current.muted = nextMuted;
+                if (!nextMuted) {
+                  videoRef.current.play().catch(() => {});
+                }
+              }
+              triggerToast(nextMuted ? "Audio dibisukan" : "Audio video diaktifkan");
             }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,9 +325,6 @@ export default function HomePage() {
             </svg>
           </button>
         </div>
-
-        {/* Seamless Gradient Transition matching BERANDA.MD */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent via-[#1c1013]/70 to-[#1c1013] pointer-events-none z-10"></div>
       </section>
 
       {/* ==========================================
@@ -333,7 +339,7 @@ export default function HomePage() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
               Mulai dari satu tema.
             </h2>
-            <p className="text-3xl sm:text-4xl md:text-5xl font-bold serif-heading italic text-white drop-shadow-md">
+            <p className="text-3xl sm:text-4xl md:text-5xl font-bold italic text-white drop-shadow-md">
               <span className="font-normal font-sans not-italic text-white/95">Jelajahi</span>{" "}
               Seluruh Budaya Sumsel
             </p>
@@ -499,7 +505,7 @@ export default function HomePage() {
                 <img
                   alt="Malam di Benteng Kuto Besak"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  src="/images/ampera_hero.jpg"
+                  src="/images/benteng_kuto_besak.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                   <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
@@ -621,7 +627,7 @@ export default function HomePage() {
                 <img
                   alt="Sehari bersama Penenun Songket"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  src="/images/songket_lepus.jpg"
+                  src="/images/menenun_songket.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
@@ -645,7 +651,7 @@ export default function HomePage() {
                 <img
                   alt="Kain Jumputan Pelangi"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  src="/images/aesan_gede_banner.jpg"
+                  src="/images/kain_jumputan.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
@@ -666,7 +672,7 @@ export default function HomePage() {
                 <img
                   alt="Motif Bunga Mawar & Rebung"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  src="/images/songket_lepus.jpg"
+                  src="/images/batik_palembang.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
@@ -805,7 +811,7 @@ export default function HomePage() {
               <img
                 alt="Festival Perahu Bidar"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                src="/images/ampera_hero.jpg"
+                src="/images/perahu_bidar.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none"></div>
               <div className="relative z-10 p-6 flex flex-col justify-end text-white items-center text-center">
@@ -843,7 +849,7 @@ export default function HomePage() {
                   <img alt="Songket Lepus Emas" className="object-[25%_60%]" src="/images/songket_lepus.jpg" />
                 </div>
                 <div className="mosaic-tile h-[52%]">
-                  <img alt="Motif Pucuk Rebung" className="object-center" src="/images/songket_lepus.jpg" />
+                  <img alt="Motif Pucuk Rebung" className="object-center" src="/images/aesan_paksangko.jpg" />
                 </div>
               </div>
 
@@ -852,7 +858,7 @@ export default function HomePage() {
                   <img alt="Aesan Gede Pengantin" className="object-[45%_22%]" src="/images/aesan_gede_banner.jpg" />
                 </div>
                 <div className="mosaic-tile h-[40%]">
-                  <img alt="Pending Emas" className="object-bottom" src="/images/aesan_gede_banner.jpg" />
+                  <img alt="Pending Emas" className="object-bottom" src="/images/aesan_gede_banner_1792383363369.jpg" />
                 </div>
               </div>
 
@@ -861,7 +867,7 @@ export default function HomePage() {
                   <img alt="Tari Tanggai Kuku Emas" className="object-[42%_50%]" src="/images/tari_gending.jpg" />
                 </div>
                 <div className="mosaic-tile h-[40%]">
-                  <img alt="Tepak Sekapur Sirih" className="object-center" src="/images/tari_gending.jpg" />
+                  <img alt="Tepak Sekapur Sirih" className="object-center" src="/images/tari_tanggai.jpg" />
                 </div>
               </div>
 
@@ -918,10 +924,10 @@ export default function HomePage() {
 
               <div className="anim-right delay-200 col-span-1 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[35%]">
-                  <img alt="Batu Prasasti" className="object-center" src="/images/aksara_ulu.jpg" />
+                  <img alt="Batu Prasasti" className="object-center" src="/images/prasasti_kedukan_bukit.jpg" />
                 </div>
                 <div className="mosaic-tile h-[30%]">
-                  <img alt="Bilah Bambu Ulu" className="object-center" src="/images/aksara_ulu.jpg" />
+                  <img alt="Bilah Bambu Ulu" className="object-center" src="/images/aksara_ulu_1792383445918.jpg" />
                 </div>
                 <div className="mosaic-tile h-[35%]">
                   <img alt="Jembatan Ampera" className="object-center" src="/images/ampera_hero.jpg" />
@@ -930,7 +936,7 @@ export default function HomePage() {
 
               <div className="anim-right delay-250 col-span-1 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[50%]">
-                  <img alt="Kelim Songket Lepus" className="object-[80%_40%]" src="/images/songket_lepus.jpg" />
+                  <img alt="Kelim Songket Lepus" className="object-[80%_40%]" src="/images/songket_lepus_1792383379080.jpg" />
                 </div>
                 <div className="mosaic-tile h-[50%]">
                   <img alt="Simbar Atap Limas" className="object-center" src="/images/rumah_limas.jpg" />
@@ -974,7 +980,7 @@ export default function HomePage() {
             <span className="inline-block uppercase tracking-wider text-xs font-bold text-[#fbc270] bg-[#bf4320]/30 px-3 py-1 rounded-full mb-3">
               Jawaban Kuis Budaya
             </span>
-            <h3 className="text-2xl font-bold font-serif mb-2 text-white serif-heading" id="modal-title">
+            <h3 className="text-2xl font-bold mb-2 text-white" id="modal-title">
               Kain Songket Lepus Emas
             </h3>
             <p className="text-sm font-medium text-[#fbc270]/90 mb-4 italic">

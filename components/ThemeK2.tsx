@@ -39,6 +39,208 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
   const highlightItems = theme.items.slice(0, 3);
   const collections = theme.items;
 
+  // Curated theme-specific collage items for the mosaic section (12 varied items)
+  const themeExtras: Record<
+    string,
+    Array<{ name: string; badge: string; image: string; slug?: string }>
+  > = {
+    kuliner: [
+      {
+        name: "Pempek Panggang & Lenggang",
+        badge: "Khas Tepian Musi",
+        image: "/images/pempek_palembang.jpg",
+        slug: "pempek-palembang",
+      },
+      {
+        name: "Pindang Patin Nanas Kuah Kuning",
+        badge: "Rasa Asam Gurih",
+        image: "/images/pindang_patin.jpg",
+        slug: "pindang-patin",
+      },
+      {
+        name: "Mie Celor Santan Udang Ebi",
+        badge: "Kuliner Kuah",
+        image: "/images/mie_celor.jpg",
+        slug: "mie-celor-laksan",
+      },
+      {
+        name: "Burgo Ikan Kuah Santan",
+        badge: "Sarapan Klasik",
+        image: "/images/burgo_palembang.jpg",
+        slug: "tekwan-model-burgo",
+      },
+      {
+        name: "Kue Maksuba Legit Telur Bebek",
+        badge: "Kudapan Bangsawan",
+        image: "/images/kue_maksuba.jpg",
+        slug: "kue-maksuba",
+      },
+    ],
+    "bahasa-aksara": [
+      {
+        name: "Prasasti Kedukan Bukit (682 M)",
+        badge: "Bukti Tertua Sriwijaya",
+        image: "/images/prasasti_kedukan_bukit.jpg",
+        slug: "prasasti-kedukan-bukit",
+      },
+      {
+        name: "Naskah Gelumpai Bambu Ulu",
+        badge: "Manuskrip Asli",
+        image: "/images/aksara_ulu.jpg",
+        slug: "aksara-ulu",
+      },
+      {
+        name: "Arca Buddha Bukit Seguntang",
+        badge: "Pustaka Sriwijaya",
+        image: "/images/buddha_seguntang.jpg",
+        slug: "kerajaan-sriwijaya",
+      },
+      {
+        name: "Museum Kesultanan Palembang",
+        badge: "Arsip Sejarah",
+        image: "/images/museum_balaputradewa.jpg",
+        slug: "kesultanan-palembang",
+      },
+      {
+        name: "Benteng Pertahanan Kuto Besak",
+        badge: "Arsip Keraton",
+        image: "/images/benteng_kuto_besak.jpg",
+        slug: "benteng-kuto-besak",
+      },
+    ],
+    "upacara-adat": [
+      {
+        name: "Aesan Gede Busana Pengantin",
+        badge: "Adat Kebesaran",
+        image: "/images/aesan_gede_banner.jpg",
+        slug: "aesan-gede",
+      },
+      {
+        name: "Lomba Perahu Dayung Musi",
+        badge: "Lomba Sungai Musi",
+        image: "/images/perahu_bidar.jpg",
+        slug: "perahu-bidar",
+      },
+      {
+        name: "Penari Tanggai Kuku Emas",
+        badge: "Penghormatan Tamu",
+        image: "/images/tari_tanggai.jpg",
+        slug: "tari-tanggai",
+      },
+      {
+        name: "Tari Tradisional Adat Pasemah",
+        badge: "Tari Penyambutan",
+        image: "/images/tari_pasemah.jpg",
+        slug: "tari-kebagh",
+      },
+      {
+        name: "Ghumah Baghi Bersih Dusun",
+        badge: "Kearifan Agrikultur",
+        image: "/images/ghumah_baghi.jpg",
+        slug: "sedekah-rame",
+      },
+      {
+        name: "Kain Jumputan Pelangi Titik Tujuh",
+        badge: "Ikat Celup",
+        image: "/images/kain_jumputan.jpg",
+        slug: "kain-jumputan",
+      },
+      {
+        name: "Rebana Burdah Arak-Arakan",
+        badge: "Syiar Musik Islami",
+        image: "/images/rebana_burdah.jpg",
+        slug: "burdah-terbangan",
+      },
+      {
+        name: "Tari Gending Sriwijaya Keraton",
+        badge: "Penyambutan Agung",
+        image: "/images/tari_gending.jpg",
+        slug: "tari-gending-sriwijaya",
+      },
+    ],
+    sejarah: [
+      {
+        name: "Arca Megalitik Pasemah Kuno",
+        badge: "Peninggalan Ribuan SM",
+        image: "/images/megalitik_pasemah.jpg",
+        slug: "museum-balaputradewa",
+      },
+      {
+        name: "Ghumah Baghi Arsitektur Purba",
+        badge: "Kearifan Besemah",
+        image: "/images/ghumah_baghi.jpg",
+        slug: "museum-balaputradewa",
+      },
+      {
+        name: "Rumah Ulu Pasak Fleksibel",
+        badge: "Arsitektur Hulu",
+        image: "/images/rumah_ulu.jpg",
+        slug: "museum-balaputradewa",
+      },
+      {
+        name: "Rumah Rakit Terapung Sejarah",
+        badge: "Pemukiman Air Musi",
+        image: "/images/rumah_rakit.jpg",
+        slug: "benteng-kuto-besak",
+      },
+      {
+        name: "Aesan Gede Mahkota Kebesaran",
+        badge: "Pusaka Kerajaan",
+        image: "/images/aesan_gede_banner.jpg",
+        slug: "kerajaan-sriwijaya",
+      },
+      {
+        name: "Penenun Songket Lepus Emas",
+        badge: "Warisan Tenun",
+        image: "/images/menenun_songket.jpg",
+        slug: "kesultanan-palembang",
+      },
+      {
+        name: "Aliran Sungai Musi Jalur Niaga",
+        badge: "Nadi Peradaban",
+        image: "/images/musi_landscape.jpg",
+        slug: "jembatan-ampera",
+      },
+    ],
+  };
+
+  const currentExtras = themeExtras[theme.slug] || [
+    {
+      name: `${theme.title} Warisan Sriwijaya`,
+      badge: "Pusaka",
+      image: theme.heroImage,
+      slug: theme.slug,
+    },
+    {
+      name: `Arsip Budaya ${theme.title}`,
+      badge: "Koleksi",
+      image: theme.image,
+      slug: theme.slug,
+    },
+    {
+      name: `Khasanah Tradisi Lokal`,
+      badge: "Dokumentasi",
+      image: theme.heroImage,
+      slug: theme.slug,
+    },
+    {
+      name: `Nilai Filosofi Nusantara`,
+      badge: "Warisan Luhur",
+      image: theme.image,
+      slug: theme.slug,
+    },
+  ];
+
+  const collageItems = [
+    ...theme.items.map((it) => ({
+      name: it.name,
+      badge: it.badge || theme.title,
+      image: it.image || theme.heroImage,
+      slug: it.slug || theme.slug,
+    })),
+    ...currentExtras,
+  ].slice(0, 13);
+
   return (
     <div className="antialiased selection:bg-amber-900 selection:text-white min-h-screen pt-16">
       <main className="w-full bg-transparent">
@@ -104,7 +306,7 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
                         />
                       </div>
                       <div className="p-4 text-center bg-black/40 backdrop-blur-md -mt-6 mx-4 rounded-md shadow-sm border border-white/10 relative mb-4">
-                        <div className="font-serif font-bold text-amber-200 tracking-wider text-sm mb-1">
+                        <div className="font-sans font-bold text-amber-200 tracking-wider text-sm mb-1">
                           {item.badge || "WARISAN"}
                         </div>
                         <div className="text-[11px] text-white/60 uppercase tracking-widest -mt-1 mb-2 font-sans font-light">
@@ -142,7 +344,7 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
                         />
                       </div>
                       <div className="p-4 text-center bg-black/40 backdrop-blur-md -mt-6 mx-4 rounded-md shadow-sm border border-white/10 relative mb-4">
-                        <div className="font-serif font-bold text-amber-200 tracking-wider text-sm mb-1">
+                        <div className="font-sans font-bold text-amber-200 tracking-wider text-sm mb-1">
                           {item.badge || "WARISAN"}
                         </div>
                         <div className="text-[11px] text-white/60 uppercase tracking-widest -mt-1 mb-2 font-sans font-light">
@@ -282,20 +484,257 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
           className="w-full mt-10 mb-16 overflow-hidden relative bg-transparent"
           data-purpose="artifacts-wall"
         >
-          <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-4 bg-transparent">
-            <h2 className="text-xl sm:text-2xl font-normal text-white drop-shadow-md">
-              Koleksi Seni &amp; Peninggalan Budaya
-            </h2>
+          <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-5 bg-transparent flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+            <div>
+              <span className="text-[11px] font-semibold tracking-wider text-amber-300 uppercase block mb-1">
+                Mozaik Kolase Warisan
+              </span>
+              <h2 className="text-xl sm:text-2xl font-normal text-white drop-shadow-md">
+                Koleksi Seni &amp; Peninggalan Budaya
+              </h2>
+            </div>
+            <p className="text-xs text-white/60">
+              Dokumentasi visual dan artefak budaya terpilih dari tema {theme.title}
+            </p>
           </div>
 
           <div className="relative w-full bg-transparent">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="scroll-anim in-view anim-mosaic delay-1 overflow-hidden rounded-xl shadow-2xl border border-white/10 bg-black/40 backdrop-blur-sm">
-                <img
-                  alt={`Koleksi mozaik artefak ${theme.title}`}
-                  className="w-full h-auto object-cover min-h-[360px]"
-                  src={theme.heroImage}
-                />
+              <div className="scroll-anim in-view anim-mosaic delay-1 overflow-hidden rounded-xl shadow-2xl border border-white/10 bg-[#1c1013] p-[2px] md:p-[3px]">
+                {/* Seamless Mosaic Puzzle Collage — 100% pure photos, no cards, no text, zero empty gaps */}
+                <div className="w-full flex gap-[2px] md:gap-[3px] h-[360px] sm:h-[420px] md:h-[480px] lg:h-[520px]">
+                  {/* Column 1 */}
+                  <div className="flex-1 flex flex-col gap-[2px] md:gap-[3px] h-full">
+                    <Link
+                      href={`/tur/${collageItems[0]?.slug || theme.slug}`}
+                      title={collageItems[0]?.name}
+                      style={{ flex: 58 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[0]?.image}
+                        alt={collageItems[0]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.heroImage || theme.image;
+                        }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/tur/${collageItems[1]?.slug || theme.slug}`}
+                      title={collageItems[1]?.name}
+                      style={{ flex: 42 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[1]?.image}
+                        alt={collageItems[1]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.image || theme.heroImage;
+                        }}
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Column 2 */}
+                  <div className="flex-1 flex flex-col gap-[2px] md:gap-[3px] h-full">
+                    <Link
+                      href={`/tur/${collageItems[2]?.slug || theme.slug}`}
+                      title={collageItems[2]?.name}
+                      style={{ flex: 38 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[2]?.image}
+                        alt={collageItems[2]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.heroImage || theme.image;
+                        }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/tur/${collageItems[3]?.slug || theme.slug}`}
+                      title={collageItems[3]?.name}
+                      style={{ flex: 62 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[3]?.image}
+                        alt={collageItems[3]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.image || theme.heroImage;
+                        }}
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Column 3 */}
+                  <div className="flex-1 flex flex-col gap-[2px] md:gap-[3px] h-full">
+                    <Link
+                      href={`/tur/${collageItems[4]?.slug || theme.slug}`}
+                      title={collageItems[4]?.name}
+                      style={{ flex: 65 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[4]?.image}
+                        alt={collageItems[4]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.heroImage || theme.image;
+                        }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/tur/${collageItems[5]?.slug || theme.slug}`}
+                      title={collageItems[5]?.name}
+                      style={{ flex: 35 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[5]?.image}
+                        alt={collageItems[5]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.image || theme.heroImage;
+                        }}
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Column 4 */}
+                  <div className="flex-1 flex flex-col gap-[2px] md:gap-[3px] h-full">
+                    <Link
+                      href={`/tur/${collageItems[6]?.slug || theme.slug}`}
+                      title={collageItems[6]?.name}
+                      style={{ flex: 35 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[6]?.image}
+                        alt={collageItems[6]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.heroImage || theme.image;
+                        }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/tur/${collageItems[7]?.slug || theme.slug}`}
+                      title={collageItems[7]?.name}
+                      style={{ flex: 30 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[7]?.image}
+                        alt={collageItems[7]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.image || theme.heroImage;
+                        }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/tur/${collageItems[8]?.slug || theme.slug}`}
+                      title={collageItems[8]?.name}
+                      style={{ flex: 35 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[8]?.image}
+                        alt={collageItems[8]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.heroImage || theme.image;
+                        }}
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Column 5 */}
+                  <div className="flex-1 flex flex-col gap-[2px] md:gap-[3px] h-full">
+                    <Link
+                      href={`/tur/${collageItems[9]?.slug || theme.slug}`}
+                      title={collageItems[9]?.name}
+                      style={{ flex: 45 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[9]?.image}
+                        alt={collageItems[9]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.heroImage || theme.image;
+                        }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/tur/${collageItems[10]?.slug || theme.slug}`}
+                      title={collageItems[10]?.name}
+                      style={{ flex: 55 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[10]?.image}
+                        alt={collageItems[10]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.image || theme.heroImage;
+                        }}
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Column 6 */}
+                  <div className="flex-1 flex flex-col gap-[2px] md:gap-[3px] h-full">
+                    <Link
+                      href={`/tur/${collageItems[11]?.slug || theme.slug}`}
+                      title={collageItems[11]?.name}
+                      style={{ flex: 55 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[11]?.image}
+                        alt={collageItems[11]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.heroImage || theme.image;
+                        }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/tur/${collageItems[12]?.slug || theme.slug}`}
+                      title={collageItems[12]?.name}
+                      style={{ flex: 45 }}
+                      className="mosaic-tile group relative overflow-hidden w-full min-h-0 block"
+                    >
+                      <img
+                        src={collageItems[12]?.image}
+                        alt={collageItems[12]?.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            theme.image || theme.heroImage;
+                        }}
+                      />
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

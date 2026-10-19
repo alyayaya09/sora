@@ -50,7 +50,7 @@ const SOURCE_ARTICLES = [
     domain: "kemdikbud.go.id • Warisan Budaya",
     title: "Fakta Sejarah Kain Songket: Epos Kemegahan Maritim",
     excerpt: "Teknik pengerjaan benang emas jantung murni dan makna filosofi kemakmuran pesisir Nusantara tempo dulu...",
-    img: "/images/songket_lepus.jpg",
+    img: "/images/menenun_songket.jpg",
   },
 ];
 
@@ -71,7 +71,7 @@ const THEME_FILTERS = [
     title: "Kemegahan Busana Adat Palembang",
     desc: "Telusuri mahakarya busana Aesan Gede, Songket Lepus berbenang emas, Jumputan Pelangi, dan warisan kebesaran Kesultanan Palembang Darussalam.",
     href: "/tema/kain-pakaian",
-    img: "/images/songket_lepus.jpg",
+    img: "/images/aesan_gede_banner.jpg",
     keywords: ["songket", "lepus", "aesan", "gede", "paksangko", "kain", "pakaian", "busana", "jumputan", "batik", "tenun", "benang", "emas"],
   },
   {
@@ -107,7 +107,7 @@ const THEME_FILTERS = [
     title: "Seni Pertunjukan & Tradisi Lisan",
     desc: "Teater Dulmuluk, Senjang berpantun, dan Tembang Batanghari Sembilan — cerita, pantun, dan tawa yang diwariskan dari mulut ke mulut.",
     href: "/tema/pertunjukan-lisan",
-    img: "/images/tari_gending.jpg",
+    img: "/images/teater_dulmuluk.jpg",
     keywords: ["dulmuluk", "teater", "senjang", "pantun", "tembang", "pertunjukan", "lisan", "syair", "tutur"],
   },
   {
@@ -116,7 +116,7 @@ const THEME_FILTERS = [
     title: "Upacara Adat & Tradisi Sosial",
     desc: "Ngobeng, Festival Perahu Bidar, Bekarang Iwak, dan Sedekah Rame — kebersamaan yang dirayakan di sungai, lahan, dan meja pernikahan.",
     href: "/tema/upacara-adat",
-    img: "/images/ampera_hero.jpg",
+    img: "/images/perahu_bidar.jpg",
     keywords: ["ngobeng", "bidar", "perahu", "bekarang", "iwak", "sedekah", "rame", "nindai", "madik", "upacara", "festival", "tradisi", "adat"],
   },
   {
@@ -125,7 +125,7 @@ const THEME_FILTERS = [
     title: "Jejak Sriwijaya & Kesultanan Palembang",
     desc: "Prasasti Kedukan Bukit, Benteng Kuto Besak, Museum Balaputradewa, dan Jembatan Ampera — arsip hidup peradaban Palembang.",
     href: "/tema/sejarah",
-    img: "/images/ampera_hero.jpg",
+    img: "/images/benteng_kuto_besak.jpg",
     keywords: ["sejarah", "sriwijaya", "prasasti", "kesultanan", "palembang", "benteng", "kuto", "besak", "museum", "balaputradewa", "ampera", "jembatan", "peninggalan", "kerajaan"],
   },
 ];
@@ -144,7 +144,7 @@ function RelatedThemeFilter({ query }: { query: string }) {
     <section className="flex flex-col gap-6 mt-20 pt-4">
       {/* Section heading */}
       <div className="flex items-center justify-center text-center w-full">
-        <h2 className="noto-heading text-2xl md:text-3xl text-white font-normal tracking-wide">
+        <h2 className="text-2xl md:text-3xl text-white font-normal tracking-wide">
           Jelajahi kategori terkait...
         </h2>
       </div>
@@ -168,7 +168,7 @@ function RelatedThemeFilter({ query }: { query: string }) {
           <span className="text-[11px] md:text-xs font-semibold tracking-widest uppercase text-amber-200/90 drop-shadow-sm">
             {match.label}
           </span>
-          <h3 className="noto-heading text-2xl md:text-4xl text-white font-medium tracking-wide drop-shadow-md">
+          <h3 className="text-2xl md:text-4xl text-white font-medium tracking-wide drop-shadow-md">
             {match.title}
           </h3>
           <p className="text-sm md:text-base text-white/90 max-w-xl mx-auto leading-relaxed drop-shadow-sm">
@@ -194,6 +194,7 @@ function JelajahiContent() {
   const [query, setQuery] = useState(urlQuery || "Filosofi dan Sejarah Songket Lepus Emas Palembang");
   const [inputValue, setInputValue] = useState(urlQuery || "Filosofi dan Sejarah Songket Lepus Emas Palembang");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -230,6 +231,64 @@ function JelajahiContent() {
     window.addEventListener("mousemove", onMove);
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
+
+  const triggerToast = (msg: string) => {
+    const existing = document.getElementById("jelajahiLiveToast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.id = "jelajahiLiveToast";
+    toast.className =
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+    toast.innerHTML = `
+      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[14px] text-amber-300">mic</span>
+      </div>
+      <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translate(-50%, 8px)";
+      setTimeout(() => toast.remove(), 300);
+    }, 2400);
+  };
+
+  const handleVoiceSearch = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      triggerToast("Browser tidak mendukung pencarian suara");
+      return;
+    }
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "id-ID";
+      recognition.interimResults = false;
+      recognition.onstart = () => {
+        setIsListening(true);
+        triggerToast("Mendengarkan... Silakan ucapkan kata kunci budaya");
+      };
+      recognition.onresult = (e: any) => {
+        const text = e.results[0][0].transcript;
+        setIsListening(false);
+        if (text && text.trim()) {
+          setInputValue(text.trim());
+          handleSearch(text.trim());
+          triggerToast(`Mencari: "${text.trim()}"`);
+        }
+      };
+      recognition.onerror = () => {
+        setIsListening(false);
+        triggerToast("Gagal mendeteksi suara");
+      };
+      recognition.onend = () => setIsListening(false);
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      triggerToast("Pencarian suara belum dapat diakses");
+    }
+  };
 
   const handleSearch = (q: string) => {
     const trimmed = q.trim();
@@ -314,10 +373,31 @@ function JelajahiContent() {
                       type="button"
                       onClick={() => { setInputValue(""); inputRef.current?.focus(); }}
                       className="p-1.5 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-colors shrink-0 cursor-pointer"
+                      title="Hapus pencarian"
                     >
                       <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={handleVoiceSearch}
+                    aria-label="Pencarian Suara"
+                    title="Pencarian Suara"
+                    className={`p-1.5 rounded-full transition-all shrink-0 cursor-pointer ${
+                      isListening
+                        ? "bg-red-500/80 text-white animate-pulse"
+                        : "text-white/40 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  </button>
                 </form>
                 {showSuggestions && (
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#141014]/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl overflow-hidden z-[200]">
@@ -353,12 +433,12 @@ function JelajahiContent() {
             <div className="lg:col-span-5 flex flex-col gap-4">
               <article className="relative overflow-hidden border border-amber-400/20 bg-white/[0.02] shadow-[0_0_35px_rgba(212,175,55,0.12)] group rounded-3xl" style={{ height: 480 }}>
                 <img
-                  src="/images/songket_lepus.jpg"
+                  src="/images/songket_lepus_1792383379080.jpg"
                   alt="Songket Lepus Palembang"
                   className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 rounded-3xl"
                 />
                 <div className="absolute inset-x-0 bottom-0 z-10 pt-24 pb-7 px-7 bg-gradient-to-t from-[#0d0d0f]/95 via-[#0d0d0f]/55 to-transparent flex flex-col justify-end">
-                  <h2 className="font-semibold text-3xl md:text-[2rem] text-white tracking-wide drop-shadow-md noto-heading">
+                  <h2 className="font-semibold text-3xl md:text-[2rem] text-white tracking-wide drop-shadow-md">
                     Songket Lepus Palembang
                   </h2>
                   <p className="text-base text-white/85 mt-2 drop-shadow-sm">Kain tenun emas lambang kemegahan tradisi Sriwijaya</p>
@@ -419,7 +499,7 @@ function JelajahiContent() {
                     <span className="material-symbols-outlined text-[26px] text-amber-400 select-none transition-transform group-hover:scale-105 shrink-0">
                       {isPlaying ? "pause" : "volume_up"}
                     </span>
-                    <span className="text-2xl md:text-3xl text-white font-normal select-none leading-none noto-heading">
+                    <span className="text-2xl md:text-3xl text-white font-normal select-none leading-none">
                       {isPlaying ? "Memutar SORA..." : "Dengarkan SORA"}
                     </span>
                     {isPlaying && (

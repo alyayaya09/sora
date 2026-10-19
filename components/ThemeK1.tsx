@@ -33,10 +33,6 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
 
         <div className="relative z-10 max-w-[1440px] mx-auto w-full px-6 sm:px-12 flex-1 flex flex-col justify-center pt-28 pb-12">
           <div className="max-w-2xl text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 text-xs uppercase tracking-wider text-amber-300 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              Pameran Virtual Budaya
-            </div>
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.1] drop-shadow-lg">
               {theme.title}
             </h1>
@@ -79,9 +75,6 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent"></div>
               <div className="relative z-10 text-white">
-                <span className="inline-block bg-[#1a73e8] hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-md mb-2.5 shadow-sm transition-colors">
-                  {item1.badge || "Pola dan motif"}
-                </span>
                 <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-snug group-hover:text-amber-200 transition-colors">
                   {item1.name}
                 </h3>
@@ -105,9 +98,6 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent"></div>
               <div className="relative z-10 text-white">
-                <span className="inline-block bg-[#1a73e8] hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-md mb-2.5 shadow-sm transition-colors">
-                  {item2.badge || "Sentra Budaya"}
-                </span>
                 <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-snug group-hover:text-amber-200 transition-colors">
                   {item2.name}
                 </h3>
@@ -132,9 +122,6 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
             <div className="relative z-10 text-white max-w-xl">
-              <span className="inline-block bg-[#1a73e8] hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-md mb-3 shadow-sm transition-colors">
-                {item3.badge || "Fakta menarik"}
-              </span>
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight leading-snug group-hover:text-amber-200 transition-colors">
                 {item3.name}
               </h3>

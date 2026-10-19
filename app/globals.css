@@ -18,13 +18,13 @@
 }
 
 .serif-heading {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .noto-heading {
-  font-family: 'Noto Serif', serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .font-bubble {
-  font-family: 'Outfit', 'Fredoka One', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 @keyframes gradientFlow {
@@ -391,8 +391,8 @@
 
 /* Tentang Page Cultural Styles & Scroll Animations */
 .font-brush {
-  font-family: 'Playfair Display', 'Permanent Marker', serif, cursive;
-  letter-spacing: 2px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 1px;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
 }
 .scroll-anim-left {
