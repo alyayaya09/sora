@@ -645,7 +645,7 @@ export default function HomePage() {
             <div className="anim-right delay-100 col-span-1 md:col-span-4 flex flex-col gap-5 h-[500px] md:h-full anim-out-bottom">
               {/* Top Card: Kain Jumputan Pelangi */}
               <Link
-                href="/tur/songket-palembang"
+                href="/tur/kain-jumputan"
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
                 <img
@@ -666,7 +666,7 @@ export default function HomePage() {
 
               {/* Bottom Card: Motif Bunga Mawar & Rebung */}
               <Link
-                href="/tur/songket-palembang"
+                href="/tur/motif-bunga-mawar-rebung"
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
                 <img
@@ -871,40 +871,19 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* CENTER REGION: TERRACOTTA QUIZ CARD (Cols 6-8) */}
+              {/* CENTER REGION: TERRACOTTA PHOTO COLLECTION CARD (Cols 6-8) */}
               <div className="anim-center delay-100 col-span-3 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <section
-                  aria-label="Tebak karya seni apa yang ada di antara potongan-potongan tersebut."
-                  className="bg-[#bf4320] hover:bg-[#b03d1b] h-[60%] flex flex-col justify-center px-6 sm:px-8 md:px-10 py-6 relative shadow-inner cursor-pointer group transition-colors duration-200"
-                  data-purpose="interactive-quiz-card"
-                  id="reveal-trigger"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setIsModalOpen(true)}
+                  aria-label="Koleksi Foto dan Ragam Budaya Sumatera Selatan"
+                  className="bg-[#bf4320] h-[60%] flex flex-col justify-center px-6 sm:px-8 md:px-10 py-6 relative shadow-inner select-none"
+                  data-purpose="photo-collection-card"
                 >
-                  <div className="absolute top-4 right-5 text-white/40 group-hover:text-white transition-colors">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" x2="12" y1="16" y2="12"></line>
-                      <line x1="12" x2="12.01" y1="8" y2="8"></line>
-                    </svg>
-                  </div>
-                  <h2 className="text-white text-2xl sm:text-[27px] md:text-[30px] font-bold leading-[1.25] tracking-tight mb-6">
-                    Tebak karya seni apa yang ada di antara potongan-potongan tersebut.
+                  <h2 className="text-white text-2xl sm:text-[27px] md:text-[30px] font-bold leading-[1.25] tracking-tight mb-3">
+                    Koleksi Foto &amp; Ragam Budaya
                   </h2>
-                  <div>
-                    <span className="inline-block text-white text-[15px] sm:text-base font-normal tracking-normal py-0.5 border-b border-white hover:opacity-85 transition-opacity underline decoration-1 underline-offset-4 cursor-pointer">
-                      Klik di sini untuk mengetahui jawabannya
-                    </span>
-                  </div>
+                  <p className="text-white/90 text-sm sm:text-base font-normal leading-relaxed">
+                    Kumpulan dokumentasi foto dan mahakarya warisan kebudayaan Sumatera Selatan dalam susunan kolase.
+                  </p>
                 </section>
 
                 <div className="mosaic-tile h-[40%]">
@@ -949,11 +928,11 @@ export default function HomePage() {
             <div className="flex items-center space-x-2">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#bf4320]"></span>
               <span className="font-medium text-white/80">
-                Eksplorasi Seni Interaktif SORA Arts &amp; Culture
+                Koleksi Foto &amp; Dokumentasi Budaya SORA Arts &amp; Culture
               </span>
             </div>
             <div className="italic text-white/50 text-[11px] sm:text-xs mt-1 sm:mt-0">
-              Gunakan kursor untuk memeriksa setiap potongan detail kebudayaan
+              Dokumentasi visual ragam seni, arsitektur, dan tradisi Sumatera Selatan
             </div>
           </div>
         </div>

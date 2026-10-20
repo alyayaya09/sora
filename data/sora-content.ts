@@ -855,6 +855,75 @@ export const dedicatedTours: Record<string, DedicatedTour> = {
     relLink: "/tema/kain-pakaian",
     relImg: "/images/batik_palembang.jpg",
   },
+  "motif-bunga-mawar-rebung": {
+    id: "motif-bunga-mawar-rebung",
+    title: "Motif Bunga Mawar & Rebung",
+    subtitle: "Simbol perlindungan batin, tolak bala, dan aspirasi spiritual luhur dalam wastra Palembang",
+    heroImg: "/images/batik_palembang.jpg",
+    sec1Title: "Motif Bunga Mawar: Doa Perlindungan Batin & Tolak Bala",
+    sec1Desc:
+      "Dalam filosofi ragam hias kain dan batik Palembang, motif Bunga Mawar (Bungo Mawar) digubah secara simetris dan anggun. Mawar melambangkan perisai batin, penangkal bala marabahaya, serta keharuman budi pekerti yang dijunjung tinggi oleh keluarga bangsawan Melayu Kesultanan.",
+    sec1Img: "/images/batik_palembang.jpg",
+    sec2Title: "Pucuk Rebung Tumpal: Aspirasi Spiritual Menjulang Luhur",
+    sec2Desc:
+      "Formasi segitiga Pucuk Rebung yang menghiasi tumpal dan kepala kain melambangkan tunas bambu muda yang terus tumbuh tegak lurus ke angkasa. Ragam ini merepresentasikan keteguhan tekad, cita-cita spiritual yang luhur menuju Sang Pencipta, serta kerendahan hati saat telah berada di puncak kesuksesan.",
+    sec2Img: "/images/songket_lepus_1792383379080.jpg",
+    sec3Title: "Keselarasan Kosmis pada Kelim & Pucuk Kain Wastra",
+    sec3Desc:
+      "Perpaduan motif Bunga Mawar pada badan kain dan Pucuk Rebung pada kelim tumpal menciptakan keselarasan estetika kosmis khas Palembang. Kehadirannya menyiratkan pesan luhur bahwa keteguhan prinsip hidup harus senantiasa diimbangi dengan kelembutan tutur kata dan perbuatan.",
+    sec3Img: "/images/songket_lepus.jpg",
+    relCat: "KATEGORI BUSANA ADAT & KAIN",
+    relTitle: "Pakaian Adat & Kain Tenun",
+    relDesc: "Telusuri keanggunan Songket Lepus Emas, Aesan Gede, Kain Jumputan, dan Batik Palembang.",
+    relLink: "/tema/kain-pakaian",
+    relImg: "/images/batik_palembang.jpg",
+  },
+  "motif-bunga-bintang": {
+    id: "motif-bunga-bintang",
+    title: "Motif Bunga Bintang Songket",
+    subtitle: "Simbol panduan navigasi bahari Sriwijaya dan filosofi keteguhan batin penenun keraton",
+    heroImg: "/images/songket_lepus.jpg",
+    sec1Title: "Kompas Bintang di Langit Bahari Sriwijaya",
+    sec1Desc:
+      "Motif Bunga Bintang (Bungo Bintang) pada kain songket terinspirasi dari gugusan bintang malam yang dijadikan pedoman arah oleh para pelaut dan armada bahari Sriwijaya dalam mengarungi samudra menuju Selat Malaka.",
+    sec1Img: "/images/songket_lepus.jpg",
+    sec2Title: "Ketelitian Geometris Penuh Makna Batin",
+    sec2Desc:
+      "Setiap titik dan sudut bintang ditenun dengan hitungan lidi yang sangat presisi menggunakan benang emas cabutan murni. Bentuk bintang bersegi delapan melambangkan delapan penjuru mata angin serta keteguhan hati dalam memegang prinsip kebenaran.",
+    sec2Img: "/images/menenun_songket.jpg",
+    sec3Title: "Pusaka Agung Pelengkap Busana Kebesaran",
+    sec3Desc:
+      "Motif Bunga Bintang kerap dipadukan pada bagian pinggiran dan badan kain songket pengantin, memancarkan aura wibawa, kecerdasan kepemimpinan, dan harapan agar sang pemakai senantiasa menjadi penerang bagi lingkungannya.",
+    sec3Img: "/images/aesan_gede_banner.jpg",
+    relCat: "KATEGORI BUSANA ADAT & KAIN",
+    relTitle: "Pakaian Adat & Kain Tenun",
+    relDesc: "Kenali ragam motif Songket Lepus, Bunga Pacik, dan Aesan Gede.",
+    relLink: "/tema/kain-pakaian",
+    relImg: "/images/songket_lepus.jpg",
+  },
+  "celup-gambir": {
+    id: "celup-gambir",
+    title: "Proses Celup Alami Gambir & Sepang",
+    subtitle: "Formulasi etnobotani getah gambir dan kayu secang penghasil rona merah marun abadi ratusan tahun",
+    heroImg: "/images/menenun_songket.jpg",
+    sec1Title: "Kearifan Etnobotani Pewarnaan Alami Melayu",
+    sec1Desc:
+      "Sebelum pewarna sintetis masuk ke Nusantara, para pengrajin kain Palembang memanfaatkan getah tanaman gambir (Uncaria gambir) dan serutan kayu secang (Caesalpinia sappan) yang direbus berjam-jam untuk menghasilkan ekstrak warna merah marun pekat yang meresap sempurna ke dalam serat sutra alami.",
+    sec1Img: "/images/menenun_songket.jpg",
+    sec2Title: "Teknik Penguncian Warna Menggunakan Jeruk Nipis & Tawas",
+    sec2Desc:
+      "Agar warna tidak mudah pudar oleh cahaya matahari dan air sungai, benang sutra yang telah dicelup difiksasi menggunakan air perasan jeruk nipis atau larutan tawas alami. Proses pengeringan dilakukan dengan diangin-anginkan di bawah rindang pohon tanpa kontak langsung terik matahari.",
+    sec2Img: "/images/kain_jumputan.jpg",
+    sec3Title: "Rona Merah Marun Lambang Kehormatan & Keabadian",
+    sec3Desc:
+      "Warna merah marun hasil celupan gambir dan secang memiliki ketahanan luar biasa hingga ratusan tahun, terlihat pada kain-kain songket kuno koleksi keraton yang warnanya tetap menyala anggun berdampingan dengan kilau benang emas murni.",
+    sec3Img: "/images/songket_lepus_1792383379080.jpg",
+    relCat: "KATEGORI KERAJINAN TEKSTIL",
+    relTitle: "Kriya Tekstil Tradisional Sumsel",
+    relDesc: "Pelajari teknik menenun gedogan, kain jumputan pelangi, dan batik Palembang.",
+    relLink: "/tema/kain-pakaian",
+    relImg: "/images/menenun_songket.jpg",
+  },
 
   // --- TARI & MUSIK TRADISIONAL ---
   "tari-gending-sriwijaya": {
@@ -1879,10 +1948,60 @@ export const dedicatedTours: Record<string, DedicatedTour> = {
     relLink: "/tema/kain-pakaian",
     relImg: "/images/menenun_songket.jpg",
   },
+  "fajar-musi": {
+    id: "fajar-musi",
+    title: "Fajar di Sungai Musi",
+    subtitle: "Rumah rakit terapung dan perahu ketek menyongsong semilir angin fajar sungai purba",
+    heroImg: "/images/rumah_rakit.jpg",
+    sec1Title: "Kabut Pagi & Siluet Perahu Ketek Pertama",
+    sec1Desc:
+      "Sebelum fajar sempurna merekah di ufuk timur, kabut tipis menyelimuti permukaan Sungai Musi. Suara ketukan mesin perahu ketek pertama mulai memecah kesunyian air, mengantarkan para pedagang dan nelayan memulai denyut nadi niaga sungai yang telah berlangsung ribuan tahun.",
+    sec1Img: "/images/perahu_ketek.jpg",
+    sec2Title: "Kehidupan Bersahaja di Atas Rumah Rakit Terapung",
+    sec2Desc:
+      "Di atas gelondongan kayu dan ratusan batang bambu penyangga, rumah-rumah rakit yang tertambat di tebing sungai mulai menyalakan lentera dan asap tungku dapur. Kehidupan terapung ini menjadi warisan hidup peradaban maritim Palembang yang adaptif dan selaras dengan pasang surut air sungai.",
+    sec2Img: "/images/rumah_rakit.jpg",
+    sec3Title: "Kilau Mentari Pagi di Bawah Megahnya Ampera",
+    sec3Desc:
+      "Sinar matahari keemasan perlahan menembus kabut, menyinari bentangan merah Jembatan Ampera dan benteng kuno Kuto Besak. Udara fajar yang sejuk dipadu aroma pempek hangat dan kopi seduh menyambut hari baru bagi seluruh Wong Kito di tepian Musi.",
+    sec3Img: "/images/ampera_hero.jpg",
+    relCat: "KATEGORI PERADABAN SUNGAI",
+    relTitle: "Peradaban Air Sungai Musi",
+    relDesc: "Jelajahi Rumah Rakit terapung, Pagi di Tepian Musi, dan pesona maritim Palembang.",
+    relLink: "/tur/rumah-rakit",
+    relImg: "/images/rumah_rakit.jpg",
+  },
+  "hutan-suvarnadvipa": {
+    id: "hutan-suvarnadvipa",
+    title: "Hutan Hujan & Perairan Suvarnadvipa",
+    subtitle: "Ekosistem hutan purba dan perairan sungai yang dilindungi titah prasasti raja-raja Sriwijaya",
+    heroImg: "/images/musi_landscape.jpg",
+    sec1Title: "Prasasti Talang Tuwo: Amanat Konservasi Tertua Dunia",
+    sec1Desc:
+      "Pada tahun 684 Masehi, Raja Sriwijaya Dapunta Hyang Sri Jayanasa menitahkan pembangunan Taman Sriksetra sebagaimana terpahat pada Prasasti Talang Tuwo. Ini adalah piagam konservasi alam tertua di dunia yang memerintahkan penanaman pohon buah-buahan, bambu, dan pelestarian sumber air demi kemakmuran seluruh makhluk.",
+    sec1Img: "/images/prasasti_kedukan_bukit.jpg",
+    sec2Title: "Perairan Sembilan Sungai & Hutan Purba Dataran Rendah",
+    sec2Desc:
+      "Bentang alam Sumatera Selatan (Suvarnadvipa) dianugerahi sembilan anak sungai Musi yang mengairi hutan gambut, rawa lebak lebung, dan hutan perbukitan Bukit Barisan. Ekosistem ini menyediakan kayu unglen kokoh untuk Rumah Limas serta getah damar untuk aksara kuno.",
+    sec2Img: "/images/musi_landscape.jpg",
+    sec3Title: "Warisan Keselarasan Manusia & Alam Masa Kini",
+    sec3Desc:
+      "Kearifan para leluhur dalam menjaga hulu sungai dan hutan adat kini menjadi inspirasi penting bagi pelestarian lingkungan hidup Sumatera Selatan, membuktikan bahwa peradaban besar hanya dapat bertahan jika menjaga keselarasan dengan alam sekitarnya.",
+    sec3Img: "/images/rumah_limas.jpg",
+    relCat: "KATEGORI LINGKUNGAN & SEJARAH",
+    relTitle: "Sejarah & Peninggalan Sumsel",
+    relDesc: "Telusuri Kerajaan Sriwijaya, Prasasti Kedukan Bukit, dan Sungai Musi.",
+    relLink: "/tema/sejarah",
+    relImg: "/images/musi_landscape.jpg",
+  },
 };
 
 // Helper: Get dedicated tour with robust fallback so any item clicked always renders properly
 export function getDedicatedTour(slug: string): DedicatedTour {
+  if (!slug) {
+    return dedicatedTours["songket-palembang"];
+  }
+
   if (dedicatedTours[slug]) {
     return dedicatedTours[slug];
   }

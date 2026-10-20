@@ -24,7 +24,7 @@ const INITIAL_FAVORITES: FavoriteItem[] = [
     image:
       "https://lh3.googleusercontent.com/aida/AEtjO1WCF1J-3c6nSV4lux31qjbnYBJ8DssQlXxYpTLW32b98ttdktCbQGRbDtWRuU7vMJhKVJ1IXPFwyZO7wlW863aJArxJu8djcQCuwIS6WuOmAl-WQzpJgBaqTNa8BzqRrFXzCJ9wc3YBiWhe-Dd1wg81Srm8bf1ihXzzRZS1v0NYOXo7bibviV4GKPJKtP4mrXKZ9OpjIf6H8KJIlwBu7jxckRPDgFsq5jtGs7Cu83dXK4Qs5WNkU701AAkN",
     fallbackImage: "/images/songket_lepus.jpg",
-    link: "/tur/songket-palembang",
+    link: "/tur/motif-bunga-bintang",
   },
   {
     id: "celup-gambir",
@@ -34,7 +34,7 @@ const INITIAL_FAVORITES: FavoriteItem[] = [
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuAzWOP7yGmzVqVnlXFOi3ONDYBGP5UXSuy9ItbD2FRle1Ed49-ZEToXjXuyLwdzT5pXg4Rmv_VMfdTJBBeCFTldiOQ_HoIoMkAELqUzYKNL1lDxUnNGp7JcU6OJSlZRj_b3C-JVdMwb13zK7PedkTq-3eM5ynGv290klaTX-R0aTE_UigYVnIJnVlLmkablNOTSnGYW38lh3lWQMTdXeQXFI-1KUv8DnGtWDpXr4VD3J_T-CSzBsZuJjA",
     fallbackImage: "/images/songket_lepus.jpg",
-    link: "/tema/kain-pakaian",
+    link: "/tur/celup-gambir",
   },
   {
     id: "aesan-gede",
@@ -54,7 +54,7 @@ const INITIAL_FAVORITES: FavoriteItem[] = [
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuB0gVTaR0LzzvJnGlJJvzZI4meD-ucCLThXQqF__AgWr2ASNon8GzQaw2NUOQz8EDRYp9AJwP5CfUwsvoq000FXc1RBmLznAiRk8YcgmUEB8GwrlgpcsBI3zF9DyVFrJKKpD40vnE0yKOBJ6eziIkEi1nmrYFcE4VlMP3LgP2WUZIkt01wKM7Gfvw6Io6q7Q4vjKlIY5jK2SzDg1O1j-Z1WpJc5932LTP0G34wSRG7VagnLuzLobqC62g",
     fallbackImage: "/images/ampera_hero.jpg",
-    link: "/tur/fajar-musi",
+    link: "/tur/hutan-suvarnadvipa",
   },
 ];
 

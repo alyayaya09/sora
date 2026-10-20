@@ -1,15 +1,92 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
-import { Theme, themes } from "../data/sora-content";
+import { Theme } from "../data/sora-content";
 
 interface ThemeK1Props {
   theme: Theme;
 }
 
 export default function ThemeK1({ theme }: ThemeK1Props) {
-  const [activeCardIndex, setActiveCardIndex] = useState(2); // Default 3rd card active matching K1.MD
+  useEffect(() => {
+    // Carousel Hover & Sticky Active State Interactivity matching K1.MD
+    const itemWrappers = document.querySelectorAll(
+      "#batik-carousel-container .carousel-card-item"
+    );
+    let currentActiveWrapper = itemWrappers[2]; // Default active: Card 3
+
+    function setActiveCard(targetWrapper: Element) {
+      if (!targetWrapper || currentActiveWrapper === targetWrapper) return;
+
+      // Nonaktifkan kartu aktif sebelumnya
+      if (currentActiveWrapper) {
+        const prevCard = currentActiveWrapper.querySelector(".interactive-card");
+        currentActiveWrapper.classList.remove("is-active-wrapper");
+        currentActiveWrapper.classList.add("is-inactive-wrapper");
+        if (prevCard) {
+          prevCard.classList.remove("is-active", "ring-2", "ring-amber-400/50");
+          prevCard.classList.add("is-inactive");
+        }
+      }
+
+      // Aktifkan kartu baru yang sedang di-hover
+      currentActiveWrapper = targetWrapper;
+      const newCard = targetWrapper.querySelector(".interactive-card");
+      targetWrapper.classList.remove("is-inactive-wrapper");
+      targetWrapper.classList.add("is-active-wrapper");
+      if (newCard) {
+        newCard.classList.remove("is-inactive");
+        newCard.classList.add("is-active", "ring-2", "ring-amber-400/50");
+      }
+    }
+
+    const mouseEnterCleanups: Array<() => void> = [];
+    itemWrappers.forEach((wrapper) => {
+      const handler = () => setActiveCard(wrapper);
+      wrapper.addEventListener("mouseenter", handler);
+      mouseEnterCleanups.push(() => wrapper.removeEventListener("mouseenter", handler));
+    });
+
+    // IntersectionObserver for entrance & exit scroll animations on story cards
+    const animElements = document.querySelectorAll(".scroll-animate");
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (!prefersReducedMotion && "IntersectionObserver" in window) {
+      const scrollObserverOptions: IntersectionObserverInit = {
+        root: null,
+        rootMargin: "0px 0px -60px 0px",
+        threshold: [0, 0.15],
+      };
+
+      const scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Meluncur masuk ke dalam posisi normal
+            entry.target.classList.add("is-visible");
+          } else {
+            // Meluncur keluar kembali ke arah luar (exit animation)
+            entry.target.classList.remove("is-visible");
+          }
+        });
+      }, scrollObserverOptions);
+
+      animElements.forEach((el) => scrollObserver.observe(el));
+
+      return () => {
+        mouseEnterCleanups.forEach((cleanup) => cleanup());
+        scrollObserver.disconnect();
+      };
+    } else {
+      animElements.forEach((el) => el.classList.add("is-visible"));
+      return () => {
+        mouseEnterCleanups.forEach((cleanup) => cleanup());
+      };
+    }
+  }, [theme.slug]);
 
   const item1 = theme.items[0] || { name: "Pola & Ragam", desc: "Koleksi budaya", badge: "Pola & Ragam", slug: "songket-palembang", image: theme.image };
   const item2 = theme.items[1] || { name: "Pusat Kerajinan", desc: "Sentra kerajinan tradisi", badge: "Sentra", slug: "songket-palembang", image: theme.image };
@@ -49,23 +126,35 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
       {/* END: HeroSection */}
 
       {/* BEGIN: StoryGridSection matching K1.MD */}
-      <section className="py-16 sm:py-20 px-6 sm:px-12 max-w-[1440px] mx-auto bg-transparent" data-purpose="editorial-stories" id="cerita-batik">
+      <section
+        className="py-16 sm:py-20 px-6 sm:px-12 max-w-[1440px] mx-auto bg-transparent"
+        data-purpose="editorial-stories"
+        id="cerita-budaya"
+      >
         <header className="text-center mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-white drop-shadow-sm">
-            Semuanya dimulai dengan sebuah titik
+            {theme.slug === "rumah-adat"
+              ? "Falsafah Ruang & Arsitektur Sungai"
+              : theme.slug === "pertunjukan-lisan"
+              ? "Tradisi Tutur & Seni Panggung Rakyat"
+              : "Semuanya dimulai dengan sebuah titik"}
           </h2>
           <p className="mt-3 text-base sm:text-lg font-normal text-[#f3f4f6]">
-            Temukan bahasa unik dari titik dan garis
+            {theme.slug === "rumah-adat"
+              ? "Menyelami kearifan rancang bangun hunian tradisional Sumatera Selatan"
+              : theme.slug === "pertunjukan-lisan"
+              ? "Cerita, pantun berirama, dan petuah leluhur yang tak lekang waktu"
+              : "Temukan bahasa unik dari titik dan garis"}
           </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch bg-transparent">
           {/* Left Column: Two Stacked Cards (Takes 5 cols on lg) */}
           <div className="lg:col-span-5 flex flex-col gap-6 sm:gap-8 justify-between bg-transparent">
-            {/* Top Left Card */}
+            {/* Top Left Card (Meluncur masuk dari kiri) */}
             <Link
               href={`/tur/${item1.slug || "songket-palembang"}`}
-              className="scroll-animate scroll-from-left group relative rounded-2xl sm:rounded-3xl overflow-hidden story-card-shadow border border-white/10 bg-transparent min-h-[260px] sm:min-h-[290px] flex flex-col justify-end p-6 sm:p-8 cursor-pointer is-visible block"
+              className="scroll-animate scroll-from-left group relative rounded-2xl sm:rounded-3xl overflow-hidden story-card-shadow border border-white/10 bg-transparent min-h-[260px] sm:min-h-[290px] flex flex-col justify-end p-6 sm:p-8 cursor-pointer block"
               data-purpose="story-card-top-left"
             >
               <img
@@ -84,10 +173,10 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
               </div>
             </Link>
 
-            {/* Bottom Left Card */}
+            {/* Bottom Left Card (Meluncur masuk dari kiri) */}
             <Link
               href={`/tur/${item2.slug || "songket-palembang"}`}
-              className="scroll-animate scroll-from-left group relative rounded-2xl sm:rounded-3xl overflow-hidden story-card-shadow border border-white/10 bg-transparent min-h-[260px] sm:min-h-[290px] flex flex-col justify-end p-6 sm:p-8 cursor-pointer is-visible block"
+              className="scroll-animate scroll-from-left group relative rounded-2xl sm:rounded-3xl overflow-hidden story-card-shadow border border-white/10 bg-transparent min-h-[260px] sm:min-h-[290px] flex flex-col justify-end p-6 sm:p-8 cursor-pointer block"
               data-purpose="story-card-bottom-left"
               style={{ transitionDelay: "0.1s" }}
             >
@@ -108,10 +197,10 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
             </Link>
           </div>
 
-          {/* Right Column: Large Feature Card (Takes 7 cols on lg) */}
+          {/* Right Column: Large Feature Card (Meluncur masuk dari kanan) */}
           <Link
             href={`/tur/${item3.slug || "songket-palembang"}`}
-            className="lg:col-span-7 scroll-animate scroll-from-right group relative rounded-2xl sm:rounded-3xl overflow-hidden story-card-shadow border border-white/10 bg-transparent min-h-[460px] sm:min-h-[540px] lg:min-h-full flex flex-col justify-end p-8 sm:p-10 cursor-pointer is-visible block"
+            className="lg:col-span-7 scroll-animate scroll-from-right group relative rounded-2xl sm:rounded-3xl overflow-hidden story-card-shadow border border-white/10 bg-transparent min-h-[460px] sm:min-h-[540px] lg:min-h-full flex flex-col justify-end p-8 sm:p-10 cursor-pointer block"
             data-purpose="story-card-feature-right"
             style={{ transitionDelay: "0.15s" }}
           >
@@ -135,14 +224,25 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
       {/* END: StoryGridSection */}
 
       {/* BEGIN: CarouselShowcaseSection matching K1.MD */}
-      <section className="py-16 sm:py-24 border-t border-white/10 overflow-hidden bg-transparent" data-purpose="card-showcase-carousel">
+      <section
+        className="py-16 sm:py-24 border-t border-white/10 overflow-hidden bg-transparent"
+        data-purpose="card-showcase-carousel"
+      >
         <div className="max-w-[1440px] mx-auto px-6 sm:px-12 bg-transparent">
           <header className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-white drop-shadow-sm">
-              Dimulai dari titik
+              {theme.slug === "rumah-adat"
+                ? "Ragam Struktur & Konstruksi"
+                : theme.slug === "pertunjukan-lisan"
+                ? "Lakon Seni & Tembang Rakyat"
+                : "Dimulai dari titik"}
             </h2>
             <p className="mt-3 text-base sm:text-lg font-normal text-[#f3f4f6]">
-              Pelajari mengenai kain yang dipakai oleh semua
+              {theme.slug === "rumah-adat"
+                ? "Pelajari arsitektur panggung yang berbicara tentang sungai, status, dan alam"
+                : theme.slug === "pertunjukan-lisan"
+                ? "Pelajari seni tutur, pantun bersahut, dan pementasan teater tradisional"
+                : "Pelajari mengenai kain yang dipakai oleh semua"}
             </p>
           </header>
 
@@ -150,20 +250,19 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
           <div className="relative flex items-center justify-center -mx-4 sm:mx-0 overflow-x-auto lg:overflow-visible py-12 px-4 no-scrollbar bg-transparent">
             <div className="flex items-center justify-center -space-x-4 sm:-space-x-8 py-10 px-4 min-w-max lg:min-w-0 bg-transparent" id="batik-carousel-container">
               {carouselItems.map((item, index) => {
-                const isActive = activeCardIndex === index;
+                const isDefaultActive = index === 2;
                 return (
                   <div
                     key={index}
-                    onMouseEnter={() => setActiveCardIndex(index)}
-                    className={`carousel-card-item carousel-card-anim-wrapper flex-shrink-0 is-visible ${
-                      isActive ? "is-active-wrapper z-40" : "is-inactive-wrapper z-10"
+                    className={`carousel-card-item flex-shrink-0 ${
+                      isDefaultActive ? "is-active-wrapper z-40" : "is-inactive-wrapper z-10"
                     }`}
                   >
                     <Link
                       href={`/tur/${item.slug || "songket-palembang"}`}
                       className={`interactive-card group relative rounded-2xl sm:rounded-3xl overflow-hidden border cursor-pointer flex-shrink-0 bg-transparent block ${
-                        isActive
-                          ? "is-active"
+                        isDefaultActive
+                          ? "is-active ring-2 ring-amber-400/50"
                           : "is-inactive"
                       }`}
                     >

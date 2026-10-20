@@ -18,7 +18,7 @@ export function generateStaticParams() {
 }
 
 export function generateMetadata({ params }: TemaPageProps) {
-  const theme = themes.find((t) => t.slug === params.slug);
+  const theme = themes.find((t) => t.slug === params?.slug);
   if (!theme) return { title: "Tema Tidak Ditemukan" };
   return {
     title: `${theme.title} — SORA Arts & Culture`,
@@ -27,7 +27,7 @@ export function generateMetadata({ params }: TemaPageProps) {
 }
 
 export default function TemaPage({ params }: TemaPageProps) {
-  const theme = themes.find((t) => t.slug === params.slug);
+  const theme = themes.find((t) => t.slug === params?.slug);
 
   if (!theme) {
     notFound();

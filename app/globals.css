@@ -210,6 +210,55 @@
   transform: translateY(-4px);
   box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.5);
 }
+
+/* Scroll Entrance & Exit Animations matching K1.MD */
+.scroll-animate {
+  opacity: 0;
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+/* Entrance from Left */
+.scroll-from-left {
+  transform: translateX(-60px);
+}
+.scroll-from-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Entrance from Right */
+.scroll-from-right {
+  transform: translateX(60px);
+}
+.scroll-from-right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Extra safety wrapper for carousel cards matching K1.MD */
+.carousel-card-anim-wrapper {
+  opacity: 0;
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-card-anim-wrapper.scroll-from-left {
+  transform: translateX(-60px);
+}
+.carousel-card-anim-wrapper.scroll-from-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.carousel-card-anim-wrapper.scroll-from-right {
+  transform: translateX(60px);
+}
+.carousel-card-anim-wrapper.scroll-from-right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
 .carousel-card-item {
   position: relative;
   transition: z-index 0.25s ease;

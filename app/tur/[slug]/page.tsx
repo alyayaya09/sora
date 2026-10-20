@@ -2,16 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { getDedicatedTour } from "../../../data/sora-content";
 
 interface TourPageProps {
-  params: {
-    slug: string;
+  params?: {
+    slug?: string;
   };
 }
 
 export default function TourDetailPage({ params }: TourPageProps) {
-  const tour = getDedicatedTour(params.slug);
+  const routerParams = useParams();
+  const slug = (routerParams?.slug as string) || params?.slug || "songket-palembang";
+  const tour = getDedicatedTour(slug);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showToast, setShowToast] = useState<string | null>(null);
