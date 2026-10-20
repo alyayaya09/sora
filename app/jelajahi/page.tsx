@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { SearchResult } from "@/lib/gemini";
+import { themes } from "@/data/sora-content";
 
 // ─── Orb / Ambient Background ───
 function AmbientBackground() {
@@ -22,7 +24,6 @@ function AmbientBackground() {
   );
 }
 
-
 const SUGGESTIONS = [
   "Filosofi dan Sejarah Songket Lepus Emas Palembang",
   "Tari Gending Sriwijaya dan makna sekapur sirih",
@@ -31,182 +32,94 @@ const SUGGESTIONS = [
   "Aksara Ulu sistem tulis kuno Sumatera Selatan",
   "Festival Perahu Bidar Sungai Musi",
   "Aesan Gede busana adat pengantin Palembang",
+  "Kerajaan Sriwijaya dan Prasasti Kedukan Bukit",
 ];
-
-
-
-const SOURCE_ARTICLES = [
-  {
-    icon: "W",
-    iconStyle: "bg-white text-slate-900",
-    domain: "id.wikipedia.org",
-    title: "Songket Palembang — Ensiklopedia Warisan Tenun Emas",
-    excerpt: "Ragam Lepus Bintang dikenal sebagai kasta tertinggi dalam busana kebesaran bangsawan Kesultanan Palembang...",
-    img: "/images/songket_lepus.jpg",
-  },
-  {
-    icon: "🏛",
-    iconStyle: "bg-[#6b1d2f] text-white",
-    domain: "kemdikbud.go.id • Warisan Budaya",
-    title: "Fakta Sejarah Kain Songket: Epos Kemegahan Maritim",
-    excerpt: "Teknik pengerjaan benang emas jantung murni dan makna filosofi kemakmuran pesisir Nusantara tempo dulu...",
-    img: "/images/menenun_songket.jpg",
-  },
-];
-
-// ─── Related Theme Filter — shows matching theme chips from 8 home categories ───
-const THEME_FILTERS = [
-  {
-    slug: "rumah-adat",
-    label: "Arsitektur Tradisional",
-    title: "Rumah Adat Sumatera Selatan",
-    desc: "Jelajahi Rumah Limas berundak, Rumah Rakit terapung di tepian Musi, dan Ghumah Baghi Pasemah yang tahan gempa.",
-    href: "/tema/rumah-adat",
-    img: "/images/rumah_limas.jpg",
-    keywords: ["rumah", "limas", "rakit", "panggung", "arsitektur", "ulu", "ghumah", "baghi", "pasemah", "kilapan"],
-  },
-  {
-    slug: "kain-pakaian",
-    label: "Busana Adat & Kain Tenun",
-    title: "Kemegahan Busana Adat Palembang",
-    desc: "Telusuri mahakarya busana Aesan Gede, Songket Lepus berbenang emas, Jumputan Pelangi, dan warisan kebesaran Kesultanan Palembang Darussalam.",
-    href: "/tema/kain-pakaian",
-    img: "/images/aesan_gede_banner.jpg",
-    keywords: ["songket", "lepus", "aesan", "gede", "paksangko", "kain", "pakaian", "busana", "jumputan", "batik", "tenun", "benang", "emas"],
-  },
-  {
-    slug: "bahasa-aksara",
-    label: "Bahasa & Aksara Kuno",
-    title: "Bahasa & Aksara Daerah Sumsel",
-    desc: "Satu provinsi, banyak sungai, banyak cara bertutur. Dari Aksara Ulu kuno abugida hingga ragam dialek Melayu Palembang.",
-    href: "/tema/bahasa-aksara",
-    img: "/images/aksara_ulu.jpg",
-    keywords: ["aksara", "ulu", "bahasa", "melayu", "komering", "lematang", "ogan", "musi", "kaganga", "tulis", "surat"],
-  },
-  {
-    slug: "tari-musik",
-    label: "Seni Pertunjukan",
-    title: "Tari & Musik Tradisional",
-    desc: "Dari Tari Gending Sriwijaya yang kolosal sakral hingga petikan melankolis Gitar Tunggal Batanghari Sembilan yang penuh petuah.",
-    href: "/tema/tari-musik",
-    img: "/images/tari_gending.jpg",
-    keywords: ["tari", "gending", "sriwijaya", "tanggai", "erai", "kebagh", "setabik", "gitar", "tunggal", "burdah", "kelintang", "musik", "lagu", "begambo", "batanghari"],
-  },
-  {
-    slug: "kuliner",
-    label: "Kuliner Khas",
-    title: "Cita Rasa Tepian Sungai Musi",
-    desc: "Dari Pempek dan cuko hitam pekat hingga Kue Maksuba kesultanan, Sambal Tempoyak Durian, dan Kue Delapan Jam yang legit.",
-    href: "/tema/kuliner",
-    img: "/images/pempek_palembang.jpg",
-    keywords: ["pempek", "kuliner", "makan", "cuko", "pindang", "mie", "celor", "tempoyak", "maksuba", "lapis", "kojo", "gandus", "burgo", "tekwan", "laksan"],
-  },
-  {
-    slug: "pertunjukan-lisan",
-    label: "Tradisi Lisan",
-    title: "Seni Pertunjukan & Tradisi Lisan",
-    desc: "Teater Dulmuluk, Senjang berpantun, dan Tembang Batanghari Sembilan — cerita, pantun, dan tawa yang diwariskan dari mulut ke mulut.",
-    href: "/tema/pertunjukan-lisan",
-    img: "/images/teater_dulmuluk.jpg",
-    keywords: ["dulmuluk", "teater", "senjang", "pantun", "tembang", "pertunjukan", "lisan", "syair", "tutur"],
-  },
-  {
-    slug: "upacara-adat",
-    label: "Upacara & Festival",
-    title: "Upacara Adat & Tradisi Sosial",
-    desc: "Ngobeng, Festival Perahu Bidar, Bekarang Iwak, dan Sedekah Rame — kebersamaan yang dirayakan di sungai, lahan, dan meja pernikahan.",
-    href: "/tema/upacara-adat",
-    img: "/images/perahu_bidar.jpg",
-    keywords: ["ngobeng", "bidar", "perahu", "bekarang", "iwak", "sedekah", "rame", "nindai", "madik", "upacara", "festival", "tradisi", "adat"],
-  },
-  {
-    slug: "sejarah",
-    label: "Sejarah & Peninggalan",
-    title: "Jejak Sriwijaya & Kesultanan Palembang",
-    desc: "Prasasti Kedukan Bukit, Benteng Kuto Besak, Museum Balaputradewa, dan Jembatan Ampera — arsip hidup peradaban Palembang.",
-    href: "/tema/sejarah",
-    img: "/images/benteng_kuto_besak.jpg",
-    keywords: ["sejarah", "sriwijaya", "prasasti", "kesultanan", "palembang", "benteng", "kuto", "besak", "museum", "balaputradewa", "ampera", "jembatan", "peninggalan", "kerajaan"],
-  },
-];
-
-
-function RelatedThemeFilter({ query }: { query: string }) {
-  const q = query.toLowerCase();
-  // Pick the first / most relevant matching theme
-  const match = THEME_FILTERS.find((t) =>
-    t.keywords.some((kw) => q.includes(kw))
-  );
-
-  if (!match) return null;
-
-  return (
-    <section className="flex flex-col gap-6 mt-20 pt-4">
-      {/* Section heading */}
-      <div className="flex items-center justify-center text-center w-full">
-        <h2 className="text-2xl md:text-3xl text-white font-normal tracking-wide">
-          Jelajahi kategori terkait...
-        </h2>
-      </div>
-
-      {/* ONE wide panoramic card — persis seperti JELAJAHI.MD */}
-      <Link
-        href={match.href}
-        className="relative w-full rounded-3xl overflow-hidden border border-amber-500/20 shadow-2xl group min-h-[340px] md:min-h-[380px] flex items-center justify-center p-6 md:p-12 transition-all duration-500 hover:border-amber-400/50 hover:shadow-[0_0_60px_rgba(212,175,55,0.18)]"
-      >
-        {/* Background image */}
-        <img
-          src={match.img}
-          alt={match.title}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none rounded-3xl"
-        />
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] pointer-events-none rounded-3xl" />
-
-        {/* Centered content */}
-        <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto gap-3">
-          <span className="text-[11px] md:text-xs font-semibold tracking-widest uppercase text-amber-200/90 drop-shadow-sm">
-            {match.label}
-          </span>
-          <h3 className="text-2xl md:text-4xl text-white font-medium tracking-wide drop-shadow-md">
-            {match.title}
-          </h3>
-          <p className="text-sm md:text-base text-white/90 max-w-xl mx-auto leading-relaxed drop-shadow-sm">
-            {match.desc}
-          </p>
-          <div className="pt-3">
-            <span className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 hover:border-amber-400/50 text-white hover:text-amber-300 text-sm font-medium tracking-wide transition-all backdrop-blur-md shadow-lg">
-              Lihat Tema
-              <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-            </span>
-          </div>
-        </div>
-      </Link>
-    </section>
-  );
-}
 
 function JelajahiContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlQuery = searchParams.get("q") || "";
 
-  const [query, setQuery] = useState(urlQuery || "Filosofi dan Sejarah Songket Lepus Emas Palembang");
-  const [inputValue, setInputValue] = useState(urlQuery || "Filosofi dan Sejarah Songket Lepus Emas Palembang");
+  const [query, setQuery] = useState(urlQuery || "");
+  const [inputValue, setInputValue] = useState(urlQuery || "");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<SearchResult | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync state whenever URL query param changes (e.g. redirected from Beranda)
+  const inputRef = useRef<HTMLInputElement>(null);
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Trigger custom toast notification
+  const triggerToast = (msg: string, icon = "mic") => {
+    const existing = document.getElementById("jelajahiLiveToast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.id = "jelajahiLiveToast";
+    toast.className =
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+    toast.innerHTML = `
+      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[14px] text-amber-300">${icon}</span>
+      </div>
+      <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translate(-50%, 8px)";
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  };
+
+  // Fetch search results from backend API
+  const performSearch = async (searchTerm: string) => {
+    const term = searchTerm.trim();
+    if (!term) {
+      setResult(null);
+      return;
+    }
+
+    setLoading(true);
+    // Stop any ongoing audio
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+    }
+    setIsPlaying(false);
+
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
+      if (!res.ok) {
+        throw new Error(`Gagal memuat data (${res.status})`);
+      }
+      const data: SearchResult = await res.json();
+      setResult(data);
+    } catch (err: any) {
+      console.error("Search error:", err);
+      triggerToast("Gagal memuat hasil pencarian", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sync state and perform search whenever URL query param changes
   useEffect(() => {
     if (urlQuery) {
       setQuery(urlQuery);
       setInputValue(urlQuery);
+      performSearch(urlQuery);
+    } else {
+      setQuery("");
+      setInputValue("");
+      setResult(null);
     }
   }, [urlQuery]);
 
+  // Ambient parallax effect on mouse move
   useEffect(() => {
     const bg = document.getElementById("dynamicBgWrapper");
     if (!bg) return;
@@ -232,33 +145,12 @@ function JelajahiContent() {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
-  const triggerToast = (msg: string) => {
-    const existing = document.getElementById("jelajahiLiveToast");
-    if (existing) existing.remove();
-
-    const toast = document.createElement("div");
-    toast.id = "jelajahiLiveToast";
-    toast.className =
-      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
-    toast.innerHTML = `
-      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-[14px] text-amber-300">mic</span>
-      </div>
-      <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translate(-50%, 8px)";
-      setTimeout(() => toast.remove(), 300);
-    }, 2400);
-  };
-
+  // Voice Search via Web Speech API (PRD F1, F2)
   const handleVoiceSearch = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      triggerToast("Browser tidak mendukung pencarian suara");
+      triggerToast("Browser tidak mendukung pencarian suara", "mic_off");
       return;
     }
     try {
@@ -267,7 +159,7 @@ function JelajahiContent() {
       recognition.interimResults = false;
       recognition.onstart = () => {
         setIsListening(true);
-        triggerToast("Mendengarkan... Silakan ucapkan kata kunci budaya");
+        triggerToast("Mendengarkan... Silakan ucapkan kata kunci budaya", "mic");
       };
       recognition.onresult = (e: any) => {
         const text = e.results[0][0].transcript;
@@ -275,18 +167,17 @@ function JelajahiContent() {
         if (text && text.trim()) {
           setInputValue(text.trim());
           handleSearch(text.trim());
-          triggerToast(`Mencari: "${text.trim()}"`);
         }
       };
       recognition.onerror = () => {
         setIsListening(false);
-        triggerToast("Gagal mendeteksi suara");
+        triggerToast("Gagal mendeteksi suara", "mic_off");
       };
       recognition.onend = () => setIsListening(false);
       recognition.start();
     } catch {
       setIsListening(false);
-      triggerToast("Pencarian suara belum dapat diakses");
+      triggerToast("Pencarian suara belum dapat diakses", "mic_off");
     }
   };
 
@@ -296,8 +187,83 @@ function JelajahiContent() {
     setQuery(trimmed);
     setInputValue(trimmed);
     setShowSuggestions(false);
-    // Keep URL in sync smoothly without full page reload and without touching Beranda
     window.history.replaceState(null, "", `/jelajahi?q=${encodeURIComponent(trimmed)}`);
+    performSearch(trimmed);
+  };
+
+  // Audio Playback Handler (PRD F3 & F14: Gemini TTS with "audio belum tersedia" fallback)
+  const handleToggleAudio = async () => {
+    if (isPlaying) {
+      if (activeAudioRef.current) {
+        activeAudioRef.current.pause();
+        activeAudioRef.current = null;
+      }
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      setIsPlaying(false);
+      return;
+    }
+
+    if (!result || !result.card2) return;
+
+    setIsPlaying(true);
+    triggerToast("Menyiapkan audio SORA...", "volume_up");
+
+    const textToSpeak = `${result.card2.title}. ${result.card2.highlight} ${result.card2.paragraphs[0] || ""}`;
+
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: textToSpeak }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (data?.available && data?.audioBase64) {
+        const audioSrc = `data:${data.mimeType || "audio/wav"};base64,${data.audioBase64}`;
+        const audio = new Audio(audioSrc);
+        activeAudioRef.current = audio;
+
+        audio.onended = () => {
+          setIsPlaying(false);
+          activeAudioRef.current = null;
+        };
+
+        audio.onerror = () => {
+          setIsPlaying(false);
+          activeAudioRef.current = null;
+          triggerToast("audio belum tersedia", "volume_off");
+        };
+
+        await audio.play();
+        return;
+      }
+
+      // If external Gemini TTS is unavailable, try browser SpeechSynthesis as fallback
+      if ("speechSynthesis" in window) {
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = "id-ID";
+        utterance.rate = 0.95;
+        utterance.onend = () => setIsPlaying(false);
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          triggerToast("audio belum tersedia", "volume_off");
+        };
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+        return;
+      }
+
+      // Final fallback message per PRD F3 & F14
+      setIsPlaying(false);
+      triggerToast("audio belum tersedia", "volume_off");
+    } catch (err) {
+      console.warn("TTS playback error:", err);
+      setIsPlaying(false);
+      triggerToast("audio belum tersedia", "volume_off");
+    }
   };
 
   return (
@@ -323,6 +289,7 @@ function JelajahiContent() {
         .eq-bar:nth-child(3){animation-delay:.22s}
         .eq-bar:nth-child(4){animation-delay:.34s}
         .expanded-body{transition:max-height .55s cubic-bezier(.2,.8,.2,1),opacity .4s ease;overflow:hidden}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
       `}</style>
 
       <AmbientBackground />
@@ -330,7 +297,7 @@ function JelajahiContent() {
       <main className="relative z-10 w-full min-h-screen pt-28 pb-20">
         <div className="flex flex-col w-full max-w-7xl mx-auto px-5 md:px-12 gap-8">
 
-          {/* ── SEARCH CAPSULE ── */}
+          {/* ── SEARCH CAPSULE (PRD F2) ── */}
           <section className="relative w-full flex flex-col items-center z-[100]">
             <div className="relative w-full max-w-[720px] mx-auto z-[100]">
               <div className="relative w-full bg-white/[0.04] border border-white/10 shadow-xl backdrop-blur-2xl rounded-full">
@@ -344,7 +311,7 @@ function JelajahiContent() {
                   <button
                     type="button"
                     onClick={() => router.push("/")}
-                    aria-label="Kembali"
+                    aria-label="Kembali ke Beranda"
                     className="flex items-center justify-center p-1.5 -ml-1 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
@@ -364,7 +331,7 @@ function JelajahiContent() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 180)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     placeholder="Cari budaya, sejarah, kuliner Sumsel..."
                     className="flex-1 min-w-0 bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-base md:text-[17px] text-white placeholder:text-white/30 font-medium"
                   />
@@ -399,6 +366,8 @@ function JelajahiContent() {
                     </svg>
                   </button>
                 </form>
+
+                {/* Suggestions dropdown */}
                 {showSuggestions && (
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#141014]/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl overflow-hidden z-[200]">
                     {SUGGESTIONS.filter(
@@ -420,171 +389,373 @@ function JelajahiContent() {
             </div>
           </section>
 
-          {/* ── HEADER LABEL ── */}
-          <div className="flex items-center gap-2.5">
-            <span className="material-symbols-outlined text-2xl text-amber-300">auto_awesome</span>
-            <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Rangkuman SORA</h1>
-          </div>
+          {/* ── LOADING STATE ── */}
+          {loading && (
+            <div className="w-full flex flex-col items-center justify-center py-24 gap-4">
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 rounded-full border-2 border-amber-400/20 border-t-amber-400 animate-spin" />
+                <div className="absolute inset-2 rounded-full border-2 border-rose-500/20 border-b-rose-400 animate-spin" style={{ animationDirection: "reverse", animationDuration: "1.2s" }} />
+              </div>
+              <p className="text-sm md:text-base font-medium text-amber-200/80 animate-pulse">
+                Menganalisis warisan budaya Sumatera Selatan dengan SORA AI...
+              </p>
+            </div>
+          )}
 
-          {/* ── 2-COLUMN LAYOUT ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* ── INITIAL STATE (NO QUERY) — PRD F2: 8 TEMA & PINTASAN ── */}
+          {!loading && !result && !query && (
+            <div className="flex flex-col gap-10 py-6">
+              <div className="flex flex-col items-center text-center gap-3 max-w-2xl mx-auto">
+                <span className="px-3.5 py-1 rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-300 text-xs font-semibold tracking-wider uppercase">
+                  Pusat Eksplorasi Budaya
+                </span>
+                <h2 className="text-3xl md:text-4xl text-white font-serif font-medium">
+                  Jelajahi Khazanah Bumi Sriwijaya
+                </h2>
+                <p className="text-sm md:text-base text-white/60 leading-relaxed">
+                  Pilih salah satu dari 8 pilar tema budaya, atau ketik topik spesifik seperti nama kain tenun, rumah adat, atau kuliner favorit Anda.
+                </p>
+              </div>
 
-            {/* LEFT — Artifact card */}
-            <div className="lg:col-span-5 flex flex-col gap-4">
-              <article className="relative overflow-hidden border border-amber-400/20 bg-white/[0.02] shadow-[0_0_35px_rgba(212,175,55,0.12)] group rounded-3xl" style={{ height: 480 }}>
-                <img
-                  src="/images/songket_lepus_1792383379080.jpg"
-                  alt="Songket Lepus Palembang"
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 rounded-3xl"
-                />
-                <div className="absolute inset-x-0 bottom-0 z-10 pt-24 pb-7 px-7 bg-gradient-to-t from-[#0d0d0f]/95 via-[#0d0d0f]/55 to-transparent flex flex-col justify-end">
-                  <h2 className="font-semibold text-3xl md:text-[2rem] text-white tracking-wide drop-shadow-md">
-                    Songket Lepus Palembang
-                  </h2>
-                  <p className="text-base text-white/85 mt-2 drop-shadow-sm">Kain tenun emas lambang kemegahan tradisi Sriwijaya</p>
-                </div>
-              </article>
-
-              {/* Source cards — appear when expanded */}
-              <div
-                className="expanded-body"
-                style={{ maxHeight: expanded ? "400px" : "0px", opacity: expanded ? 1 : 0 }}
-              >
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl p-4 flex flex-col gap-3 shadow-xl">
-                  <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.15em] px-1">Sumber Referensi</p>
-                  {SOURCE_ARTICLES.map((art, i) => (
-                    <div key={i}>
-                      {i > 0 && <div className="h-px bg-white/[0.06] my-1" />}
-                      <div className="flex items-start gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer group/art">
-                        <div className="flex flex-col gap-1 min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${art.iconStyle}`}>
-                              {art.icon}
-                            </div>
-                            <span className="text-[11px] text-white/45 truncate">{art.domain}</span>
-                          </div>
-                          <p className="text-[13px] font-medium text-white group-hover/art:text-amber-300 transition-colors line-clamp-1">{art.title}</p>
-                          <p className="text-[11px] text-white/40 line-clamp-2 leading-relaxed">{art.excerpt}</p>
-                        </div>
-                        <img src={art.img} alt={art.title} className="w-14 h-14 rounded-lg object-cover border border-white/10 shrink-0" />
-                      </div>
+              {/* 8 Tema Grid Pintasan */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {themes.map((theme) => (
+                  <Link
+                    key={theme.slug}
+                    href={`/tema/${theme.slug}`}
+                    className="group relative h-48 md:h-56 rounded-2xl overflow-hidden border border-white/10 hover:border-amber-400/50 transition-all duration-300 shadow-lg flex flex-col justify-end p-4"
+                  >
+                    <img
+                      src={theme.heroImage || theme.image}
+                      alt={theme.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 pointer-events-none"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+                    <div className="relative z-10 flex flex-col gap-1">
+                      <span className="text-[10px] uppercase font-semibold text-amber-300 tracking-wider">
+                        {theme.guidebook[0] || "Tema Budaya"}
+                      </span>
+                      <h3 className="text-base md:text-lg font-medium text-white group-hover:text-amber-200 transition-colors">
+                        {theme.title}
+                      </h3>
+                      <p className="text-xs text-white/70 line-clamp-1">{theme.tagline}</p>
                     </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── NO RESULT TEMPLATE ── */}
+          {!loading && result?.status === "no_result" && (
+            <div className="w-full flex flex-col items-center text-center py-16 px-4 max-w-2xl mx-auto gap-6 bg-white/[0.02] border border-white/10 rounded-3xl backdrop-blur-xl">
+              <div className="w-16 h-16 rounded-full bg-amber-950/40 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                <span className="material-symbols-outlined text-3xl">travel_explore</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-2xl md:text-3xl text-white font-medium">
+                  Pertanyaan Tidak Dapat Dijawab
+                </h2>
+                <p className="text-sm md:text-base text-white/60 leading-relaxed">
+                  SORA AI dapat menjawab pertanyaan tentang{" "}
+                  <strong className="text-amber-300 font-semibold">Sumatera Selatan</strong>,
+                  tempat wisata, kuliner, sejarah, dan pengetahuan umum.
+                  Coba ubah kata kunci Anda.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 w-full pt-2">
+                <p className="text-xs uppercase font-semibold tracking-wider text-white/40">
+                  Coba contoh pertanyaan:
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {[
+                    "Wisata terbaik di Palembang",
+                    "Makanan khas Sumsel",
+                    "Monpera Palembang",
+                    "Songket Lepus",
+                    "Rumah Limas",
+                    "Tari Gending Sriwijaya",
+                  ].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => handleSearch(chip)}
+                      className="px-4 py-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/10 hover:border-amber-400/40 text-xs md:text-sm text-white/80 transition-all cursor-pointer"
+                    >
+                      {chip}
+                    </button>
                   ))}
                 </div>
               </div>
             </div>
+          )}
 
-            {/* RIGHT — AI Summary Card */}
-            <div className="lg:col-span-7">
-              <article className="relative w-full rounded-3xl overflow-hidden bg-[#0d0d0f]/60 border border-white/10 backdrop-blur-2xl p-6 md:p-8 flex flex-col gap-5 shadow-2xl hover:border-amber-400/25 transition-all duration-300 min-h-[480px]">
-                {/* Decorative mandala */}
-                <div className="absolute -right-8 -bottom-10 pointer-events-none w-64 h-64 opacity-10 text-amber-400 mix-blend-screen z-0">
-                  <svg className="w-full h-full rotate-12" fill="none" viewBox="0 0 200 200">
-                    <g stroke="currentColor" strokeWidth="1">
-                      <circle cx="100" cy="100" r="80" strokeDasharray="3 3" />
-                      <circle cx="100" cy="100" r="56" />
-                      <circle cx="100" cy="100" r="32" strokeDasharray="2 2" />
-                      <polygon fill="currentColor" fillOpacity="0.1" points="100,10 120,80 190,100 120,120 100,190 80,120 10,100 80,80" strokeWidth="1.5" />
-                    </g>
-                  </svg>
+
+          {/* ── RESULT VALID: 3-CARD TEMPLATE (PRD F2, F3, F9) ── */}
+          {!loading && result && result.status !== "no_result" && (
+            <>
+              {/* Header Label */}
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-2xl text-amber-300">auto_awesome</span>
+                <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Rangkuman SORA</h1>
+              </div>
+
+              {/* Outside Sumsel Notice (PRD Bagian 9) */}
+              {result.status === "outside_sumsel" && result.note && (
+                <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-950/40 border border-amber-400/40 text-amber-200 text-xs md:text-sm">
+                  <span className="material-symbols-outlined text-lg shrink-0 text-amber-400">info</span>
+                  <p className="leading-relaxed">{result.note}</p>
                 </div>
+              )}
 
-                <div className="relative z-10 flex flex-col gap-5 w-full">
-                  {/* Audio Toggle */}
-                  <button
-                    type="button"
-                    onClick={() => setIsPlaying((v) => !v)}
-                    className="inline-flex items-center gap-2.5 px-0 py-0 bg-transparent hover:opacity-90 text-left focus:outline-none group cursor-pointer transition-all w-fit"
+              {/* ── 2-COLUMN LAYOUT (KARTU 1 & KARTU 2) ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                {/* KARTU 1 — Foto dari web (Wikipedia/real), tanpa teks, tidak bisa diklik */}
+                <div className="lg:col-span-5 flex flex-col gap-4">
+                  <div
+                    className="relative overflow-hidden border border-amber-400/20 bg-[#0d0d0f] shadow-[0_0_35px_rgba(212,175,55,0.12)] rounded-3xl select-none"
+                    style={{ height: 480 }}
                   >
-                    <span className="material-symbols-outlined text-[26px] text-amber-400 select-none transition-transform group-hover:scale-105 shrink-0">
-                      {isPlaying ? "pause" : "volume_up"}
-                    </span>
-                    <span className="text-2xl md:text-3xl text-white font-normal select-none leading-none">
-                      {isPlaying ? "Memutar SORA..." : "Dengarkan SORA"}
-                    </span>
-                    {isPlaying && (
-                      <span className="flex items-end gap-0.5 h-4 px-1">
-                        {[0, 1, 2, 3].map((i) => (
-                          <span
-                            key={i}
-                            className={`eq-bar ${i % 2 === 0 ? "bg-amber-300" : "bg-rose-400"}`}
-                            style={{ height: 8, animationDelay: `${i * 120}ms` }}
-                          />
-                        ))}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Highlighted intro */}
-                  <p className="text-base leading-[1.85] text-white/90">
-                    <span
-                      className="bg-[#6b1d2f]/90 text-amber-50 px-2 py-0.5 rounded font-normal shadow-sm border-l-2 border-amber-400/60"
-                      style={{ boxDecorationBreak: "clone" as React.CSSProperties["boxDecorationBreak"] }}
-                    >
-                      Songket Lepus diciptakan sebagai evolusi busana adiluhung berkasta tertinggi dalam tradisi Kesultanan Palembang, bergeser dari sekadar pakaian adat menjadi lambang estetika sakral, kehormatan, dan kemegahan peradaban bahari Sriwijaya.
-                    </span>
-                  </p>
-
-                  {/* Body paragraphs */}
-                  <div className="flex flex-col gap-3 text-white/65 text-base leading-relaxed">
-                    <p>
-                      Kata <strong className="text-amber-400 font-semibold">"lepus"</strong> secara etimologis bermakna{" "}
-                      <em>merata tanpa celah</em>—merujuk pada teknik pengerjaan motif benang emas murni yang menyelimuti seluruh tenunan kain sutra dasar.
-                    </p>
-                    <p
-                      style={
-                        !expanded
-                          ? { WebkitMaskImage: "linear-gradient(black 30%, transparent 100%)", maskImage: "linear-gradient(black 30%, transparent 100%)" }
-                          : {}
-                      }
-                    >
-                      Penyanyi dan maestro wastra tenun memandang motif ini bukan sekadar pola ragam hias dekoratif, melainkan pusaka adiluhung paling sakral dalam kebudayaan Melayu dan tradisi pesisir Asia Tenggara...
-                    </p>
-
-                    {/* Expanded content */}
-                    <div
-                      className="expanded-body"
-                      style={{ maxHeight: expanded ? "600px" : "0px", opacity: expanded ? 1 : 0 }}
-                    >
-                      <div className="flex flex-col gap-3 pt-1">
-                        <p>Keanggunannya membentang melintasi kurun waktu berabad-abad sebagai lambang kedaulatan serta prestise abadi peradaban Sriwijaya.</p>
-                        <p>Berikut adalah fakta singkat mengenai kebesaran dan keagungan Songket Lepus dalam lintasan budaya nusantara:</p>
-                        <div className="flex flex-col gap-2.5 pl-4 border-l-2 border-amber-400/35">
-                          <p><strong className="text-amber-400 font-semibold">• Ikon Budaya Global:</strong> Saking tersohornya di kalangan bangsawan istana, muncul pepatah kesultanan bahwa di mana pun adat Melayu ditegakkan, di situ kilau benang emas Songket Lepus bertahta.</p>
-                          <p><strong className="text-amber-400 font-semibold">• Mahkota Busana Pernikahan Aesan Gede:</strong> Dikenakan khusus oleh keluarga inti Sultan Palembang dalam penobatan kemuliaan dan resepsi agung pengantin kebesaran.</p>
-                          <p><strong className="text-amber-400 font-semibold">• Simbol Kejayaan Maritim Sriwijaya:</strong> Kilauan benang emas jantung melambangkan kemakmuran rute rempah Selat Malaka serta jalinan sosial yang erat di tepian Sungai Musi.</p>
+                    {result.card1.image && !result.card1.image.startsWith("/images/") ? (
+                      <img
+                        src={result.card1.image}
+                        alt={result.card1.title}
+                        className="w-full h-full object-cover rounded-3xl"
+                        draggable={false}
+                        onError={(e) => {
+                          // Jika gambar gagal load, sembunyikan elemen
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      // Elegant dark gradient fallback
+                      <div className="w-full h-full rounded-3xl relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#3a0a14] via-[#0d0d0f] to-[#1a1200]" />
+                        <div className="absolute inset-0" style={{
+                          background: "radial-gradient(ellipse at 30% 40%, rgba(212,175,55,0.12) 0%, transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(107,29,47,0.25) 0%, transparent 55%)"
+                        }} />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20">
+                          <span className="material-symbols-outlined text-6xl">photo_camera</span>
+                          <span className="text-xs tracking-widest uppercase">{result.card1.title}</span>
                         </div>
                       </div>
-                    </div>
+                    )}
+                    {/* Label sumber foto */}
+                    {result.card1.image && !result.card1.image.startsWith("/images/") && (
+                      <div className="absolute bottom-3 right-4 pointer-events-none">
+                        <span className="text-[9px] font-medium text-white/35 tracking-wider uppercase bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                          Wikimedia Commons
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Toggle button */}
-                  <button
-                    type="button"
-                    onClick={() => setExpanded((v) => !v)}
-                    aria-expanded={expanded}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-amber-400/40 text-white text-sm font-medium tracking-wide transition-all backdrop-blur-md focus:outline-none shadow-sm cursor-pointer"
-                  >
-                    <span>{expanded ? "Tampilkan lebih sedikit" : "Tampilkan lebih banyak"}</span>
-                    <span
-                      className="material-symbols-outlined text-base transition-transform duration-300"
-                      style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
-                    >
-                      expand_more
-                    </span>
-                  </button>
-                </div>
-              </article>
-            </div>
-          </div>
 
-          {/* ── KATEGORI TERKAIT — filter chip dari 8 tema beranda ── */}
-          <RelatedThemeFilter query={query} />
+                  {/* Sources Section — clickable links */}
+                  {result.card2.sources && result.card2.sources.length > 0 && (
+                    <div
+                      className="expanded-body"
+                      style={{ maxHeight: expanded ? "500px" : "0px", opacity: expanded ? 1 : 0 }}
+                    >
+                      <div className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl p-4 flex flex-col gap-3 shadow-xl">
+                        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.15em] px-1">Sumber Referensi</p>
+                        {result.card2.sources.map((art, i) => (
+                          <div key={i}>
+                            {i > 0 && <div className="h-px bg-white/[0.06] my-1" />}
+                            <a
+                              href={art.url || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-start gap-3 p-2 rounded-xl hover:bg-white/[0.06] transition-colors cursor-pointer group/art no-underline block"
+                            >
+                              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${art.iconStyle}`}>
+                                    {art.icon}
+                                  </div>
+                                  <span className="text-[11px] text-white/45 truncate">{art.domain}</span>
+                                  <span className="material-symbols-outlined text-[11px] text-white/25 ml-auto shrink-0">open_in_new</span>
+                                </div>
+                                <p className="text-[13px] font-medium text-white group-hover/art:text-amber-300 transition-colors line-clamp-1">{art.title}</p>
+                                <p className="text-[11px] text-white/40 line-clamp-2 leading-relaxed">{art.excerpt}</p>
+                              </div>
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* KARTU 2 — AI Summary Card */}
+                <div className="lg:col-span-7">
+                  <article className="relative w-full rounded-3xl overflow-hidden bg-[#0d0d0f]/60 border border-white/10 backdrop-blur-2xl p-6 md:p-8 flex flex-col gap-5 shadow-2xl hover:border-amber-400/25 transition-all duration-300 min-h-[480px]">
+                    {/* Decorative mandala */}
+                    <div className="absolute -right-8 -bottom-10 pointer-events-none w-64 h-64 opacity-10 text-amber-400 mix-blend-screen z-0">
+                      <svg className="w-full h-full rotate-12" fill="none" viewBox="0 0 200 200">
+                        <g stroke="currentColor" strokeWidth="1">
+                          <circle cx="100" cy="100" r="80" strokeDasharray="3 3" />
+                          <circle cx="100" cy="100" r="56" />
+                          <circle cx="100" cy="100" r="32" strokeDasharray="2 2" />
+                          <polygon fill="currentColor" fillOpacity="0.1" points="100,10 120,80 190,100 120,120 100,190 80,120 10,100 80,80" strokeWidth="1.5" />
+                        </g>
+                      </svg>
+                    </div>
+
+                    <div className="relative z-10 flex flex-col gap-5 w-full">
+                      {/* Audio Button */}
+                      <button
+                        type="button"
+                        onClick={handleToggleAudio}
+                        className="inline-flex items-center gap-2.5 px-0 py-0 bg-transparent hover:opacity-90 text-left focus:outline-none group cursor-pointer transition-all w-fit"
+                      >
+                        <span className="material-symbols-outlined text-[26px] text-amber-400 select-none transition-transform group-hover:scale-105 shrink-0">
+                          {isPlaying ? "pause" : "volume_up"}
+                        </span>
+                        <span className="text-2xl md:text-3xl text-white font-normal select-none leading-none">
+                          {isPlaying ? "Memutar SORA..." : "Dengarkan SORA"}
+                        </span>
+                        {isPlaying && (
+                          <span className="flex items-end gap-0.5 h-4 px-1">
+                            {[0, 1, 2, 3].map((i) => (
+                              <span
+                                key={i}
+                                className={`eq-bar ${i % 2 === 0 ? "bg-amber-300" : "bg-rose-400"}`}
+                                style={{ height: 8, animationDelay: `${i * 120}ms` }}
+                              />
+                            ))}
+                          </span>
+                        )}
+                      </button>
+
+                      {/* Highlighted text */}
+                      {result.card2.highlight && (
+                        <p className="text-base leading-[1.85] text-white/90">
+                          <span
+                            className="bg-[#6b1d2f]/90 text-amber-50 px-2 py-0.5 rounded font-normal shadow-sm border-l-2 border-amber-400/60"
+                            style={{ boxDecorationBreak: "clone" as React.CSSProperties["boxDecorationBreak"] }}
+                          >
+                            {result.card2.highlight}
+                          </span>
+                        </p>
+                      )}
+
+                      {/* Paragraphs */}
+                      <div className="flex flex-col gap-3 text-white/70 text-base leading-relaxed">
+                        {result.card2.paragraphs[0] && (
+                          <p>{result.card2.paragraphs[0]}</p>
+                        )}
+
+                        {result.card2.paragraphs[1] && (
+                          <p
+                            style={
+                              !expanded
+                                ? { WebkitMaskImage: "linear-gradient(black 30%, transparent 100%)", maskImage: "linear-gradient(black 30%, transparent 100%)" }
+                                : {}
+                            }
+                          >
+                            {result.card2.paragraphs[1]}
+                          </p>
+                        )}
+
+                        {/* Expanded details & bullets */}
+                        <div
+                          className="expanded-body"
+                          style={{ maxHeight: expanded ? "600px" : "0px", opacity: expanded ? 1 : 0 }}
+                        >
+                          <div className="flex flex-col gap-3 pt-2">
+                            {result.card2.paragraphs.slice(2).map((p, idx) => (
+                              <p key={idx}>{p}</p>
+                            ))}
+
+                            {result.card2.bulletPoints && result.card2.bulletPoints.length > 0 && (
+                              <div className="flex flex-col gap-2.5 pl-4 border-l-2 border-amber-400/35 mt-1">
+                                {result.card2.bulletPoints.map((bp, bidx) => (
+                                  <p key={bidx}>
+                                    <strong className="text-amber-400 font-semibold">• {bp.label}:</strong> {bp.text}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expand / Collapse Button */}
+                      <button
+                        type="button"
+                        onClick={() => setExpanded((v) => !v)}
+                        aria-expanded={expanded}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-amber-400/40 text-white text-sm font-medium tracking-wide transition-all backdrop-blur-md focus:outline-none shadow-sm cursor-pointer"
+                      >
+                        <span>{expanded ? "Tampilkan lebih sedikit" : "Tampilkan lebih banyak"}</span>
+                        <span
+                          className="material-symbols-outlined text-base transition-transform duration-300"
+                          style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                        >
+                          expand_more
+                        </span>
+                      </button>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              {/* ── KARTU 3 — KONTEN TERKAIT & FILTER TEMA ── */}
+              {result.card3 && result.card3.themeSlug && result.card3.themeTitle && (
+                <section className="flex flex-col gap-6 mt-12 pt-4">
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-amber-300 tracking-wider">
+                      Eksplorasi Lanjutan
+                    </span>
+                    <h2 className="text-2xl md:text-3xl text-white font-serif font-medium mt-1">
+                      Kategori Terkait: {result.card3.themeTitle}
+                    </h2>
+                  </div>
+
+                  {/* Panoramic theme card */}
+                  <Link
+                    href={result.card3.themeHref}
+                    className="relative w-full rounded-3xl overflow-hidden border border-amber-500/20 shadow-2xl group min-h-[300px] md:min-h-[340px] flex items-center justify-center p-6 md:p-12 transition-all duration-500 hover:border-amber-400/50 hover:shadow-[0_0_60px_rgba(212,175,55,0.18)]"
+                  >
+                    <img
+                      src={result.card3.themeImg || "/images/rumah_limas.jpg"}
+                      alt={result.card3.themeTitle}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none rounded-3xl"
+                    />
+                    <div className="absolute inset-0 bg-black/65 backdrop-blur-[1px] pointer-events-none rounded-3xl" />
+
+                    <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto gap-3">
+                      <span className="text-[11px] md:text-xs font-semibold tracking-widest uppercase text-amber-200/90 drop-shadow-sm">
+                        {result.card3.themeLabel}
+                      </span>
+                      <h3 className="text-2xl md:text-4xl text-white font-medium tracking-wide drop-shadow-md">
+                        {result.card3.themeTitle}
+                      </h3>
+                      <p className="text-sm md:text-base text-white/90 max-w-xl mx-auto leading-relaxed drop-shadow-sm">
+                        {result.card3.themeDesc}
+                      </p>
+                      <div className="pt-3">
+                        <span className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 hover:border-amber-400/50 text-white hover:text-amber-300 text-sm font-medium tracking-wide transition-all backdrop-blur-md shadow-lg">
+                          Jelajahi Tema Ini
+                          <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+
+
+                </section>
+              )}
+            </>
+          )}
 
         </div>
       </main>
 
-      {/* ── FOOTER ── */}
+      {/* ── FOOTER (PRD Bagian 5) ── */}
       <footer className="relative z-10 w-full border-t border-white/10 py-6 mt-4">
         <div className="max-w-7xl mx-auto px-5 md:px-12 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex flex-wrap items-center gap-2 text-sm text-white/30">
