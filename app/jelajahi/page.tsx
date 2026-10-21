@@ -432,6 +432,7 @@ function JelajahiContent() {
         .eq-bar:nth-child(3){animation-delay:.22s}
         .eq-bar:nth-child(4){animation-delay:.34s}
         .expanded-body{transition:max-height .55s cubic-bezier(.2,.8,.2,1),opacity .4s ease;overflow:hidden}
+        .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}.scrollbar-hide::-webkit-scrollbar{display:none}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
       `}</style>
 
@@ -510,93 +511,58 @@ function JelajahiContent() {
                   </button>
                 </form>
 
-                {/* Search History & Suggestions dropdown */}
-                {showSuggestions && (
+                {/* Search History dropdown — hanya muncul jika ada riwayat */}
+                {showSuggestions && searchHistory.length > 0 && (
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#141014]/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl overflow-hidden z-[200]">
-                    {searchHistory.length > 0 ? (
-                      <div>
-                        {/* Header Riwayat Akun */}
-                        <div className="flex items-center justify-between px-5 pt-3.5 pb-2 border-b border-white/[0.06] select-none">
-                          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/45">
-                            <span className="material-symbols-outlined text-[15px] text-amber-400/80">history</span>
-                            <span>Riwayat Pertanyaan {session?.user?.name ? `(${session.user.name})` : ""}</span>
-                          </div>
+                    {/* Header Riwayat */}
+                    <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-white/[0.06] select-none">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-white/40">Riwayat Pencarian</span>
+                      <button
+                        type="button"
+                        onMouseDown={clearAllHistory}
+                        className="text-[11px] text-white/35 hover:text-rose-400 transition-colors font-medium cursor-pointer"
+                      >
+                        Hapus Semua
+                      </button>
+                    </div>
+
+                    {/* List Riwayat — scroll tersembunyi, tanpa icon */}
+                    <div className="max-h-64 overflow-y-auto scrollbar-hide py-1 divide-y divide-white/[0.04]">
+                      {(inputValue.trim()
+                        ? searchHistory.filter((item) =>
+                            item.toLowerCase().includes(inputValue.toLowerCase())
+                          )
+                        : searchHistory
+                      ).map((item, idx) => (
+                        <div
+                          key={idx}
+                          onMouseDown={() => handleSearch(item)}
+                          className="group flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                        >
+                          <span className="text-sm text-white/75 group-hover:text-white truncate flex-1">
+                            {item}
+                          </span>
                           <button
                             type="button"
-                            onMouseDown={clearAllHistory}
-                            className="text-[11px] text-white/35 hover:text-rose-400 transition-colors font-medium cursor-pointer"
+                            onMouseDown={(e) => removeFromHistory(item, e)}
+                            title="Hapus"
+                            aria-label={`Hapus ${item}`}
+                            className="p-0.5 rounded-full text-white/25 hover:text-rose-300 transition-colors shrink-0 flex items-center justify-center cursor-pointer"
                           >
-                            Hapus Semua
+                            <span className="material-symbols-outlined text-[14px]">close</span>
                           </button>
                         </div>
+                      ))}
 
-                        {/* List Riwayat Pertanyaan */}
-                        <div className="max-h-72 overflow-y-auto py-1 divide-y divide-white/[0.03]">
-                          {(inputValue.trim()
-                            ? searchHistory.filter((item) =>
-                                item.toLowerCase().includes(inputValue.toLowerCase())
-                              )
-                            : searchHistory
-                          ).map((item, idx) => (
-                            <div
-                              key={idx}
-                              onMouseDown={() => handleSearch(item)}
-                              className="group flex items-center justify-between gap-3 px-5 py-2.5 hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
-                            >
-                              <div className="flex items-center gap-3 min-w-0 flex-1">
-                                <span className="material-symbols-outlined text-base text-amber-400/60 shrink-0 group-hover:text-amber-400 transition-colors">
-                                  history
-                                </span>
-                                <span className="text-sm text-white/80 group-hover:text-white truncate">
-                                  {item}
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onMouseDown={(e) => removeFromHistory(item, e)}
-                                title="Hapus pertanyaan ini"
-                                aria-label={`Hapus ${item}`}
-                                className="p-1 rounded-full text-white/30 hover:text-rose-300 hover:bg-white/10 transition-colors shrink-0 flex items-center justify-center cursor-pointer"
-                              >
-                                <span className="material-symbols-outlined text-[15px]">close</span>
-                              </button>
-                            </div>
-                          ))}
-
-                          {inputValue.trim() &&
-                            searchHistory.filter((item) =>
-                              item.toLowerCase().includes(inputValue.toLowerCase())
-                            ).length === 0 && (
-                              <div className="px-5 py-3 text-xs text-white/40 italic">
-                                Tidak ada riwayat yang cocok dengan "{inputValue}"
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        {/* Header Saran Rekomendasi saat riwayat masih kosong */}
-                        <div className="flex items-center gap-2 px-5 pt-3.5 pb-2 border-b border-white/[0.06] text-xs font-semibold uppercase tracking-wider text-white/45 select-none">
-                          <span className="material-symbols-outlined text-[15px] text-amber-400/80">lightbulb</span>
-                          <span>Rekomendasi Pencarian Budaya</span>
-                        </div>
-                        <div className="max-h-72 overflow-y-auto py-1.5">
-                          {SUGGESTIONS.filter(
-                            (s) => s.toLowerCase().includes(inputValue.toLowerCase()) || inputValue.length < 2
-                          ).map((s, i) => (
-                            <button
-                              key={i}
-                              type="button"
-                              onMouseDown={() => handleSearch(s)}
-                              className="w-full flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
-                            >
-                              <span className="material-symbols-outlined text-base text-amber-400/60 shrink-0">explore</span>
-                              <span className="text-sm text-white/75 hover:text-white truncate">{s}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      {inputValue.trim() &&
+                        searchHistory.filter((item) =>
+                          item.toLowerCase().includes(inputValue.toLowerCase())
+                        ).length === 0 && (
+                          <div className="px-4 py-3 text-xs text-white/35 italic">
+                            Tidak ada riwayat yang cocok
+                          </div>
+                        )}
+                    </div>
                   </div>
                 )}
               </div>

@@ -170,10 +170,10 @@ export default function HomePage() {
     const toast = document.createElement("div");
     toast.id = "soraLiveToast";
     toast.className =
-      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-[#00f2fe]/50 backdrop-blur-xl shadow-[0_12px_36px_rgba(0,242,254,0.25),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
     toast.innerHTML = `
-      <div class="w-6 h-6 rounded-full bg-cyan-950/80 border border-cyan-400 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-[14px] text-cyan-300">info</span>
+      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400/60 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[14px] text-amber-300">info</span>
       </div>
       <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
     `;
@@ -330,8 +330,8 @@ export default function HomePage() {
             <span className="text-[11px] font-semibold tracking-widest text-[#fbc270]/90">
               SCROLL DOWN TO EXPLORE
             </span>
-            <div className="w-5 h-8 rounded-full border border-white/30 flex items-start justify-center p-1 group-hover:border-cyan-400 transition-colors">
-              <div className="w-1.5 h-2 bg-cyan-400 rounded-full animate-bounce"></div>
+            <div className="w-5 h-8 rounded-full border border-white/30 flex items-start justify-center p-1 group-hover:border-blue-400 transition-colors">
+              <div className="w-1.5 h-2 bg-blue-500 rounded-full animate-bounce"></div>
             </div>
           </a>
         </div>
@@ -518,7 +518,7 @@ export default function HomePage() {
               <img
                 alt="Pagi di Tepian Musi"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                src="/images/pempek_palembang.jpg"
+                src="/images/pagi_tepian_musi.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                 <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
@@ -562,7 +562,7 @@ export default function HomePage() {
                 <img
                   alt="Malam di Benteng Kuto Besak"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  src="/images/benteng_kuto_besak.jpg"
+                  src="/images/benteng_kuto_besak_malam.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                   <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
@@ -584,7 +584,7 @@ export default function HomePage() {
               <img
                 alt="Fajar di Sungai Musi"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                src="/images/rumah_limas.jpg"
+                src="/images/fajar_sungai_musi.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                 <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
@@ -627,7 +627,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/tur/songket-palembang"
-              className="mt-2 bg-[#00f2fe] hover:bg-[#00d6e2] text-slate-950 font-bold px-7 py-3 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-sm tracking-wide inline-flex items-center gap-2"
+              className="mt-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-sm tracking-wide inline-flex items-center gap-2"
             >
               <span>Masuklah ke dalam</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -111,10 +111,10 @@ export default function TourDetailPage({ params }: TourPageProps) {
     const toast = document.createElement("div");
     toast.id = "soraLiveToast";
     toast.className =
-      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-[#00f2fe]/50 backdrop-blur-xl shadow-[0_12px_36px_rgba(0,242,254,0.25),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
     toast.innerHTML = `
-      <div class="w-6 h-6 rounded-full bg-cyan-950/80 border border-cyan-400 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-[14px] text-cyan-300">info</span>
+      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400/60 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[14px] text-amber-300">info</span>
       </div>
       <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
     `;

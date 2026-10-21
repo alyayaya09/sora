@@ -10,7 +10,35 @@ interface ThemeK3Props {
 
 export default function ThemeK3({ theme }: ThemeK3Props) {
   const [activeFannedIndex, setActiveFannedIndex] = useState(2); // Default card 3 active matching K3.MD
-  const [activeExpert, setActiveExpert] = useState(6); // Default 7th card active (0-indexed 6) matching K3.MD
+  const [activeExpert, setActiveExpert] = useState(6); // Default 7th card active matching K3.MD
+  const [playingVideo, setPlayingVideo] = useState<{
+    id: string;
+    name: string;
+    origin: string;
+    youtubeId: string;
+    desc: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPlayingVideo(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (playingVideo) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [playingVideo]);
 
   useEffect(() => {
     const slideElements = document.querySelectorAll(".scroll-slide");
@@ -43,10 +71,10 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
     const toast = document.createElement("div");
     toast.id = "soraLiveToast";
     toast.className =
-      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-[#00f2fe]/50 backdrop-blur-xl shadow-[0_12px_36px_rgba(0,242,254,0.25),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
     toast.innerHTML = `
-      <div class="w-6 h-6 rounded-full bg-cyan-950/80 border border-cyan-400 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-[14px] text-cyan-300">info</span>
+      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400/60 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[14px] text-amber-300">info</span>
       </div>
       <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
     `;
@@ -93,18 +121,78 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
     slug: "tari-gending-sriwijaya",
   };
 
-  // 10 experts for the slit accordion
-  const experts = [
-    { name: "Elly Rudy", title: "Maestro Tari Tradisi Palembang", img: theme.heroImage },
-    { name: "Sahilin", title: "Legenda Batanghari Sembilan", img: theme.image },
-    { name: "H. Abdul Rozak", title: "Pemerhati Musik Tradisional", img: theme.heroImage },
-    { name: "Siti Rahma", title: "Koreografer Tari Tanggai", img: theme.image },
-    { name: "Ahmad Dahlan", title: "Pelestari Gambus & Rebana", img: theme.heroImage },
-    { name: "Nurhayati", title: "Penari Istana Kesultanan", img: theme.image },
-    { name: "Dra. Farida", title: "Cendekiawan Budaya Sumsel", img: theme.heroImage },
-    { name: "Bambang Utoyo", title: "Peneliti Seni Musik Etnik", img: theme.image },
-    { name: "Kartini", title: "Pendidik Seni Tari Generasi Muda", img: theme.heroImage },
-    { name: "M. Yamin", title: "Pengrajin Tanggai & Alat Musik", img: theme.image },
+  // 10 Kumpulan Video Tari Tradisional Sumatera Selatan
+  const danceVideos = [
+    {
+      id: "gending-sriwijaya",
+      name: "Tari Gending Sriwijaya",
+      origin: "Palembang / Sumatera Selatan",
+      youtubeId: "-D5nI9cNyRo",
+      desc: "Tarian agung penyambutan tamu kehormatan yang melambangkan kemegahan, keanggunan, dan keluhuran budaya Kedatuan Sriwijaya.",
+    },
+    {
+      id: "tari-tanggai",
+      name: "Tari Tanggai",
+      origin: "Palembang",
+      youtubeId: "_I9cZt-74J8",
+      desc: "Tarian penyambutan khas dengan lentik jemari bertapis kuningan kuku emas tanggai, memancarkan keramahan bumi Sriwijaya.",
+    },
+    {
+      id: "pagar-pengantin",
+      name: "Tari Pagar Pengantin",
+      origin: "Palembang",
+      youtubeId: "yaj6InlaZCc",
+      desc: "Tarian sakral mempelai wanita di dalam lingkaran nampan kuningan (dulang kencana), perlambang perpisahan masa lajang menuju alam pernikahan.",
+    },
+    {
+      id: "tari-kebagh",
+      name: "Tari Kebagh",
+      origin: "Besemah, Kota Pagar Alam",
+      youtubeId: "DMThptENETA",
+      desc: "Tarian adat sakral tertua masyarakat Besemah dengan kepakan sayap lembut bagai burung dinang saat menyambut para tetamu kehormatan.",
+    },
+    {
+      id: "tari-erai-erai",
+      name: "Tari Erai-Erai",
+      origin: "Kabupaten Lahat",
+      youtubeId: "Nt_5ekQ6E0k",
+      desc: "Tarian kegembiraan dan kebersamaan masyarakat Lahat saat panen raya padi diiringi alunan syair tembang penuh suka cita.",
+    },
+    {
+      id: "tari-setabik",
+      name: "Tari Setabik",
+      origin: "Musi Banyuasin",
+      youtubeId: "OSamBGmmtE0",
+      desc: "Tarian penghormatan khas Sekayu Musi Banyuasin dengan prosesi menyuguhkan daun sirih kapur dalam wadah tepak tembaga.",
+    },
+    {
+      id: "tepak-keraton",
+      name: "Tari Tepak Keraton",
+      origin: "Kesultanan Palembang",
+      youtubeId: "UI2kn8aVYIE",
+      desc: "Tarian istana yang diciptakan untuk menyambut tamu agung kesultanan dengan busana kebesaran Aesan Gede dan tepak kencana.",
+    },
+    {
+      id: "tari-silampari",
+      name: "Tari Silampari Kayangan Tinggi",
+      origin: "Musi Rawas / Lubuklinggau",
+      youtubeId: "0EdfcCQ10F4",
+      desc: "Tarian legendaris bidadari kahyangan yang memadukan kelembutan gerak dan pesona mistis tanah Silampari.",
+    },
+    {
+      id: "tari-seluang-mudik",
+      name: "Tari Seluang Mudik",
+      origin: "Kabupaten Banyuasin",
+      youtubeId: "XVUvnrbCEGg",
+      desc: "Tarian tradisi pesisir yang terinspirasi dari lincahnya kawanan ikan seluang yang berenang mudik menentang arus sungai.",
+    },
+    {
+      id: "pagar-pengantin-adat",
+      name: "Prosesi Adat Tari Pengantin",
+      origin: "Sumatera Selatan",
+      youtubeId: "cKpWcPLnyC4",
+      desc: "Dokumentasi pementasan prosesi Tari Pagar Pengantin lengkap dalam balutan adat pernikahan megah Kesultanan Palembang Darussalam.",
+    },
   ];
 
   return (
@@ -402,7 +490,7 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
       {/* END: Section4_SejarahKata */}
 
       {/* ==========================================
-           SECTION 5: MAESTRO & SENIMAN TRADISI (SMOOTH & STICKY 10 SLIT ACCORDION)
+           SECTION 5: KUMPULAN VIDEO SENI TARI SUMATERA SELATAN (SMOOTH & STICKY 10 SLIT ACCORDION)
            ========================================== */}
       <section
         className="py-20 px-3 sm:px-6 border-b-8 border-pink-700/50 bg-transparent"
@@ -411,23 +499,24 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3 text-white text-shadow-custom">
-              Bagaimana masa depan kesenian tari &amp; musik?
+              Kumpulan Video Seni Tari Sumatera Selatan
             </h2>
-            <p className="text-sm md:text-base font-normal text-white text-shadow-custom">
-              Dengarkan pandangan para maestro &amp; seniman Sumatera Selatan.
-            </p>
           </div>
 
           <div
             className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-2.5 overflow-x-auto py-8 px-4 no-scrollbar"
             id="expert-carousel"
           >
-            {experts.map((exp, idx) => {
+            {danceVideos.map((video, idx) => {
               const isActive = activeExpert === idx;
               return (
                 <div
-                  key={idx}
-                  onClick={() => setActiveExpert(idx)}
+                  key={video.id}
+                  onClick={() => {
+                    setActiveExpert(idx);
+                    setPlayingVideo(video);
+                    triggerToast(`Memutar ${video.name}`);
+                  }}
                   onMouseEnter={() => setActiveExpert(idx)}
                   className={`expert-card group relative flex-shrink-0 h-96 rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer border ${
                     isActive
@@ -436,9 +525,9 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
                   }`}
                 >
                   <img
-                    alt={exp.name}
+                    alt={video.name}
                     className="w-full h-full object-cover"
-                    src={exp.img}
+                    src={`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
                   />
                   <div
                     className={`overlay-dark absolute inset-0 ${
@@ -468,10 +557,10 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
                     }`}
                   >
                     <h3 className="font-bold text-lg leading-tight mb-1 text-shadow-custom text-white">
-                      {exp.name}
+                      {video.name}
                     </h3>
                     <p className="text-xs text-gray-300 font-light leading-snug text-shadow-custom">
-                      {exp.title}
+                      {video.origin}
                     </p>
                   </div>
                 </div>
@@ -479,8 +568,40 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
             })}
           </div>
         </div>
+
+        {/* Modal Clean Pemutar Video YouTube (Opsi A) */}
+        {playingVideo && (
+          <div
+            className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 md:p-10 transition-all duration-300"
+            onClick={() => setPlayingVideo(null)}
+          >
+            {/* Tombol Tutup Melayang di Pojok Kanan Atas */}
+            <button
+              onClick={() => setPlayingVideo(null)}
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/25 active:scale-90 border border-white/20 flex items-center justify-center text-white text-lg transition-all cursor-pointer z-50 shadow-2xl"
+              title="Tutup (Esc)"
+              aria-label="Tutup Video"
+            >
+              ✕
+            </button>
+
+            {/* Video Player Clean (Tanpa Teks di Bawahnya) */}
+            <div
+              className="relative w-full max-w-5xl aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.98)] border border-amber-500/30 bg-black"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${playingVideo.youtubeId}?autoplay=1&rel=0`}
+                title={playingVideo.name}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        )}
       </section>
-      {/* END: Section5_MasaDepanBahasa */}
+      {/* END: Section5_VideoTariSumsel */}
     </div>
   );
 }

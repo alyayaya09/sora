@@ -274,6 +274,9 @@ export function resolveContextualImage(
     q.includes("rebana") ||
     q.includes("batanghari sembilan")
   ) {
+    if (q.includes("batanghari sembilan") || q.includes("gitar")) {
+      return "/images/tembang_batanghari_sembilan.jpg";
+    }
     if (q.includes("kebile") || q.includes("besemah") || q.includes("lahat") || q.includes("pagaralam")) {
       return "/images/tari_pasemah.jpg";
     }
@@ -574,12 +577,6 @@ export async function generateGeminiSummary(
   query: string,
   localMatch: ReturnType<typeof findLocalMatch>
 ): Promise<SearchResult | null> {
-  // 1. Prioritas Utama: Lirik Lagu Daerah Sumsel (Zero Hallucination)
-  const matchedSong = findSumselSong(query);
-  if (matchedSong) {
-    return buildSongSearchResult(matchedSong, query);
-  }
-
   const apiKey = getGeminiApiKey();
   if (!apiKey) return null;
 
@@ -610,15 +607,24 @@ Jika menanyakan lagu daerah Sumatera Selatan, Anda WAJIB menggunakan bait kanoni
 
 PANDUAN UTAMA PENJAWABAN (WAJIB TEPAT PADA INTI PERTANYAAN):
 1. JAWABLAH SECARA LANGSUNG, TEPAT, DAN LENGKAP SESUAI DENGAN INTENSI PERTANYAAN:
-   - JIKA MENANYAKAN LIRIK LAGU TERTENTU:
-     * WAJIB sajikan lirik lagu yang spesifik ditanyakan tersebut! DILARANG KERAS MENGGANTI ATAU MENUKAR KE LAGU LAIN (contoh: jika ditanya 'Palembang Darussalam', DILARANG menjawab 'Cuk Mak Ilang'! Jika ditanya 'Pempek Lenjer', WAJIB jawab lagu 'Pempek Lenjer'!).
-     * Pada "highlight": Berikan pengantar 1 kalimat singkat bahwa ini adalah lirik lagu yang diminta.
-     * Pada "paragraphs": WAJIB TULISKAN SELURUH TEKS LIRIK LAGU SECARA LENGKAP BAIT DEMI BAIT (dengan baris-baris lirik rapi menggunakan \\n)! DILARANG HANYA MENULISKAN PENJELASAN SEJARAHNYA SAJA! DILARANG MENGARANG LIRIK PALSU! Pengguna ingin membaca lirik aslinya.
-     * Di akhir paragraphs atau bulletPoints, sertakan arti/makna ringkas lagu dan penciptanya jika diketahui.
-   - JIKA MENANYAKAN RESEP / CARA MEMBUAT (contoh: "resep pempek", "cara masak pindang patin", "resep tekwan"):
-     * Pada "highlight": Pengantar ringkas hidangan tersebut.
-     * Pada "paragraphs": Sajikan daftar bahan-bahan lengkap dengan takaran, serta langkah-langkah pembuatan step-by-step secara terurut dan jelas!
-   - JIKA MENANYAKAN SEJARAH / MAKNA / ASAL-USUL:
+   - JIKA MENANYAKAN TENTANG LAGU DAERAH ATAU LIRIK LAGU (contoh: "lagu cuk mak ilang", "lagu pempek lenjer", "lirik ya saman", "cuk mak ilang", dll):
+     * JANGAN PERNAH mengalihkan atau menjawab tentang makanan/objek fisik (contoh: jika ditanya "lagu pempek lenjer", ini adalah LAGU DAERAH ciptaan S. Tarno, BUKAN resep atau makanan pempek lenjer!).
+     * Pada "title": Berikan judul lagu daerah yang jelas (contoh: "Lagu Daerah Palembang: Pempek Lenjer", "Lagu Daerah Sumsel: Cuk Mak Ilang").
+     * Pada "badge": "Lagu & Musik Tradisional".
+     * Pada "highlight": Berikan pengantar 1-2 kalimat tentang lagu tersebut (asal daerah, pencipta, nuansa lagu, dan tema lagunya).
+     * Pada "paragraphs":
+       - Uraikan latar belakang lagu, makna budaya, dan konteks sosialnya.
+       - TULISKAN SELURUH TEKS LIRIK LAGU SECARA LENGKAP BAIT DEMI BAIT (dengan baris-baris lirik rapi menggunakan \\n)! Gunakan teks kanonikal resmi di atas.
+     * Di bagian bulletPoints, cantumkan Pencipta, Asal Daerah, dan Makna Singkat.
+   - JIKA MENANYAKAN RESEP / CARA MEMBUAT / CARA MASAK (contoh: "resep pempek", "resep pempek kapal selam", "resep pempek keriting", "resep tekwan", "cara membuat cuko pempek", "cara masak pindang patin"):
+     * DILARANG HANYA MEMBERIKAN PENJELASAN SEJARAH! Pengguna meminta RESEP DAN PANDUAN CARA MEMASAK!
+     * Pada "title": "Resep & Cara Membuat [Nama Masakan]" (contoh: "Resep Pempek Kapal Selam Asli Palembang", "Resep Pempek Keriting Gurih").
+     * Pada "badge": "Resep Kuliner Tradisional".
+     * Pada "highlight": Ringkasan hidangan dan rahasia kelezatan/tips suksesnya (contoh: takaran perbandingan ikan dan tepung sagu, atau cara memasukkan telur tanpa bocor).
+     * Pada "paragraphs":
+       - Paragraf 1: Daftar bahan utama dan bumbu lengkap beserta takaran/ukurannya yang presisi.
+       - Paragraf 2 & 3: Langkah-langkah pembuatan step-by-step secara terurut mulai dari mengadon, membentuk, merebus/menggoreng, hingga membuat kuah cuko pendampingnya.
+   - JIKA MENANYAKAN SEJARAH / MAKNA / ASAL-USUL / PENJELASAN UMUM:
      * Sajikan sejarah kronologis, filosofi mendalam, dan fakta autentik.
    - JIKA MENANYAKAN LOKASI / RUTE / TIKET / WISATA:
      * Berikan informasi lokasi geografis, alamat, jam operasional, harga tiket, dan rute perjalanan.
@@ -672,16 +678,13 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
 `;
 
   try {
-    // Priority order: models that have available active free-tier quota first
+    // Priority order: valid Gemini API model IDs (free-tier available)
     const models = [
       "gemini-flash-lite-latest",
       "gemini-3.5-flash-lite",
-      "gemini-3.5-flash",
-      "gemma-4-26b-a4b-it",
       "gemini-3.1-flash-lite",
-      "gemini-flash-latest",
       "gemini-3.8-flash",
-      "gemini-3.7-flash",
+      "gemini-3.5-flash",
     ];
     let jsonText = "";
 
@@ -690,7 +693,7 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
       try {
         geminiDebugLogs.push(`Trying ${model} (key: ${apiKey.slice(0, 6)}...${apiKey.slice(-4)})`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,

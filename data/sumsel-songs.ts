@@ -419,70 +419,123 @@ export const sumselSongs: SumselSong[] = [
   },
 ];
 
-// Helper to find song by query with exact and phrase matching
+// Cek apakah query secara eksplisit meminta LIRIK lagu
+function isLyricRequest(q: string): boolean {
+  return (
+    q.includes("lirik") ||
+    q.includes("syair") ||
+    q.includes("bait lagu") ||
+    q.includes("teks lagu") ||
+    q.includes("kata lagu") ||
+    q.includes("tuliskan lagu") ||
+    q.includes("tulis lirik") ||
+    q.includes("bacakan lirik")
+  );
+}
+
+// Cek apakah query adalah permintaan resep / cara masak (jangan intersep dengan lagu)
+function isRecipeRequest(q: string): boolean {
+  return (
+    q.includes("resep") ||
+    q.includes("cara buat") ||
+    q.includes("cara masak") ||
+    q.includes("bahan") ||
+    q.includes("bumbu") ||
+    q.includes("langkah") ||
+    q.includes("cara memasak") ||
+    q.includes("cara membuat") ||
+    q.includes("resepi")
+  );
+}
+
+// Helper to find song by query — HANYA aktif jika query eksplisit meminta lirik
 export function findSumselSong(query: string): SumselSong | null {
   if (!query) return null;
   const cleanQ = query.toLowerCase().replace(/['".,?!]/g, " ").replace(/\s+/g, " ").trim();
 
-  // 1. Cek specific keyword unik langsung (prioritas teratas)
-  if (cleanQ.includes("darussalam") || (cleanQ.includes("palembang") && cleanQ.includes("kota kito")) || cleanQ.includes("sungi musinyo") || cleanQ.includes("pempeknyo")) {
-    const s = sumselSongs.find((x) => x.id === "palembang-darussalam");
-    if (s) return s;
+  // JIKA query adalah permintaan resep/cara masak, langsung bypass ke Gemini
+  if (isRecipeRequest(cleanQ)) return null;
+
+  // JIKA query TIDAK secara eksplisit meminta lirik/syair,
+  // hanya cocokkan berdasarkan penggalan lirik unik (bukan nama lagu)
+  // agar query seperti "lagu cuk mak ilang" diserahkan ke Gemini sebagai penjelasan
+  const wantsLyrics = isLyricRequest(cleanQ);
+
+  // 1. Cek potongan lirik UNIK yang hanya ada di satu lagu (selalu aktif)
+  if (cleanQ.includes("sungi musinyo") || cleanQ.includes("pempeknyo") || cleanQ.includes("kota kito")) {
+    return sumselSongs.find((x) => x.id === "palembang-darussalam") || null;
   }
-  if (cleanQ.includes("lenjer") || cleanQ.includes("mak lengen") || cleanQ.includes("kejel") || cleanQ.includes("kelenger")) {
-    const s = sumselSongs.find((x) => x.id === "pempek-lenjer");
-    if (s) return s;
+  if (cleanQ.includes("mak lengen") || cleanQ.includes("kelenger") || cleanQ.includes("bulet besak panjang")) {
+    return sumselSongs.find((x) => x.id === "pempek-lenjer") || null;
   }
-  if (cleanQ.includes("kebile") || cleanQ.includes("kabile") || cleanQ.includes("lege") || cleanQ.includes("ibung kah nulih") || cleanQ.includes("kukendam kina")) {
-    const s = sumselSongs.find((x) => x.id === "kebile-bile");
-    if (s) return s;
+  if (cleanQ.includes("ibung kah nulih") || cleanQ.includes("kukendam kina") || cleanQ.includes("kabile-bile mangke ku lege") || cleanQ.includes("kabile bile mangke ku lege")) {
+    return sumselSongs.find((x) => x.id === "kebile-bile") || null;
   }
-  if (cleanQ.includes("saman") || cleanQ.includes("perahu bidar") || cleanQ.includes("telok abang") || cleanQ.includes("setolok an")) {
-    const s = sumselSongs.find((x) => x.id === "ya-saman");
-    if (s) return s;
+  if (cleanQ.includes("telok abang") || cleanQ.includes("setolok an") || cleanQ.includes("nyelek gelumbang")) {
+    return sumselSongs.find((x) => x.id === "ya-saman") || null;
   }
-  if (cleanQ.includes("cuk mak ilang") || cleanQ.includes("cagak batu") || cleanQ.includes("kucing belang") || cleanQ.includes("bepayong kembang")) {
-    const s = sumselSongs.find((x) => x.id === "cuk-mak-ilang");
-    if (s) return s;
+  if (cleanQ.includes("cagak batu") || cleanQ.includes("kucing belang") || cleanQ.includes("bepayong kembang")) {
+    return sumselSongs.find((x) => x.id === "cuk-mak-ilang") || null;
   }
-  if (cleanQ.includes("sangke")) {
-    const s = sumselSongs.find((x) => x.id === "dek-sangke");
-    if (s) return s;
+  if (cleanQ.includes("awak uke la jadi duwo") || cleanQ.includes("nemba bunga putik kelapo")) {
+    return sumselSongs.find((x) => x.id === "dek-sangke") || null;
   }
-  if (cleanQ.includes("gending sriwijaya") || (cleanQ.includes("gending") && !cleanQ.includes("alat"))) {
-    const s = sumselSongs.find((x) => x.id === "gending-sriwijaya");
-    if (s) return s;
+  if (cleanQ.includes("lempipi") || cleanQ.includes("sayang selayak")) {
+    return sumselSongs.find((x) => x.id === "sayang-selayak") || null;
   }
-  if (cleanQ.includes("tanggai") && (cleanQ.includes("lagu") || cleanQ.includes("lirik") || cleanQ.includes("tari"))) {
-    const s = sumselSongs.find((x) => x.id === "tari-tanggai");
-    if (s) return s;
-  }
-  if (cleanQ.includes("sayang selayak") || cleanQ.includes("lempipi")) {
-    const s = sumselSongs.find((x) => x.id === "sayang-selayak");
-    if (s) return s;
-  }
-  if (cleanQ.includes("petang petang") || cleanQ.includes("petang-petang")) {
-    const s = sumselSongs.find((x) => x.id === "petang-petang");
-    if (s) return s;
-  }
-  if (cleanQ.includes("sukat malang")) {
-    const s = sumselSongs.find((x) => x.id === "sukat-malang");
-    if (s) return s;
+  if (cleanQ.includes("petanglah petang") || cleanQ.includes("petang kemano")) {
+    return sumselSongs.find((x) => x.id === "petang-petang") || null;
   }
   if (cleanQ.includes("ribang kemambang")) {
-    const s = sumselSongs.find((x) => x.id === "ribang-kemambang");
-    if (s) return s;
+    return sumselSongs.find((x) => x.id === "ribang-kemambang") || null;
+  }
+  if (cleanQ.includes("sukat malang")) {
+    return sumselSongs.find((x) => x.id === "sukat-malang") || null;
   }
 
-  // 2. Cek match alias dari yang terpanjang ke terpendek
+  // 2. Jika TIDAK meminta lirik secara eksplisit, jangan intersep nama lagu saja
+  // Biarkan Gemini menangani query "lagu X", "apa itu X", dll sebagai penjelasan informatif
+  if (!wantsLyrics) return null;
+
+  // 3. Jika meminta lirik, cocokkan nama/alias lagu
+  if (cleanQ.includes("darussalam")) {
+    return sumselSongs.find((x) => x.id === "palembang-darussalam") || null;
+  }
+  if (cleanQ.includes("pempek lenjer") || cleanQ.includes("lenjer")) {
+    return sumselSongs.find((x) => x.id === "pempek-lenjer") || null;
+  }
+  if (cleanQ.includes("kebile") || cleanQ.includes("kabile")) {
+    return sumselSongs.find((x) => x.id === "kebile-bile") || null;
+  }
+  if (cleanQ.includes("ya saman") || (cleanQ.includes("saman") && !cleanQ.includes("ya saman") === false)) {
+    return sumselSongs.find((x) => x.id === "ya-saman") || null;
+  }
+  if (cleanQ.includes("cuk mak ilang")) {
+    return sumselSongs.find((x) => x.id === "cuk-mak-ilang") || null;
+  }
+  if (cleanQ.includes("dek sangke") || cleanQ.includes("sangke")) {
+    return sumselSongs.find((x) => x.id === "dek-sangke") || null;
+  }
+  if (cleanQ.includes("gending sriwijaya") || (cleanQ.includes("gending") && !cleanQ.includes("alat"))) {
+    return sumselSongs.find((x) => x.id === "gending-sriwijaya") || null;
+  }
+  if (cleanQ.includes("tari tanggai") || (cleanQ.includes("tanggai") && (cleanQ.includes("lagu") || cleanQ.includes("lirik")))) {
+    return sumselSongs.find((x) => x.id === "tari-tanggai") || null;
+  }
+  if (cleanQ.includes("petang petang") || cleanQ.includes("petang-petang")) {
+    return sumselSongs.find((x) => x.id === "petang-petang") || null;
+  }
+
+  // 4. Alias match — hanya untuk lirik request
   let bestMatch: { song: SumselSong; score: number } | null = null;
   for (const song of sumselSongs) {
     for (const alias of song.aliases) {
+      // Hanya cocokkan alias yang mengandung kata "lirik" atau cocok persis
       const cleanAlias = alias.toLowerCase().replace(/['".,?!]/g, " ").replace(/\s+/g, " ").trim();
       if (cleanQ === cleanAlias) {
         return song;
       }
-      if (cleanQ.includes(cleanAlias)) {
+      if (cleanAlias.includes("lirik") && cleanQ.includes(cleanAlias.replace("lirik ", "").trim())) {
         const score = cleanAlias.length;
         if (!bestMatch || score > bestMatch.score) {
           bestMatch = { song, score };
