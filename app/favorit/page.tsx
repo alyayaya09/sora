@@ -281,18 +281,7 @@ export default function FavoritPage() {
                     </div>
                   )}
 
-                  {/* Badge */}
-                  {(item.item_type || item.itemType) && (
-                    <div className="absolute top-3 left-3 z-20">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-black/50 text-[#f3d38c] border border-[#d4af37]/30 backdrop-blur-sm capitalize">
-                        {(item.item_type || item.itemType) === "card"
-                          ? "Tur Digital"
-                          : (item.item_type || item.itemType) === "theme"
-                          ? "Tema"
-                          : "Gambar"}
-                      </span>
-                    </div>
-                  )}
+
 
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
@@ -325,14 +314,9 @@ export default function FavoritPage() {
 
                   {/* Bottom: title */}
                   <div className="relative z-20 flex flex-col items-center text-center mt-auto">
-                    <h3 className="font-sans font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug mb-1.5 sm:text-lg">
+                    <h3 className="font-sans font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug sm:text-lg">
                       {item.title || item.item_ref}
                     </h3>
-                    {item.creator && (
-                      <p className="text-[#cbbba7] leading-relaxed font-sans text-xs opacity-70">
-                        {item.creator}
-                      </p>
-                    )}
                   </div>
                 </article>
               ))}
