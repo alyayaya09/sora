@@ -273,24 +273,8 @@ export default function TourDetailPage({ params }: TourPageProps) {
             </div>
           </div>
 
-          {/* Bottom Subtle Scroll-Down Indicator & Partnership matching LKONTEN.MD */}
+          {/* Bottom Subtle Scroll-Down Indicator matching LKONTEN.MD */}
           <div className="relative z-10 max-w-7xl mx-auto w-full flex flex-col items-center justify-center text-center gap-1.5 pb-2 shrink-0">
-            <div className="flex flex-col items-center justify-center gap-1 text-center">
-              <span className="text-[10px] sm:text-[11px] uppercase tracking-widest text-neutral-400 font-semibold opacity-80 mb-1">
-                Bekerja sama dengan
-              </span>
-              <div className="inline-flex items-center justify-center gap-3 sm:gap-4">
-                <span className="text-xs text-amber-300/80 font-semibold border border-amber-400/20 px-3 py-1 rounded-full bg-black/40">
-                  Pemerintah Provinsi Sumatera Selatan
-                </span>
-                <span className="text-xs text-cyan-300/80 font-semibold border border-cyan-400/20 px-3 py-1 rounded-full bg-black/40">
-                  Museum Negeri Balaputradewa
-                </span>
-                <span className="text-xs text-rose-300/80 font-semibold border border-rose-400/20 px-3 py-1 rounded-full bg-black/40">
-                  Pesona Indonesia
-                </span>
-              </div>
-            </div>
             <a
               className="inline-flex flex-col items-center text-neutral-400 hover:text-amber-300 transition-colors group cursor-pointer pt-2"
               href="#narasi-seksi-1"
@@ -322,9 +306,6 @@ export default function TourDetailPage({ params }: TourPageProps) {
           </div>
           <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 slide-in-narrative is-visible">
             <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-                Bagian 01 / 03
-              </span>
               <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec1Title}
               </h2>
@@ -353,9 +334,6 @@ export default function TourDetailPage({ params }: TourPageProps) {
           </div>
           <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 slide-in-narrative is-visible">
             <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md">
-              <span className="text-xs font-bold uppercase tracking-widest text-cyan-400">
-                Bagian 02 / 03
-              </span>
               <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec2Title}
               </h2>
@@ -384,9 +362,6 @@ export default function TourDetailPage({ params }: TourPageProps) {
           </div>
           <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 slide-in-narrative is-visible">
             <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md">
-              <span className="text-xs font-bold uppercase tracking-widest text-rose-400">
-                Bagian 03 / 03
-              </span>
               <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec3Title}
               </h2>
