@@ -394,9 +394,6 @@ export default function TourDetailPage({ params }: TourPageProps) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0f]/80 via-[#6b1d2f]/25 to-black/60 pointer-events-none"></div>
               <div className="relative z-10 flex flex-col items-center justify-center max-w-3xl mx-auto">
-                <span className="text-amber-400 text-xs md:text-sm font-semibold tracking-widest uppercase mb-3">
-                  {tour.relCat}
-                </span>
                 <h3 className="font-sans text-3xl md:text-4xl lg:text-5xl text-white font-normal md:font-medium tracking-normal mb-3 drop-shadow-md">
                   {tour.relTitle}
                 </h3>
