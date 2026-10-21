@@ -126,6 +126,30 @@ export default function FavoritPage() {
     return "/jelajahi";
   };
 
+  const getItemSubtitle = (item: FavoriteItem) => {
+    const type = item.item_type || item.itemType;
+    if (type === "card") {
+      if (item.creator && !item.creator.toLowerCase().includes("wikimedia")) {
+        return item.creator;
+      }
+      const ref = item.item_ref || item.itemRef;
+      if (ref) {
+        try {
+          const tour = getDedicatedTour(ref);
+          if (tour?.subtitle) return tour.subtitle;
+        } catch {}
+      }
+      return "Warisan peradaban dan kebudayaan Sumatera Selatan";
+    }
+
+    // Untuk jenis gambar
+    if (item.creator && !item.creator.toLowerCase().includes("wikimedia")) {
+      return item.creator;
+    }
+    const name = item.title || item.item_ref || item.itemRef || "Sumatera Selatan";
+    return `Pesona visual dan keindahan warisan budaya ${name}`;
+  };
+
   if (isPending) {
     return (
       <>
@@ -312,11 +336,16 @@ export default function FavoritPage() {
                     </span>
                   </div>
 
-                  {/* Bottom: title */}
+                  {/* Bottom: title & subtitle */}
                   <div className="relative z-20 flex flex-col items-center text-center mt-auto">
-                    <h3 className="font-sans font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug sm:text-lg">
+                    <h3 className="font-sans font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug mb-1 sm:text-lg">
                       {item.title || item.item_ref}
                     </h3>
+                    {getItemSubtitle(item) && (
+                      <p className="text-[#cbbba7] leading-relaxed font-sans text-xs opacity-75 line-clamp-2">
+                        {getItemSubtitle(item)}
+                      </p>
+                    )}
                   </div>
                 </article>
               ))}

@@ -526,7 +526,17 @@ function JelajahiContent() {
                         itemRef={result.card1.title || query}
                         title={result.card1.title}
                         imageUrl={result.card1.image}
-                        creator="Wikimedia Commons"
+                        creator={
+                          result.card2?.highlight
+                            ? (result.card2.highlight.length > 95
+                                ? result.card2.highlight.slice(0, 92) + "..."
+                                : result.card2.highlight)
+                            : (result.card2?.paragraphs?.[0]
+                                ? (result.card2.paragraphs[0].length > 95
+                                    ? result.card2.paragraphs[0].slice(0, 92) + "..."
+                                    : result.card2.paragraphs[0])
+                                : `Dokumentasi visual pesona budaya ${result.card1.title || query || "Sumatera Selatan"}`)
+                        }
                         sourceUrl={result.card2.sources?.[0]?.url || `/jelajahi?q=${encodeURIComponent(query)}`}
                         size="sm"
                       />
