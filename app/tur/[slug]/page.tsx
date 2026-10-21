@@ -359,7 +359,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
              5. FINAL VIEWPORT: "KONTEN TERKAIT" (EXACT LKONTEN.MD)
              ========================================== */}
         <div
-          className="min-h-screen w-full flex flex-col justify-between relative overflow-hidden"
+          className="min-h-screen w-full flex flex-col justify-between relative overflow-hidden pb-16"
           id="konten-terkait"
         >
           <section className="relative w-full flex-1 flex flex-col justify-center px-6 md:px-12 py-8 md:py-12 max-w-7xl mx-auto">
