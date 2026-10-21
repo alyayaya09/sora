@@ -1,66 +1,34 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "../../lib/auth-client";
 import AmbientBackground from "../../components/AmbientBackground";
 
 interface FavoriteItem {
   id: string;
-  title: string;
-  badge: string;
-  desc: string;
-  image: string;
-  fallbackImage: string;
-  link: string;
+  user_id: string;
+  item_type: "card" | "theme" | "image";
+  item_ref: string;
+  title: string | null;
+  image_url: string | null;
+  creator: string | null;
+  source_url: string | null;
+  license: string | null;
+  created_at: string;
 }
 
-const INITIAL_FAVORITES: FavoriteItem[] = [
-  {
-    id: "songket-bintang",
-    title: "Motif Bunga Bintang Songket",
-    badge: "Motif Ikonik",
-    desc: "Melambangkan arah kompas pelayaran bahari armada Sriwijaya dan filosofi keteguhan batin.",
-    image:
-      "https://lh3.googleusercontent.com/aida/AEtjO1WCF1J-3c6nSV4lux31qjbnYBJ8DssQlXxYpTLW32b98ttdktCbQGRbDtWRuU7vMJhKVJ1IXPFwyZO7wlW863aJArxJu8djcQCuwIS6WuOmAl-WQzpJgBaqTNa8BzqRrFXzCJ9wc3YBiWhe-Dd1wg81Srm8bf1ihXzzRZS1v0NYOXo7bibviV4GKPJKtP4mrXKZ9OpjIf6H8KJIlwBu7jxckRPDgFsq5jtGs7Cu83dXK4Qs5WNkU701AAkN",
-    fallbackImage: "/images/songket_lepus.jpg",
-    link: "/tur/motif-bunga-bintang",
-  },
-  {
-    id: "celup-gambir",
-    title: "Proses Celup Alami Gambir & Sepang",
-    badge: "Etnobotani & Pewarnaan",
-    desc: "Formulasi getah gambir dan kayu secang penghasil rona merah marun abadi tahan ratusan tahun.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAzWOP7yGmzVqVnlXFOi3ONDYBGP5UXSuy9ItbD2FRle1Ed49-ZEToXjXuyLwdzT5pXg4Rmv_VMfdTJBBeCFTldiOQ_HoIoMkAELqUzYKNL1lDxUnNGp7JcU6OJSlZRj_b3C-JVdMwb13zK7PedkTq-3eM5ynGv290klaTX-R0aTE_UigYVnIJnVlLmkablNOTSnGYW38lh3lWQMTdXeQXFI-1KUv8DnGtWDpXr4VD3J_T-CSzBsZuJjA",
-    fallbackImage: "/images/songket_lepus.jpg",
-    link: "/tur/celup-gambir",
-  },
-  {
-    id: "aesan-gede",
-    title: "Pakaian Adat Aesan Gede Palembang",
-    badge: "Kostum Kerajaan Lengkap",
-    desc: "Busana perkawinan agung gabungan pengaruh estetika Buddha Sriwijaya dan etika Kesultanan Palembang.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBJO4Z-bTXBjhbzXkn23uF10_ZVIKjcwSp8nnG6B0xJIRE0nhOgXm4SixSyetg0GB3OwO9UnqY6uKMU0wwAGcHjIWM084GccGNXIm1eE_BBCzcfsF0EZ3bWp0tn2AsGrY5pqydW0m7LlO_-APhVrGGI1hfxXJPXzULHATngnUv30iSQ9D8MvROo5SqtgusvaU4JJYe1JMZmP1AmbJd6IEl_tFaD4ofj78uH_WqShCXsWFMxZyTtkem_8w",
-    fallbackImage: "/images/aesan_gede_banner.jpg",
-    link: "/tur/aesan-gede",
-  },
-  {
-    id: "hutan-suvarnadvipa",
-    title: "Hutan Hujan & Perairan Suvarnadvipa",
-    badge: "Konservasi & Ekosistem",
-    desc: "Ekosistem maritim dan hutan purba yang dilindungi oleh piagam prasasti raja-raja Sriwijaya.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuB0gVTaR0LzzvJnGlJJvzZI4meD-ucCLThXQqF__AgWr2ASNon8GzQaw2NUOQz8EDRYp9AJwP5CfUwsvoq000FXc1RBmLznAiRk8YcgmUEB8GwrlgpcsBI3zF9DyVFrJKKpD40vnE0yKOBJ6eziIkEi1nmrYFcE4VlMP3LgP2WUZIkt01wKM7Gfvw6Io6q7Q4vjKlIY5jK2SzDg1O1j-Z1WpJc5932LTP0G34wSRG7VagnLuzLobqC62g",
-    fallbackImage: "/images/ampera_hero.jpg",
-    link: "/tur/hutan-suvarnadvipa",
-  },
-];
+type TabType = "stories" | "gambar";
 
 export default function FavoritPage() {
   const router = useRouter();
-  const [favorites, setFavorites] = useState<FavoriteItem[]>(INITIAL_FAVORITES);
+  const { data: session, isPending } = useSession();
+  const user = session?.user;
+
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>("stories");
   const [toast, setToast] = useState<{
     visible: boolean;
     title: string;
@@ -80,77 +48,172 @@ export default function FavoritPage() {
     }, 2800);
   };
 
-  const handleRemoveFavorite = (e: React.MouseEvent, item: FavoriteItem) => {
+  const fetchFavorites = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/favorite");
+      if (res.ok) {
+        const data = await res.json();
+        setFavorites(data.favorites || []);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!isPending && !user) {
+      router.push("/masuk");
+      return;
+    }
+    fetchFavorites();
+  }, [user, isPending, fetchFavorites, router]);
+
+  const handleRemoveFavorite = async (e: React.MouseEvent, item: FavoriteItem) => {
     e.stopPropagation();
-    setFavorites((prev) => prev.filter((f) => f.id !== item.id));
-    showToast("Dihapus dari Favorit", item.title, true);
+    try {
+      await fetch("/api/favorite", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemType: item.item_type, itemRef: item.item_ref }),
+      });
+      setFavorites((prev) => prev.filter((f) => f.id !== item.id));
+      showToast("Dihapus dari Favorit", item.title || item.item_ref, true);
+    } catch {
+      showToast("Gagal menghapus", "Coba lagi nanti", true);
+    }
   };
+
+  const storiesFavs = favorites.filter((f) => f.item_type === "card" || f.item_type === "theme");
+  const imageFavs = favorites.filter((f) => f.item_type === "image");
+  const displayedFavs = activeTab === "stories" ? storiesFavs : imageFavs;
+
+  const getItemLink = (item: FavoriteItem) => {
+    if (item.item_type === "card") return `/tur/${item.item_ref}`;
+    if (item.item_type === "theme") return `/tema/${item.item_ref}`;
+    if (item.source_url) return item.source_url;
+    return "/jelajahi";
+  };
+
+  if (isPending) {
+    return (
+      <>
+        <AmbientBackground />
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <div className="w-10 h-10 border-2 border-[#d4af37]/40 border-t-[#d4af37] rounded-full animate-spin" />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      {/* ── Ambient Background persis seperti halaman Jelajahi ── */}
       <AmbientBackground />
 
-
-      {/* ── Main Content Area ── */}
       <main className="relative z-10 pt-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 flex-1 w-full flex flex-col justify-between">
-        
-        {/* Profile & Tab Header (matching favorit.md) */}
+        {/* Profile & Tab Header */}
         <section className="text-center pt-2 pb-4" data-purpose="user-favorites-hero">
           <div className="inline-block relative mb-2">
             <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#6b1d2f]/70 via-[#e9c176]/40 to-[#6b1d2f]/70 blur-lg scale-110" />
             <div className="relative w-20 h-20 rounded-full p-[2.5px] bg-gradient-to-tr from-[#6b1d2f] via-[#e9c176] to-[#6b1d2f] shadow-xl">
-              <div className="w-full h-full rounded-full p-0.5 bg-[#131315]">
-                <img
-                  alt="Foto Profil Pengguna"
-                  className="w-full h-full rounded-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB4mSgnKaQmmdPgIZ3Zv7VSeR1OquXyumHAQzt_w82xEGaWeBi3hz9VkmbWkckuwTrhiYOaCNbhKL_xRsYwiMAFDwfunbuHF2v_lGp3X8s5d9omLN2S8aEPf4bWNKbkH_SV8fmAALpuhPf4GHI1vyskXOjlS1QyhwUJnrH80ruSh5F6dD1cVs5rOpKJgkJCkfAL1v1GMvv7Dxw0Dc9M88QfO-sPU1-NMdmUuFh7AMX9HP-gs0Gyv0WdA"
-                  onError={(e) => {
-                    // Fallback to default avatar if offline
-                    (e.target as HTMLImageElement).src = "/images/ampera_hero.jpg";
-                  }}
-                />
+              <div className="w-full h-full rounded-full p-0.5 bg-[#131315] flex items-center justify-center">
+                {user?.image ? (
+                  <img
+                    alt="Foto Profil"
+                    className="w-full h-full rounded-full object-cover"
+                    src={user.image}
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-[#f3d38c]">
+                    {user?.name
+                      ? user.name
+                          .split(" ")
+                          .slice(0, 2)
+                          .map((w) => w[0])
+                          .join("")
+                          .toUpperCase()
+                      : "U"}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
+          {user?.name && (
+            <p className="text-white/60 text-sm font-sans mb-3">{user.name}</p>
+          )}
+
+          {/* Tabs */}
           <div className="flex justify-center border-b border-white/10 mt-2" data-purpose="tab-navigation">
             <nav aria-label="Tabs Kurasi" className="flex space-x-12 items-center">
               <button
                 type="button"
-                className="relative font-sans font-medium text-base sm:text-lg tracking-wider py-1.5 px-3 transition-colors duration-300 cursor-pointer focus:outline-none text-[#f3d38c] hover:text-[#ffe088]"
+                onClick={() => setActiveTab("stories")}
+                className={`relative font-sans font-medium text-base sm:text-lg tracking-wider py-1.5 px-3 transition-colors duration-300 cursor-pointer focus:outline-none ${
+                  activeTab === "stories"
+                    ? "text-[#f3d38c] hover:text-[#ffe088]"
+                    : "text-white/50 hover:text-white/80"
+                }`}
               >
-                Favorit
-                <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
+                Stories
+                {activeTab === "stories" && (
+                  <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("gambar")}
+                className={`relative font-sans font-medium text-base sm:text-lg tracking-wider py-1.5 px-3 transition-colors duration-300 cursor-pointer focus:outline-none ${
+                  activeTab === "gambar"
+                    ? "text-[#f3d38c] hover:text-[#ffe088]"
+                    : "text-white/50 hover:text-white/80"
+                }`}
+              >
+                Gambar
+                {activeTab === "gambar" && (
+                  <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
+                )}
               </button>
             </nav>
           </div>
         </section>
 
-        {/* Saved Artefacts / Stories Section (matching favorit.md) */}
+        {/* Favorites Grid */}
         <section className="mt-4 mb-8 max-w-7xl mx-auto w-full">
           <div className="flex items-center justify-between mb-5 pb-1">
             <div className="flex items-baseline gap-3">
               <h2 className="font-sans text-2xl sm:text-3xl font-semibold tracking-wide text-[#F9F8F6] drop-shadow-sm">
-                Stories
+                {activeTab === "stories" ? "Stories" : "Gambar"}
               </h2>
               <span className="font-sans text-xs text-[#e2be74] font-medium px-2.5 py-0.5 rounded-full bg-[#6b1d2f]/40 border border-amber-400/30">
-                {favorites.length}
+                {displayedFavs.length}
               </span>
             </div>
           </div>
 
-          {favorites.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[3/4] rounded-2xl bg-white/5 animate-pulse border border-white/10"
+                />
+              ))}
+            </div>
+          ) : displayedFavs.length === 0 ? (
             <div className="text-center py-16 px-4 rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl flex flex-col items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-[#6b1d2f]/40 border border-amber-400/30 flex items-center justify-center text-amber-300">
                 <span className="material-symbols-outlined text-3xl">bookmark_border</span>
               </div>
               <div className="max-w-md">
                 <h3 className="font-sans text-xl font-semibold text-white mb-1">
-                  Belum Ada Cerita Favorit
+                  Belum Ada {activeTab === "stories" ? "Cerita" : "Gambar"} Favorit
                 </h3>
                 <p className="text-sm text-white/60 leading-relaxed">
-                  Semua item favorit telah dihapus. Jelajahi ragam budaya Sumatera Selatan untuk menambahkan kembali ke koleksi Anda.
+                  Tekan ikon ❤ pada konten untuk menyimpannya ke favorit.
                 </p>
               </div>
               <div className="flex gap-3 mt-2">
@@ -164,26 +227,44 @@ export default function FavoritPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {favorites.map((item) => (
+              {displayedFavs.map((item) => (
                 <article
                   key={item.id}
-                  onClick={() => router.push(item.link)}
+                  onClick={() => router.push(getItemLink(item))}
                   className="group relative rounded-2xl overflow-hidden border border-white/10 aspect-[3/4] flex flex-col justify-between p-4 cursor-pointer shadow-lg hover:border-amber-400/30 transition-all duration-500 bg-black/60 heritage-card"
                 >
                   {/* Background Image */}
-                  <img
-                    alt={item.title}
-                    src={item.image}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = item.fallbackImage;
-                    }}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 z-0"
-                  />
+                  {item.image_url && (
+                    <img
+                      alt={item.title || item.item_ref}
+                      src={item.image_url}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 z-0"
+                    />
+                  )}
+
+                  {/* No image placeholder */}
+                  {!item.image_url && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#6b1d2f]/40 to-[#0d0d0f] z-0 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-5xl text-white/20">photo_camera</span>
+                    </div>
+                  )}
+
+                  {/* Badge */}
+                  {item.item_type && (
+                    <div className="absolute top-3 left-3 z-20">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-black/50 text-[#f3d38c] border border-[#d4af37]/30 backdrop-blur-sm capitalize">
+                        {item.item_type === "card" ? "Tur Digital" : item.item_type === "theme" ? "Tema" : "Gambar"}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
 
-                  {/* Top Header inside Card: Favorite Heart Toggle */}
+                  {/* Top: Remove Favorite button */}
                   <div className="relative z-20 flex items-center justify-end w-full">
                     <button
                       type="button"
@@ -202,21 +283,23 @@ export default function FavoritPage() {
                     </button>
                   </div>
 
-                  {/* Center "Eksplor" button on hover */}
+                  {/* Center hover "Eksplor" */}
                   <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <span className="inline-flex items-center justify-center px-5 py-2 rounded-full text-white text-sm font-semibold tracking-wide transition-all duration-300 border border-white/40 hover:border-white focus:outline-none shadow-lg bg-black/40 backdrop-blur-sm">
+                    <span className="inline-flex items-center justify-center px-5 py-2 rounded-full text-white text-sm font-semibold tracking-wide border border-white/40 shadow-lg bg-black/40 backdrop-blur-sm">
                       Eksplor
                     </span>
                   </div>
 
-                  {/* Bottom Text Content */}
+                  {/* Bottom: title */}
                   <div className="relative z-20 flex flex-col items-center text-center mt-auto">
                     <h3 className="font-sans font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug mb-1.5 sm:text-lg">
-                      {item.title}
+                      {item.title || item.item_ref}
                     </h3>
-                    <p className="text-[#cbbba7] leading-relaxed font-sans line-clamp-2 text-sm">
-                      {item.desc}
-                    </p>
+                    {item.creator && (
+                      <p className="text-[#cbbba7] leading-relaxed font-sans text-xs opacity-70">
+                        {item.creator}
+                      </p>
+                    )}
                   </div>
                 </article>
               ))}
@@ -225,21 +308,17 @@ export default function FavoritPage() {
         </section>
       </main>
 
-      {/* ── Toast Notification (matching favorit.md) ── */}
+      {/* Toast */}
       <aside
         aria-live="polite"
         className={`fixed bottom-6 right-6 z-50 transform transition-all duration-300 pointer-events-none ${
-          toast.visible
-            ? "translate-y-0 opacity-100"
-            : "translate-y-24 opacity-0"
+          toast.visible ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0"
         }`}
       >
         <div className="bg-[#1b1b1e]/95 backdrop-blur-xl border border-[#d4af37]/40 text-[#f5eedc] px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
           <div
             className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-              toast.isRemove
-                ? "bg-white/10 text-white/60"
-                : "bg-[#6b1d2f]/80 text-[#d4af37]"
+              toast.isRemove ? "bg-white/10 text-white/60" : "bg-[#6b1d2f]/80 text-[#d4af37]"
             }`}
           >
             {toast.isRemove ? (
