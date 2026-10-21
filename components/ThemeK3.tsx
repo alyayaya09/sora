@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Theme } from "../data/sora-content";
-import LoveButton from "./LoveButton";
 
 interface ThemeK3Props {
   theme: Theme;
@@ -147,22 +146,8 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
             {theme.intro}
           </p>
 
-          {/* Interactive Actions: Favorite & Share */}
+          {/* Interactive Actions: Share */}
           <div className="flex items-center gap-6 mt-6">
-            <LoveButton
-              itemType="theme"
-              itemRef={theme.slug}
-              title={theme.title}
-              imageUrl={theme.heroImage || theme.image}
-              creator="Sumatera Selatan"
-              sourceUrl={`/tema/${theme.slug}`}
-              size="md"
-              onToggle={(fav) => {
-                triggerToast(
-                  fav ? "Tersimpan ke Favorit" : "Dihapus dari Favorit"
-                );
-              }}
-            />
             <button
               aria-label="Bagikan"
               className="text-white/90 hover:text-white hover:scale-110 transition-transform cursor-pointer"

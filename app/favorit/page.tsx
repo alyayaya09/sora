@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "../../lib/auth-client";
 import AmbientBackground from "../../components/AmbientBackground";
+import { getDedicatedTour } from "../../data/sora-content";
 
 interface FavoriteItem {
   id: string;
@@ -102,6 +103,20 @@ export default function FavoritPage() {
   const imageFavs = favorites.filter((f) => (f.item_type || f.itemType) === "image");
   const displayedFavs = activeTab === "stories" ? storiesFavs : imageFavs;
 
+  const getItemImage = (item: FavoriteItem) => {
+    const direct = item.image_url || item.imageUrl;
+    if (direct) return direct;
+    const type = item.item_type || item.itemType;
+    const ref = item.item_ref || item.itemRef;
+    if (type === "card" && ref) {
+      try {
+        const tour = getDedicatedTour(ref);
+        if (tour?.heroImg) return tour.heroImg;
+      } catch {}
+    }
+    return null;
+  };
+
   const getItemLink = (item: FavoriteItem) => {
     const type = item.item_type || item.itemType;
     const ref = item.item_ref || item.itemRef;
@@ -162,6 +177,7 @@ export default function FavoritPage() {
           {/* Tabs */}
           <div className="flex justify-center border-b border-white/10 mt-2" data-purpose="tab-navigation">
             <nav aria-label="Tabs Kurasi" className="flex space-x-12 items-center">
+
               <button
                 type="button"
                 onClick={() => setActiveTab("stories")}
@@ -171,7 +187,7 @@ export default function FavoritPage() {
                     : "text-white/50 hover:text-white/80"
                 }`}
               >
-                Stories
+                Tur Digital
                 {activeTab === "stories" && (
                   <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
                 )}
@@ -199,7 +215,7 @@ export default function FavoritPage() {
           <div className="flex items-center justify-between mb-5 pb-1">
             <div className="flex items-baseline gap-3">
               <h2 className="font-sans text-2xl sm:text-3xl font-semibold tracking-wide text-[#F9F8F6] drop-shadow-sm">
-                {activeTab === "stories" ? "Stories" : "Gambar"}
+                {activeTab === "stories" ? "Tur Digital" : "Gambar"}
               </h2>
               <span className="font-sans text-xs text-[#e2be74] font-medium px-2.5 py-0.5 rounded-full bg-[#6b1d2f]/40 border border-amber-400/30">
                 {displayedFavs.length}
@@ -223,7 +239,7 @@ export default function FavoritPage() {
               </div>
               <div className="max-w-md">
                 <h3 className="font-sans text-xl font-semibold text-white mb-1">
-                  Belum Ada {activeTab === "stories" ? "Cerita" : "Gambar"} Favorit
+                  Belum Ada {activeTab === "stories" ? "Tur Digital" : "Gambar"} Favorit
                 </h3>
                 <p className="text-sm text-white/60 leading-relaxed">
                   Tekan ikon ❤ pada konten untuk menyimpannya ke favorit.
@@ -247,10 +263,10 @@ export default function FavoritPage() {
                   className="group relative rounded-2xl overflow-hidden border border-white/10 aspect-[3/4] flex flex-col justify-between p-4 cursor-pointer shadow-lg hover:border-amber-400/30 transition-all duration-500 bg-black/60 heritage-card"
                 >
                   {/* Background Image */}
-                  {(item.image_url || item.imageUrl) && (
+                  {getItemImage(item) && (
                     <img
                       alt={item.title || item.item_ref || item.itemRef || "Favorit"}
-                      src={(item.image_url || item.imageUrl)!}
+                      src={getItemImage(item)!}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
                       }}
@@ -259,7 +275,7 @@ export default function FavoritPage() {
                   )}
 
                   {/* No image placeholder */}
-                  {!(item.image_url || item.imageUrl) && (
+                  {!getItemImage(item) && (
                     <div className="absolute inset-0 bg-gradient-to-br from-[#6b1d2f]/40 to-[#0d0d0f] z-0 flex items-center justify-center">
                       <span className="material-symbols-outlined text-5xl text-white/20">photo_camera</span>
                     </div>

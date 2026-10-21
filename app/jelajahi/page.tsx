@@ -426,23 +426,6 @@ function JelajahiContent() {
                     href={`/tema/${theme.slug}`}
                     className="group relative h-48 md:h-56 rounded-2xl overflow-hidden border border-white/10 hover:border-amber-400/50 transition-all duration-300 shadow-lg flex flex-col justify-end p-4"
                   >
-                    <div
-                      className="absolute top-3 right-3 z-20"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <LoveButton
-                        itemType="theme"
-                        itemRef={theme.slug}
-                        title={theme.title}
-                        imageUrl={theme.heroImage || theme.image}
-                        creator="Sumatera Selatan"
-                        sourceUrl={`/tema/${theme.slug}`}
-                        size="sm"
-                      />
-                    </div>
                     <img
                       src={theme.heroImage || theme.image}
                       alt={theme.title}
@@ -750,23 +733,6 @@ function JelajahiContent() {
                     href={result.card3.themeHref}
                     className="relative w-full rounded-3xl overflow-hidden border border-amber-500/20 shadow-2xl group min-h-[300px] md:min-h-[340px] flex items-center justify-center p-6 md:p-12 transition-all duration-500 hover:border-amber-400/50 hover:shadow-[0_0_60px_rgba(212,175,55,0.18)]"
                   >
-                    <div
-                      className="absolute top-4 right-4 z-20"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <LoveButton
-                        itemType="theme"
-                        itemRef={result.card3.themeSlug}
-                        title={result.card3.themeTitle}
-                        imageUrl={result.card3.themeImg}
-                        creator="Sumatera Selatan"
-                        sourceUrl={result.card3.themeHref}
-                        size="sm"
-                      />
-                    </div>
                     <img
                       src={result.card3.themeImg || "/images/rumah_limas.jpg"}
                       alt={result.card3.themeTitle}

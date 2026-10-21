@@ -186,7 +186,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
                   itemType="card"
                   itemRef={slug}
                   title={tour.title}
-                  imageUrl={tour.heroImage}
+                  imageUrl={tour.heroImg}
                   creator={tour.subtitle}
                   sourceUrl={`/tur/${slug}`}
                   variant="rounded-2xl"
