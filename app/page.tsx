@@ -667,17 +667,17 @@ export default function HomePage() {
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
                 <img
-                  alt="Songket Lepus Emas"
+                  alt={t("Songket Lepus Emas", "Gold Lepus Songket")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/songket_lepus.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
                   <h3 className="text-[1.18rem] font-bold leading-snug tracking-normal text-white drop-shadow-sm">
-                    Songket Lepus Emas
+                    {t("Songket Lepus Emas", "Gold Lepus Songket")}
                   </h3>
                   <p className="text-[13px] text-neutral-200 font-normal mt-0.5">
-                    Kasta tertinggi tenun Palembang
+                    {t("Kasta tertinggi tenun Palembang", "The highest tier of Palembang weaving")}
                   </p>
                 </div>
               </Link>
@@ -688,17 +688,17 @@ export default function HomePage() {
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
                 <img
-                  alt="Sehari bersama Penenun Songket"
+                  alt={t("Sehari bersama Penenun Songket", "A Day with Songket Weavers")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/menenun_songket.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
                   <h3 className="text-[1.12rem] font-bold leading-snug tracking-normal text-white drop-shadow-sm">
-                    Sehari bersama Penenun Songket
+                    {t("Sehari bersama Penenun Songket", "A Day with Songket Weavers")}
                   </h3>
                   <p className="text-[12px] text-neutral-200 font-normal mt-0.5">
-                    Kisah ketelitian di balik bilah gedogan kayu
+                    {t("Kisah ketelitian di balik bilah gedogan kayu", "The story of meticulous devotion behind wooden looms")}
                   </p>
                 </div>
               </Link>
@@ -712,17 +712,17 @@ export default function HomePage() {
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
                 <img
-                  alt="Kain Jumputan Pelangi"
+                  alt={t("Kain Jumputan Pelangi", "Rainbow Jumputan Textile")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/kain_jumputan.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
                   <h3 className="text-[1.18rem] font-bold leading-snug tracking-normal text-white drop-shadow-sm">
-                    Kain Jumputan Pelangi
+                    {t("Kain Jumputan Pelangi", "Rainbow Jumputan Textile")}
                   </h3>
                   <p className="text-[13px] text-neutral-200 font-normal mt-0.5">
-                    Harmoni celup ikat sutra khas Palembang
+                    {t("Harmoni celup ikat sutra khas Palembang", "Harmony of Palembang silk tie-dye craft")}
                   </p>
                 </div>
               </Link>
@@ -733,17 +733,17 @@ export default function HomePage() {
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
                 <img
-                  alt="Motif Bunga Mawar & Rebung"
+                  alt={t("Motif Bunga Mawar & Rebung", "Rose & Bamboo Shoot Motifs")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/batik_palembang.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
                   <h3 className="text-[1.12rem] font-bold leading-snug tracking-normal text-white drop-shadow-sm">
-                    Motif Bunga Mawar &amp; Rebung
+                    {t("Motif Bunga Mawar & Rebung", "Rose & Bamboo Shoot Motifs")}
                   </h3>
                   <p className="text-[12.5px] text-neutral-200 font-normal mt-0.5">
-                    Simbol tolak bala dan aspirasi spiritual
+                    {t("Simbol tolak bala dan aspirasi spiritual", "Symbols of spiritual aspiration and warding misfortune")}
                   </p>
                 </div>
               </Link>
@@ -756,17 +756,17 @@ export default function HomePage() {
                 className="relative h-full rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
                 <img
-                  alt="Aesan Gede Busana Kebesaran"
+                  alt={t("Aesan Gede Busana Kebesaran", "Aesan Gede: Imperial Ceremonial Attire")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/aesan_gede_banner.jpg"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 via-40% to-transparent pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white pointer-events-none">
                   <h3 className="text-[1.18rem] font-bold leading-snug tracking-normal text-white drop-shadow-sm">
-                    Aesan Gede: Busana Kebesaran
+                    {t("Aesan Gede: Busana Kebesaran", "Aesan Gede: Imperial Ceremonial Attire")}
                   </h3>
                   <p className="text-[13px] text-neutral-200 font-normal mt-0.5">
-                    Mahkota emas dan kemegahan Sriwijaya
+                    {t("Mahkota emas dan kemegahan Sriwijaya", "Golden crown and the majesty of Sriwijaya")}
                   </p>
                 </div>
               </Link>
@@ -800,17 +800,20 @@ export default function HomePage() {
             {/* Card 1: Tari Gending Sriwijaya (Meluncur dari KIRI) */}
             <article className="anim-left gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
               <img
-                alt="Tari Gending Sriwijaya"
+                alt={t("Tari Gending Sriwijaya", "Gending Sriwijaya Dance")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/tari_gending.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none"></div>
               <div className="relative z-10 p-6 flex flex-col justify-end text-white items-center text-center">
                 <h3 className="text-xl font-bold text-shadow-custom leading-snug mb-1 text-white">
-                  Tari Gending Sriwijaya
+                  {t("Tari Gending Sriwijaya", "Gending Sriwijaya Dance")}
                 </h3>
                 <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-90 line-clamp-2 mb-4">
-                  Tepak sekapur sirih dan lentiknya kuku emas penyambut tamu agung.
+                  {t(
+                    "Tepak sekapur sirih dan lentiknya kuku emas penyambut tamu agung.",
+                    "The ceremonial betel box and curved golden nails welcoming honored guests."
+                  )}
                 </p>
                 <Link
                   href="/tur/tari-gending-sriwijaya"
@@ -824,17 +827,20 @@ export default function HomePage() {
             {/* Card 2: Rumah Limas (Meluncur dari KANAN) */}
             <article className="anim-right delay-100 gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
               <img
-                alt="Rumah Limas Palembang"
+                alt={t("Rumah Limas Palembang", "Palembang Limas House")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/rumah_limas.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none"></div>
               <div className="relative z-10 p-6 flex flex-col justify-end text-white items-center text-center">
                 <h3 className="text-xl font-bold text-shadow-custom leading-snug mb-1 text-white">
-                  Rumah Limas Palembang
+                  {t("Rumah Limas Palembang", "Palembang Limas House")}
                 </h3>
                 <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-90 line-clamp-2 mb-4">
-                  Falsafah bengkilas bertingkat dan pasak kayu unglen tahan gempa.
+                  {t(
+                    "Falsafah bengkilas bertingkat dan pasak kayu unglen tahan gempa.",
+                    "Tiered floor philosophy and earthquake-resistant unglen timber joinery."
+                  )}
                 </p>
                 <Link
                   href="/tur/rumah-limas"
@@ -848,17 +854,20 @@ export default function HomePage() {
             {/* Card 3: Kerajaan Sriwijaya (Meluncur dari KIRI) */}
             <article className="anim-left delay-200 gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
               <img
-                alt="Kerajaan Sriwijaya"
+                alt={t("Kerajaan Sriwijaya", "Sriwijaya Empire")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/aksara_ulu.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none"></div>
               <div className="relative z-10 p-6 flex flex-col justify-end text-white items-center text-center">
                 <h3 className="text-xl font-bold text-shadow-custom leading-snug mb-1 text-white">
-                  Kerajaan Sriwijaya
+                  {t("Kerajaan Sriwijaya", "Sriwijaya Empire")}
                 </h3>
                 <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-90 line-clamp-2 mb-4">
-                  Prasasti Kedukan Bukit dan kekuasaan maritim penguasa Selat Malaka.
+                  {t(
+                    "Prasasti Kedukan Bukit dan kekuasaan maritim penguasa Selat Malaka.",
+                    "Kedukan Bukit Inscription and maritime thalassocracy over the Malacca Strait."
+                  )}
                 </p>
                 <Link
                   href="/tur/kerajaan-sriwijaya"
@@ -872,17 +881,20 @@ export default function HomePage() {
             {/* Card 4: Festival Perahu Bidar (Meluncur dari KANAN) */}
             <article className="anim-right delay-300 gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
               <img
-                alt="Festival Perahu Bidar"
+                alt={t("Festival Perahu Bidar", "Bidar Boat Race Festival")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/perahu_bidar.jpg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none"></div>
               <div className="relative z-10 p-6 flex flex-col justify-end text-white items-center text-center">
                 <h3 className="text-xl font-bold text-shadow-custom leading-snug mb-1 text-white">
-                  Festival Perahu Bidar
+                  {t("Festival Perahu Bidar", "Bidar Boat Race Festival")}
                 </h3>
                 <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-90 line-clamp-2 mb-4">
-                  Ketangkasan 55 pendayung beradu cepat di atas gelombang Sungai Musi.
+                  {t(
+                    "Ketangkasan 55 pendayung beradu cepat di atas gelombang Sungai Musi.",
+                    "Prowess of 55 rowers racing across the waves of the Musi River."
+                  )}
                 </p>
                 <Link
                   href="/tur/perahu-bidar"

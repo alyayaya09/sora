@@ -32,7 +32,7 @@ type TabType = "stories" | "gambar";
 export default function FavoritPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const user = session?.user;
 
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
@@ -92,7 +92,7 @@ export default function FavoritPage() {
         body: JSON.stringify({ itemType: type, itemRef: ref }),
       });
       setFavorites((prev) => prev.filter((f) => f.id !== item.id));
-      showToast(t("Dihapus dari Favorit", "Removed from Favorites"), item.title || ref || "Item", true);
+      showToast(t("Dihapus dari Favorit", "Removed from Favorites"), getItemTitle(item), true);
     } catch {
       showToast(t("Gagal menghapus", "Failed to remove"), t("Coba lagi nanti", "Please try again later"), true);
     }
@@ -112,7 +112,7 @@ export default function FavoritPage() {
     const ref = item.item_ref || item.itemRef;
     if (type === "card" && ref) {
       try {
-        const tour = getDedicatedTour(ref);
+        const tour = getDedicatedTour(ref, lang);
         if (tour?.heroImg) return tour.heroImg;
       } catch {}
     }
@@ -128,6 +128,18 @@ export default function FavoritPage() {
     return "/jelajahi";
   };
 
+  const getItemTitle = (item: FavoriteItem) => {
+    const type = item.item_type || item.itemType;
+    const ref = item.item_ref || item.itemRef;
+    if (type === "card" && ref) {
+      try {
+        const tour = getDedicatedTour(ref, lang);
+        if (tour?.title) return tour.title;
+      } catch {}
+    }
+    return item.title || item.item_ref || item.itemRef || t("Warisan Budaya", "Cultural Heritage");
+  };
+
   const getItemSubtitle = (item: FavoriteItem) => {
     const type = item.item_type || item.itemType;
     if (type === "card") {
@@ -137,19 +149,19 @@ export default function FavoritPage() {
       const ref = item.item_ref || item.itemRef;
       if (ref) {
         try {
-          const tour = getDedicatedTour(ref);
+          const tour = getDedicatedTour(ref, lang);
           if (tour?.subtitle) return tour.subtitle;
         } catch {}
       }
-      return "Warisan peradaban dan kebudayaan Sumatera Selatan";
+      return t("Warisan peradaban dan kebudayaan Sumatera Selatan", "Civilization and cultural heritage of South Sumatra");
     }
 
     // Untuk jenis gambar
     if (item.creator && !item.creator.toLowerCase().includes("wikimedia")) {
       return item.creator;
     }
-    const name = item.title || item.item_ref || item.itemRef || "Sumatera Selatan";
-    return `Pesona visual dan keindahan warisan budaya ${name}`;
+    const name = getItemTitle(item);
+    return t(`Pesona visual dan keindahan warisan budaya ${name}`, `Visual charm and beauty of ${name} cultural heritage`);
   };
 
   if (isPending) {
@@ -296,7 +308,7 @@ export default function FavoritPage() {
                   {/* Background Image */}
                   {getItemImage(item) && (
                     <img
-                      alt={item.title || item.item_ref || item.itemRef || "Favorit"}
+                      alt={getItemTitle(item)}
                       src={getItemImage(item)!}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
@@ -312,8 +324,6 @@ export default function FavoritPage() {
                     </div>
                   )}
 
-
-
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10 pointer-events-none" />
 
@@ -321,10 +331,10 @@ export default function FavoritPage() {
                   <div className="relative z-20 flex items-center justify-end w-full">
                     <button
                       type="button"
-                      aria-label="Hapus dari Favorit"
+                      aria-label={t("Hapus dari Favorit", "Remove from Favorites")}
                       onClick={(e) => handleRemoveFavorite(e, item)}
                       className="p-1.5 rounded-full bg-black/50 hover:bg-black/80 text-red-400 hover:text-red-300 border border-white/10 backdrop-blur-md transition-all cursor-pointer shadow-md"
-                      title="Hapus dari Favorit"
+                      title={t("Hapus dari Favorit", "Remove from Favorites")}
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                         <path
@@ -346,7 +356,7 @@ export default function FavoritPage() {
                   {/* Bottom: title & subtitle */}
                   <div className="relative z-20 flex flex-col items-center text-center mt-auto">
                     <h3 className="font-sans font-semibold text-[#f5f0eb] group-hover:text-[#f3d38c] transition duration-300 leading-snug mb-1 sm:text-lg">
-                      {item.title || item.item_ref}
+                      {getItemTitle(item)}
                     </h3>
                     {getItemSubtitle(item) && (
                       <p className="text-[#cbbba7] leading-relaxed font-sans text-xs opacity-75 line-clamp-2">
