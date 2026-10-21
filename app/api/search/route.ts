@@ -3,6 +3,7 @@ import {
   checkRateLimitWithInfo,
   generateGeminiSummary,
   fetchWikipediaImage,
+  fetchSmartImage,
   generateLocalFallback,
   findLocalMatch,
   SearchResult,
@@ -81,24 +82,23 @@ export async function GET(request: NextRequest) {
       _imageSearchQuery?: string;
     } = geminiResult || generateLocalFallback(query);
 
-    // ── Fetch real image from Wikipedia / Wikimedia ───────────────────────────
+    // ── Fetch real image from References first, then other sources ───────────
     if (result.status !== "no_result") {
       const wikiTitleId =
         result._wikiTitleId || result.card1.title || query;
       const wikiTitleEn = result._wikiTitleEn;
       const imageSearchQuery = result._imageSearchQuery || result.card1.title;
 
-      // Always try to get a real web image from Wikipedia / Wikimedia Commons
-      const alreadyHasExternalImage =
-        result.card1.image &&
-        result.card1.image.startsWith("http") &&
-        !result.card1.image.startsWith("/images/");
+      const smartImg = await fetchSmartImage(
+        result.card2?.sources || [],
+        wikiTitleId,
+        wikiTitleEn,
+        imageSearchQuery,
+        query
+      );
 
-      if (!alreadyHasExternalImage) {
-        const wikiImg = await fetchWikipediaImage(wikiTitleId, wikiTitleEn, imageSearchQuery);
-        if (wikiImg) {
-          result.card1 = { ...result.card1, image: wikiImg };
-        }
+      if (smartImg) {
+        result.card1 = { ...result.card1, image: smartImg };
       }
     }
 

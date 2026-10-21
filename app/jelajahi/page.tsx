@@ -719,11 +719,12 @@ function JelajahiContent() {
                       {/* Paragraphs */}
                       <div className="flex flex-col gap-3 text-white/70 text-base leading-relaxed">
                         {result.card2.paragraphs[0] && (
-                          <p>{result.card2.paragraphs[0]}</p>
+                          <p className="whitespace-pre-line">{result.card2.paragraphs[0]}</p>
                         )}
 
                         {result.card2.paragraphs[1] && (
                           <p
+                            className="whitespace-pre-line"
                             style={
                               !expanded
                                 ? { WebkitMaskImage: "linear-gradient(black 30%, transparent 100%)", maskImage: "linear-gradient(black 30%, transparent 100%)" }
@@ -737,11 +738,11 @@ function JelajahiContent() {
                         {/* Expanded details & bullets */}
                         <div
                           className="expanded-body"
-                          style={{ maxHeight: expanded ? "600px" : "0px", opacity: expanded ? 1 : 0 }}
+                          style={{ maxHeight: expanded ? "2000px" : "0px", opacity: expanded ? 1 : 0 }}
                         >
                           <div className="flex flex-col gap-3 pt-2">
                             {result.card2.paragraphs.slice(2).map((p, idx) => (
-                              <p key={idx}>{p}</p>
+                              <p key={idx} className="whitespace-pre-line">{p}</p>
                             ))}
 
                             {result.card2.bulletPoints && result.card2.bulletPoints.length > 0 && (

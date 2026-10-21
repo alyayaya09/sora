@@ -210,6 +210,94 @@ function isValidImageUrl(url?: string | null): boolean {
   return true;
 }
 
+// ─── Fetch real image: Direct from references first, then Wikipedia & Commons ───
+export async function fetchSmartImage(
+  sources: SearchSource[] = [],
+  titleId: string,
+  titleEn?: string,
+  searchQuery?: string,
+  query?: string
+): Promise<string | null> {
+  // 1. Coba ambil foto langsung dari sumber referensi (sources) yang valid
+  if (Array.isArray(sources) && sources.length > 0) {
+    for (const src of sources) {
+      if (!src?.url) continue;
+
+      // a. Jika referensi dari Wikipedia, ambil foto artikel aslinya via REST API
+      const wikiMatch = src.url.match(/wikipedia\.org\/wiki\/([^#?]+)/i);
+      if (wikiMatch && wikiMatch[1]) {
+        const pageTitle = decodeURIComponent(wikiMatch[1]);
+        const lang = src.url.includes("en.wikipedia") ? "en" : "id";
+        try {
+          const cleanTitle = pageTitle.replace(/\s+/g, "_");
+          const res = await fetch(
+            `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanTitle)}`,
+            { headers: { "User-Agent": "SORA-App/1.0" }, signal: AbortSignal.timeout(3500) }
+          );
+          if (res.ok) {
+            const d = await res.json();
+            const img = d?.thumbnail?.source || d?.originalimage?.source;
+            if (isValidImageUrl(img)) return img;
+          }
+        } catch {}
+      }
+
+      // b. Jika referensi adalah situs web eksternal berita/budaya, ambil og:image
+      if (src.url.startsWith("http") && !src.url.includes("wikipedia.org")) {
+        try {
+          const res = await fetch(src.url, {
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)" },
+            signal: AbortSignal.timeout(3500),
+          });
+          if (res.ok) {
+            const html = await res.text();
+            const ogMatch =
+              html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+              html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i) ||
+              html.match(/<meta\s+[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i);
+            if (ogMatch && ogMatch[1]) {
+              let candidate = ogMatch[1].trim();
+              if (candidate.startsWith("//")) candidate = "https:" + candidate;
+              if (candidate.startsWith("http") && isValidImageUrl(candidate)) {
+                return candidate;
+              }
+            }
+          }
+        } catch {}
+      }
+    }
+  }
+
+  // 2. Jika di referensi tidak ada foto, cari di sumber lain (Wikipedia ID/EN + Commons)
+  const directImg = await fetchWikipediaImage(titleId, titleEn, searchQuery || query);
+  if (directImg) return directImg;
+
+  // 3. Coba cari di Wikimedia Commons dengan kata kunci regional spesifik
+  const qTopic = searchQuery || query || titleId;
+  if (qTopic) {
+    try {
+      const res = await fetch(
+        `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(qTopic + " Palembang")}&gsrnamespace=6&gsrlimit=6&prop=imageinfo&iiprop=url|mime&iiurlwidth=800&format=json&origin=*`,
+        { signal: AbortSignal.timeout(4000) }
+      );
+      if (res.ok) {
+        const d = await res.json();
+        const pages = Object.values(d?.query?.pages || {}) as any[];
+        for (const p of pages) {
+          const info = p?.imageinfo?.[0];
+          const mime = info?.mime || "";
+          const url = info?.thumburl || info?.url;
+          if (url && mime.startsWith("image/") && isValidImageUrl(url)) {
+            return url;
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return null;
+}
+
 // ─── Fetch real image: Wikipedia REST + search + Wikimedia Commons ──────────
 export async function fetchWikipediaImage(
   titleId: string,
@@ -331,6 +419,22 @@ Anda adalah SORA AI — asisten cerdas serba bisa yang ahli tentang Sumatera Sel
 
 Query pengguna: "${query}"
 
+PANDUAN UTAMA PENJAWABAN (WAJIB TEPAT PADA INTI PERTANYAAN):
+1. JAWABLAH SECARA LANGSUNG, TEPAT, DAN LENGKAP SESUAI DENGAN INTENSI PERTANYAAN:
+   - JIKA MENANYAKAN LIRIK LAGU (contoh: "lirik lagu cuk mak ilang", "lirik gending sriwijaya", "lagu daerah palembang"):
+     * Pada "highlight": Berikan pengantar 1 kalimat singkat bahwa ini adalah lirik lagu yang diminta.
+     * Pada "paragraphs": WAJIB TULISKAN SELURUH TEKS LIRIK LAGU SECARA LENGKAP BAIT DEMI BAIT (dengan baris-baris lirik rapi menggunakan \\n)! DILARANG HANYA MENULISKAN PENJELASAN SEJARAHNYA SAJA! Pengguna ingin membaca lirik aslinya.
+     * Di akhir paragraphs atau bulletPoints, sertakan arti/makna ringkas lagu dan penciptanya jika diketahui.
+   - JIKA MENANYAKAN RESEP / CARA MEMBUAT (contoh: "resep pempek", "cara masak pindang patin", "resep tekwan"):
+     * Pada "highlight": Pengantar ringkas hidangan tersebut.
+     * Pada "paragraphs": Sajikan daftar bahan-bahan lengkap dengan takaran, serta langkah-langkah pembuatan step-by-step secara terurut dan jelas!
+   - JIKA MENANYAKAN SEJARAH / MAKNA / ASAL-USUL:
+     * Sajikan sejarah kronologis, filosofi mendalam, dan fakta autentik.
+   - JIKA MENANYAKAN LOKASI / RUTE / TIKET / WISATA:
+     * Berikan informasi lokasi geografis, alamat, jam operasional, harga tiket, dan rute perjalanan.
+   - JIKA MENANYAKAN CIRI KHAS / DAFTAR / PERBEDAAN:
+     * Uraikan poin-poin karakteristik spesifiknya secara berbobot.
+
 ATURAN KLASIFIKASI:
 1. "status":"ok" — HANYA untuk entitas/topik yang BENAR-BENAR NYATA & FAKTUAL:
    - Segala hal yang nyata ada di Sumatera Selatan: kuliner khas (pempek, tekwan, pindang patin, laksan, maksuba, dll.), tempat wisata/landmark (Monpera, Jembatan Ampera, Jembatan Musi II/IV/VI, Benteng Kuto Besak, Danau Ranau, Gunung Dempo Pagaralam, Pulau Kemaro), sejarah (Sriwijaya, Kesultanan Palembang), busana (songket), adat, seni, budaya, tokoh, alam, kota, hotel, atau rekomendasi umum wisata/kuliner nyata di Sumsel.
@@ -343,8 +447,8 @@ ATURAN KLASIFIKASI:
    - Spam acak (contoh: "asdfghjkl"), kata tanpa arti, judi online, obat terlarang, konten dewasa, atau ujaran kebencian.
 
 PENTING:
-- Jika subjek nyata dan faktual di Sumsel, jawab dengan informatif dan sertakan 2-3 sumber referensi NYATA dengan URL valid (Wikipedia, portal resmi pariwisata pemprov sumselprov.go.id, indonesia.travel, situs berita kredibel kompas.com, detik.com).
-- Berikan "imageSearchQuery": kata kunci spesifik terbaik untuk mencari foto asli (contoh: "Pempek Palembang", "Songket Palembang", "Monumen Perjuangan Rakyat Palembang", "Jembatan Ampera").
+- Sertakan 2-3 sumber referensi NYATA dengan URL valid (Wikipedia, portal resmi pemprov sumselprov.go.id, indonesia.travel, situs berita kredibel kompas.com, detik.com).
+- Berikan "imageSearchQuery": kata kunci spesifik terbaik untuk mencari foto asli (contoh: "Pempek Palembang", "Lagu Cuk Mak Ilang Palembang", "Songket Palembang", "Jembatan Ampera").
 
 Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
 {
@@ -354,16 +458,16 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
   "imageSearchQuery": "Kata kunci pencarian foto spesifik",
   "titleWikipediaId": "Judul halaman Wikipedia Bahasa Indonesia",
   "titleWikipediaEn": "Wikipedia page title in English",
-  "subtitle": "Satu kalimat ringkasan yang informatif",
-  "highlight": "Satu paragraf pembuka yang menarik dan berbobot",
+  "subtitle": "Satu kalimat ringkasan yang langsung menjawab pertanyaan",
+  "highlight": "Jawaban langsung atau pembuka yang langsung menjawab inti pertanyaan",
   "paragraphs": [
-    "Paragraf 1: penjelasan detail, konteks, dan sejarah/relevansinya",
-    "Paragraf 2: variasi, rekomendasi, atau fakta menarik"
+    "Paragraf/Bait 1",
+    "Paragraf/Bait 2",
+    "Paragraf/Bait 3"
   ],
   "bulletPoints": [
-    {"label": "Kategori / Jenis", "text": "Detail 1"},
-    {"label": "Ciri Khas", "text": "Detail 2"},
-    {"label": "Rekomendasi", "text": "Detail 3"}
+    {"label": "Label 1", "text": "Detail 1"},
+    {"label": "Label 2", "text": "Detail 2"}
   ],
   "sources": [
     {
@@ -371,12 +475,6 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
       "url": "https://...",
       "domain": "id.wikipedia.org",
       "excerpt": "Kutipan atau ringkasan informasi"
-    },
-    {
-      "title": "Nama Sumber 2",
-      "url": "https://...",
-      "domain": "kompas.com",
-      "excerpt": "Kutipan informasi relevan"
     }
   ],
   "matchedThemeSlug": "sejarah | rumah-adat | kain-pakaian | bahasa-aksara | tari-musik | kuliner | pertunjukan-lisan | upacara-adat | null"
@@ -384,14 +482,16 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
 `;
 
   try {
-    // Priority order: models that have available free-tier quota first
+    // Priority order: models that have available active free-tier quota first
     const models = [
-      "gemini-3-flash-preview",
+      "gemini-flash-lite-latest",
       "gemini-3.5-flash-lite",
-      "gemini-3.1-flash-lite",
-      "gemini-3.8-flash",
-      "gemini-3.6-flash",
       "gemini-3.5-flash",
+      "gemma-4-26b-a4b-it",
+      "gemini-3.1-flash-lite",
+      "gemini-flash-latest",
+      "gemini-3.8-flash",
+      "gemini-3.7-flash",
     ];
     let jsonText = "";
 
