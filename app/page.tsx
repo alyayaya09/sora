@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { themes } from "../data/sora-content";
@@ -64,6 +64,44 @@ export default function HomePage() {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Auto-mute video saat hero keluar dari viewport, unmute saat kembali terlihat
+  useEffect(() => {
+    const heroEl = document.getElementById("hero-ampera");
+    if (!heroEl || !videoRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const video = videoRef.current;
+        if (!video) return;
+        if (!entry.isIntersecting) {
+          // Hero sudah tidak terlihat → mute video
+          video.muted = true;
+          setIsMuted(true);
+        } else {
+          // Hero terlihat kembali → kembalikan state mute sesuai tombol
+          // (tidak paksa unmute, biarkan user yang kontrol)
+        }
+      },
+      { threshold: 0.05 } // mute jika < 5% hero yang terlihat
+    );
+
+    observer.observe(heroEl);
+    return () => observer.disconnect();
+  }, []);
+
+  // Cleanup: mute video saat komponen unmount (navigasi ke halaman lain)
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        try {
+          videoRef.current.muted = true;
+          videoRef.current.pause();
+        } catch {}
+      }
+    };
   }, []);
 
   useEffect(() => {
