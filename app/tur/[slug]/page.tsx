@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getDedicatedTour } from "../../../data/sora-content";
@@ -27,6 +27,10 @@ export default function TourDetailPage({ params }: TourPageProps) {
     "konten-terkait",
   ];
 
+  const [currentSection, setCurrentSection] = useState(0);
+  const [isPointerActive, setIsPointerActive] = useState(false);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     // Slide in narrative observer matching LKONTEN.MD
     const narrativeCards = document.querySelectorAll(".slide-in-narrative");
@@ -42,18 +46,57 @@ export default function TourDetailPage({ params }: TourPageProps) {
     );
     narrativeCards.forEach((c) => observer.observe(c));
 
-    const handleScroll = () => {
+    const updateScrollState = () => {
       const totalScroll =
         document.documentElement.scrollHeight - window.innerHeight;
       if (totalScroll > 0) {
         setScrollProgress((window.scrollY / totalScroll) * 100);
       }
+      const scrollPos = window.scrollY;
+      const effectivePos = scrollPos + window.innerHeight * 0.3;
+      if (scrollPos <= 60) {
+        setCurrentSection(0);
+        return;
+      }
+      let activeIndex = 0;
+      for (let i = 0; i < sectionIds.length; i++) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && effectivePos >= el.offsetTop) {
+          activeIndex = i;
+        }
+      }
+      setCurrentSection(activeIndex);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    updateScrollState();
+    window.addEventListener("scroll", updateScrollState, { passive: true });
     return () => {
       observer.disconnect();
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", updateScrollState);
+    };
+  }, []);
+
+  // Idle auto-hide pointer tracking (muncul saat pointer digerakkan, sembunyi saat pointer diam)
+  useEffect(() => {
+    const handlePointerActivity = () => {
+      setIsPointerActive(true);
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+      idleTimerRef.current = setTimeout(() => {
+        setIsPointerActive(false);
+      }, 2500);
+    };
+
+    window.addEventListener("mousemove", handlePointerActivity, { passive: true });
+    window.addEventListener("scroll", handlePointerActivity, { passive: true });
+    window.addEventListener("touchstart", handlePointerActivity, { passive: true });
+
+    return () => {
+      window.removeEventListener("mousemove", handlePointerActivity);
+      window.removeEventListener("scroll", handlePointerActivity);
+      window.removeEventListener("touchstart", handlePointerActivity);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
   }, []);
 
@@ -400,7 +443,11 @@ export default function TourDetailPage({ params }: TourPageProps) {
              FLOATING MINIMALIST ARROW CONTROLS (EXACT LKONTEN.MD)
              ========================================== */}
         <aside
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-opacity duration-300 opacity-100 pointer-events-auto"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-700 ease-in-out ${
+            currentSection >= 1 && isPointerActive
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
           id="navControlsAside"
         >
           <div
