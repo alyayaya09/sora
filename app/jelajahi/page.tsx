@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SearchResult } from "@/lib/gemini";
 import { themes } from "@/data/sora-content";
 import LoveButton from "@/components/LoveButton";
+import { useSession } from "@/lib/auth-client";
 
 // ─── Orb / Ambient Background ───
 function AmbientBackground() {
@@ -50,9 +51,91 @@ function JelajahiContent() {
   const [expanded, setExpanded] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const { data: session } = useSession();
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioReqIdRef = useRef(0);
+
+  // Dapatkan storage key spesifik akun yang sedang aktif
+  const getHistoryStorageKey = useCallback(() => {
+    if (session?.user?.id) {
+      return `sora_search_history_user_${session.user.id}`;
+    }
+    if (session?.user?.email) {
+      return `sora_search_history_user_${session.user.email}`;
+    }
+    return "sora_search_history_guest";
+  }, [session?.user?.id, session?.user?.email]);
+
+  // Muat riwayat pencarian saat mount atau saat sesi akun berganti
+  useEffect(() => {
+    try {
+      const key = getHistoryStorageKey();
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setSearchHistory(parsed);
+          return;
+        }
+      }
+      setSearchHistory([]);
+    } catch {
+      setSearchHistory([]);
+    }
+  }, [getHistoryStorageKey]);
+
+  // Simpan pertanyaan ke riwayat akun saat ini
+  const saveToHistory = useCallback((term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed || trimmed.length < 2) return;
+    try {
+      const key = getHistoryStorageKey();
+      setSearchHistory((prev) => {
+        const filtered = prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase());
+        const updated = [trimmed, ...filtered].slice(0, 15);
+        localStorage.setItem(key, JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.warn("Gagal menyimpan riwayat:", e);
+    }
+  }, [getHistoryStorageKey]);
+
+  // Hapus satu item pertanyaan dari riwayat akun
+  const removeFromHistory = (itemToRemove: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      const key = getHistoryStorageKey();
+      setSearchHistory((prev) => {
+        const updated = prev.filter((item) => item !== itemToRemove);
+        localStorage.setItem(key, JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.warn("Gagal menghapus riwayat:", e);
+    }
+  };
+
+  // Hapus seluruh riwayat akun
+  const clearAllHistory = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      const key = getHistoryStorageKey();
+      localStorage.removeItem(key);
+      setSearchHistory([]);
+    } catch (e) {
+      console.warn("Gagal membersihkan riwayat:", e);
+    }
+  };
 
   // Fungsi penghenti audio total (HTML5 Audio + SpeechSynthesis)
   const stopAudio = useCallback(() => {
@@ -143,13 +226,14 @@ function JelajahiContent() {
     if (urlQuery) {
       setQuery(urlQuery);
       setInputValue(urlQuery);
+      saveToHistory(urlQuery);
       performSearch(urlQuery);
     } else {
       setQuery("");
       setInputValue("");
       setResult(null);
     }
-  }, [urlQuery, stopAudio]);
+  }, [urlQuery, stopAudio, saveToHistory]);
 
   // Ambient parallax effect on mouse move
   useEffect(() => {
@@ -217,6 +301,7 @@ function JelajahiContent() {
     stopAudio();
     const trimmed = q.trim();
     if (!trimmed) return;
+    saveToHistory(trimmed);
     setQuery(trimmed);
     setInputValue(trimmed);
     setShowSuggestions(false);
@@ -425,22 +510,93 @@ function JelajahiContent() {
                   </button>
                 </form>
 
-                {/* Suggestions dropdown */}
+                {/* Search History & Suggestions dropdown */}
                 {showSuggestions && (
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#141014]/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl overflow-hidden z-[200]">
-                    {SUGGESTIONS.filter(
-                      (s) => s.toLowerCase().includes(inputValue.toLowerCase()) || inputValue.length < 2
-                    ).map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onMouseDown={() => handleSearch(s)}
-                        className="w-full flex items-center gap-3 px-5 py-3 hover:bg-white/[0.05] text-left transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-base text-amber-400/60 shrink-0">history</span>
-                        <span className="text-sm text-white/75 truncate">{s}</span>
-                      </button>
-                    ))}
+                    {searchHistory.length > 0 ? (
+                      <div>
+                        {/* Header Riwayat Akun */}
+                        <div className="flex items-center justify-between px-5 pt-3.5 pb-2 border-b border-white/[0.06] select-none">
+                          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/45">
+                            <span className="material-symbols-outlined text-[15px] text-amber-400/80">history</span>
+                            <span>Riwayat Pertanyaan {session?.user?.name ? `(${session.user.name})` : ""}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onMouseDown={clearAllHistory}
+                            className="text-[11px] text-white/35 hover:text-rose-400 transition-colors font-medium cursor-pointer"
+                          >
+                            Hapus Semua
+                          </button>
+                        </div>
+
+                        {/* List Riwayat Pertanyaan */}
+                        <div className="max-h-72 overflow-y-auto py-1 divide-y divide-white/[0.03]">
+                          {(inputValue.trim()
+                            ? searchHistory.filter((item) =>
+                                item.toLowerCase().includes(inputValue.toLowerCase())
+                              )
+                            : searchHistory
+                          ).map((item, idx) => (
+                            <div
+                              key={idx}
+                              onMouseDown={() => handleSearch(item)}
+                              className="group flex items-center justify-between gap-3 px-5 py-2.5 hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                            >
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <span className="material-symbols-outlined text-base text-amber-400/60 shrink-0 group-hover:text-amber-400 transition-colors">
+                                  history
+                                </span>
+                                <span className="text-sm text-white/80 group-hover:text-white truncate">
+                                  {item}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onMouseDown={(e) => removeFromHistory(item, e)}
+                                title="Hapus pertanyaan ini"
+                                aria-label={`Hapus ${item}`}
+                                className="p-1 rounded-full text-white/30 hover:text-rose-300 hover:bg-white/10 transition-colors shrink-0 flex items-center justify-center cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">close</span>
+                              </button>
+                            </div>
+                          ))}
+
+                          {inputValue.trim() &&
+                            searchHistory.filter((item) =>
+                              item.toLowerCase().includes(inputValue.toLowerCase())
+                            ).length === 0 && (
+                              <div className="px-5 py-3 text-xs text-white/40 italic">
+                                Tidak ada riwayat yang cocok dengan "{inputValue}"
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        {/* Header Saran Rekomendasi saat riwayat masih kosong */}
+                        <div className="flex items-center gap-2 px-5 pt-3.5 pb-2 border-b border-white/[0.06] text-xs font-semibold uppercase tracking-wider text-white/45 select-none">
+                          <span className="material-symbols-outlined text-[15px] text-amber-400/80">lightbulb</span>
+                          <span>Rekomendasi Pencarian Budaya</span>
+                        </div>
+                        <div className="max-h-72 overflow-y-auto py-1.5">
+                          {SUGGESTIONS.filter(
+                            (s) => s.toLowerCase().includes(inputValue.toLowerCase()) || inputValue.length < 2
+                          ).map((s, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onMouseDown={() => handleSearch(s)}
+                              className="w-full flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-base text-amber-400/60 shrink-0">explore</span>
+                              <span className="text-sm text-white/75 hover:text-white truncate">{s}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
