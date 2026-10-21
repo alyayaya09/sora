@@ -464,9 +464,6 @@ function JelajahiContent() {
           {!loading && !result && !query && (
             <div className="flex flex-col gap-10 py-6">
               <div className="flex flex-col items-center text-center gap-3 max-w-2xl mx-auto">
-                <span className="px-3.5 py-1 rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-300 text-xs font-semibold tracking-wider uppercase">
-                  Pusat Eksplorasi Budaya
-                </span>
                 <h2 className="text-3xl md:text-4xl text-white font-serif font-medium">
                   Jelajahi Khazanah Bumi Sriwijaya
                 </h2>
@@ -490,9 +487,6 @@ function JelajahiContent() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
                     <div className="relative z-10 flex flex-col gap-1">
-                      <span className="text-[10px] uppercase font-semibold text-amber-300 tracking-wider">
-                        {theme.guidebook[0] || "Tema Budaya"}
-                      </span>
                       <h3 className="text-base md:text-lg font-medium text-white group-hover:text-amber-200 transition-colors">
                         {theme.title}
                       </h3>
