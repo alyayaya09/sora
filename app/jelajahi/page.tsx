@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useRef, useEffect, Suspense } from "react";
+import React, { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchResult } from "@/lib/gemini";
 import { themes } from "@/data/sora-content";
 import LoveButton from "@/components/LoveButton";
+import { useSession } from "@/lib/auth-client";
 
 // ─── Orb / Ambient Background ───
 function AmbientBackground() {
@@ -50,8 +51,116 @@ function JelajahiContent() {
   const [expanded, setExpanded] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const { data: session } = useSession();
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioReqIdRef = useRef(0);
+
+  // Dapatkan storage key spesifik akun yang sedang aktif
+  const getHistoryStorageKey = useCallback(() => {
+    if (session?.user?.id) {
+      return `sora_search_history_user_${session.user.id}`;
+    }
+    if (session?.user?.email) {
+      return `sora_search_history_user_${session.user.email}`;
+    }
+    return "sora_search_history_guest";
+  }, [session?.user?.id, session?.user?.email]);
+
+  // Muat riwayat pencarian saat mount atau saat sesi akun berganti
+  useEffect(() => {
+    try {
+      const key = getHistoryStorageKey();
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setSearchHistory(parsed);
+          return;
+        }
+      }
+      setSearchHistory([]);
+    } catch {
+      setSearchHistory([]);
+    }
+  }, [getHistoryStorageKey]);
+
+  // Simpan pertanyaan ke riwayat akun saat ini
+  const saveToHistory = useCallback((term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed || trimmed.length < 2) return;
+    try {
+      const key = getHistoryStorageKey();
+      setSearchHistory((prev) => {
+        const filtered = prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase());
+        const updated = [trimmed, ...filtered].slice(0, 15);
+        localStorage.setItem(key, JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.warn("Gagal menyimpan riwayat:", e);
+    }
+  }, [getHistoryStorageKey]);
+
+  // Hapus satu item pertanyaan dari riwayat akun
+  const removeFromHistory = (itemToRemove: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      const key = getHistoryStorageKey();
+      setSearchHistory((prev) => {
+        const updated = prev.filter((item) => item !== itemToRemove);
+        localStorage.setItem(key, JSON.stringify(updated));
+        return updated;
+      });
+    } catch (e) {
+      console.warn("Gagal menghapus riwayat:", e);
+    }
+  };
+
+  // Hapus seluruh riwayat akun
+  const clearAllHistory = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      const key = getHistoryStorageKey();
+      localStorage.removeItem(key);
+      setSearchHistory([]);
+    } catch (e) {
+      console.warn("Gagal membersihkan riwayat:", e);
+    }
+  };
+
+  // Fungsi penghenti audio total (HTML5 Audio + SpeechSynthesis)
+  const stopAudio = useCallback(() => {
+    audioReqIdRef.current += 1;
+    if (activeAudioRef.current) {
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.currentTime = 0;
+      } catch {}
+      activeAudioRef.current = null;
+    }
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
+    setIsPlaying(false);
+  }, []);
+
+  // Cleanup audio saat komponen unmount (beralih ke halaman lain)
+  useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, [stopAudio]);
 
   // Trigger custom toast notification
   const triggerToast = (msg: string, icon = "mic") => {
@@ -78,6 +187,7 @@ function JelajahiContent() {
 
   // Fetch search results from backend API
   const performSearch = async (searchTerm: string) => {
+    stopAudio();
     const term = searchTerm.trim();
     if (!term) {
       setResult(null);
@@ -85,16 +195,19 @@ function JelajahiContent() {
     }
 
     setLoading(true);
-    // Stop any ongoing audio
-    if (activeAudioRef.current) {
-      activeAudioRef.current.pause();
-      activeAudioRef.current = null;
-    }
-    setIsPlaying(false);
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
       if (!res.ok) {
+        if (res.status === 429) {
+          const errData = await res.json().catch(() => ({}));
+          triggerToast(
+            errData?.error || "Terlalu banyak pencarian. Silakan tunggu beberapa detik.",
+            "hourglass_empty"
+          );
+          setLoading(false);
+          return;
+        }
         throw new Error(`Gagal memuat data (${res.status})`);
       }
       const data: SearchResult = await res.json();
@@ -109,16 +222,18 @@ function JelajahiContent() {
 
   // Sync state and perform search whenever URL query param changes
   useEffect(() => {
+    stopAudio();
     if (urlQuery) {
       setQuery(urlQuery);
       setInputValue(urlQuery);
+      saveToHistory(urlQuery);
       performSearch(urlQuery);
     } else {
       setQuery("");
       setInputValue("");
       setResult(null);
     }
-  }, [urlQuery]);
+  }, [urlQuery, stopAudio, saveToHistory]);
 
   // Ambient parallax effect on mouse move
   useEffect(() => {
@@ -183,8 +298,10 @@ function JelajahiContent() {
   };
 
   const handleSearch = (q: string) => {
+    stopAudio();
     const trimmed = q.trim();
     if (!trimmed) return;
+    saveToHistory(trimmed);
     setQuery(trimmed);
     setInputValue(trimmed);
     setShowSuggestions(false);
@@ -195,18 +312,14 @@ function JelajahiContent() {
   // Audio Playback Handler (PRD F3 & F14: Gemini TTS with "audio belum tersedia" fallback)
   const handleToggleAudio = async () => {
     if (isPlaying) {
-      if (activeAudioRef.current) {
-        activeAudioRef.current.pause();
-        activeAudioRef.current = null;
-      }
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      setIsPlaying(false);
+      stopAudio();
       return;
     }
 
     if (!result || !result.card2) return;
+
+    audioReqIdRef.current += 1;
+    const currentReqId = audioReqIdRef.current;
 
     setIsPlaying(true);
     triggerToast("Menyiapkan audio SORA...", "volume_up");
@@ -220,7 +333,25 @@ function JelajahiContent() {
         body: JSON.stringify({ text: textToSpeak }),
       });
 
+      if (audioReqIdRef.current !== currentReqId) {
+        return;
+      }
+
+      if (res.status === 429) {
+        const errData = await res.json().catch(() => ({}));
+        setIsPlaying(false);
+        triggerToast(
+          errData?.error || "Terlalu banyak permintaan suara. Silakan coba sebentar lagi.",
+          "volume_off"
+        );
+        return;
+      }
+
       const data = await res.json().catch(() => ({}));
+
+      if (audioReqIdRef.current !== currentReqId) {
+        return;
+      }
 
       if (data?.available && data?.audioBase64) {
         const audioSrc = `data:${data.mimeType || "audio/wav"};base64,${data.audioBase64}`;
@@ -238,12 +369,20 @@ function JelajahiContent() {
           triggerToast("audio belum tersedia", "volume_off");
         };
 
+        if (audioReqIdRef.current !== currentReqId) {
+          audio.pause();
+          return;
+        }
+
         await audio.play();
         return;
       }
 
       // If external Gemini TTS is unavailable, try browser SpeechSynthesis as fallback
       if ("speechSynthesis" in window) {
+        if (audioReqIdRef.current !== currentReqId) {
+          return;
+        }
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
         utterance.lang = "id-ID";
         utterance.rate = 0.95;
@@ -253,6 +392,9 @@ function JelajahiContent() {
           triggerToast("audio belum tersedia", "volume_off");
         };
         window.speechSynthesis.cancel();
+        if (audioReqIdRef.current !== currentReqId) {
+          return;
+        }
         window.speechSynthesis.speak(utterance);
         return;
       }
@@ -290,6 +432,7 @@ function JelajahiContent() {
         .eq-bar:nth-child(3){animation-delay:.22s}
         .eq-bar:nth-child(4){animation-delay:.34s}
         .expanded-body{transition:max-height .55s cubic-bezier(.2,.8,.2,1),opacity .4s ease;overflow:hidden}
+        .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}.scrollbar-hide::-webkit-scrollbar{display:none}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
       `}</style>
 
@@ -368,22 +511,58 @@ function JelajahiContent() {
                   </button>
                 </form>
 
-                {/* Suggestions dropdown */}
-                {showSuggestions && (
+                {/* Search History dropdown — hanya muncul jika ada riwayat */}
+                {showSuggestions && searchHistory.length > 0 && (
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#141014]/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl overflow-hidden z-[200]">
-                    {SUGGESTIONS.filter(
-                      (s) => s.toLowerCase().includes(inputValue.toLowerCase()) || inputValue.length < 2
-                    ).map((s, i) => (
+                    {/* Header Riwayat */}
+                    <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-white/[0.06] select-none">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-white/40">Riwayat Pencarian</span>
                       <button
-                        key={i}
                         type="button"
-                        onMouseDown={() => handleSearch(s)}
-                        className="w-full flex items-center gap-3 px-5 py-3 hover:bg-white/[0.05] text-left transition-colors"
+                        onMouseDown={clearAllHistory}
+                        className="text-[11px] text-white/35 hover:text-rose-400 transition-colors font-medium cursor-pointer"
                       >
-                        <span className="material-symbols-outlined text-base text-amber-400/60 shrink-0">history</span>
-                        <span className="text-sm text-white/75 truncate">{s}</span>
+                        Hapus Semua
                       </button>
-                    ))}
+                    </div>
+
+                    {/* List Riwayat — scroll tersembunyi, tanpa icon */}
+                    <div className="max-h-64 overflow-y-auto scrollbar-hide py-1 divide-y divide-white/[0.04]">
+                      {(inputValue.trim()
+                        ? searchHistory.filter((item) =>
+                            item.toLowerCase().includes(inputValue.toLowerCase())
+                          )
+                        : searchHistory
+                      ).map((item, idx) => (
+                        <div
+                          key={idx}
+                          onMouseDown={() => handleSearch(item)}
+                          className="group flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-white/[0.06] text-left transition-colors cursor-pointer"
+                        >
+                          <span className="text-sm text-white/75 group-hover:text-white truncate flex-1">
+                            {item}
+                          </span>
+                          <button
+                            type="button"
+                            onMouseDown={(e) => removeFromHistory(item, e)}
+                            title="Hapus"
+                            aria-label={`Hapus ${item}`}
+                            className="p-0.5 rounded-full text-white/25 hover:text-rose-300 transition-colors shrink-0 flex items-center justify-center cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">close</span>
+                          </button>
+                        </div>
+                      ))}
+
+                      {inputValue.trim() &&
+                        searchHistory.filter((item) =>
+                          item.toLowerCase().includes(inputValue.toLowerCase())
+                        ).length === 0 && (
+                          <div className="px-4 py-3 text-xs text-white/35 italic">
+                            Tidak ada riwayat yang cocok
+                          </div>
+                        )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -407,9 +586,6 @@ function JelajahiContent() {
           {!loading && !result && !query && (
             <div className="flex flex-col gap-10 py-6">
               <div className="flex flex-col items-center text-center gap-3 max-w-2xl mx-auto">
-                <span className="px-3.5 py-1 rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-300 text-xs font-semibold tracking-wider uppercase">
-                  Pusat Eksplorasi Budaya
-                </span>
                 <h2 className="text-3xl md:text-4xl text-white font-serif font-medium">
                   Jelajahi Khazanah Bumi Sriwijaya
                 </h2>
@@ -433,9 +609,6 @@ function JelajahiContent() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
                     <div className="relative z-10 flex flex-col gap-1">
-                      <span className="text-[10px] uppercase font-semibold text-amber-300 tracking-wider">
-                        {theme.guidebook[0] || "Tema Budaya"}
-                      </span>
                       <h3 className="text-base md:text-lg font-medium text-white group-hover:text-amber-200 transition-colors">
                         {theme.title}
                       </h3>
@@ -541,38 +714,35 @@ function JelajahiContent() {
                         size="sm"
                       />
                     </div>
-                    {result.card1.image && !result.card1.image.startsWith("/images/") ? (
+                    {result.card1.image ? (
                       <img
                         src={result.card1.image}
-                        alt={result.card1.title}
+                        alt={result.card1.title || query}
                         className="w-full h-full object-cover rounded-3xl"
                         draggable={false}
                         onError={(e) => {
-                          // Jika gambar gagal load, sembunyikan elemen
-                          (e.target as HTMLImageElement).style.display = "none";
+                          const target = e.target as HTMLImageElement;
+                          if (!target.src.includes("/images/ampera_hero.jpg")) {
+                            target.src = "/images/ampera_hero.jpg";
+                          }
                         }}
                       />
                     ) : (
-                      // Elegant dark gradient fallback
-                      <div className="w-full h-full rounded-3xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#3a0a14] via-[#0d0d0f] to-[#1a1200]" />
-                        <div className="absolute inset-0" style={{
-                          background: "radial-gradient(ellipse at 30% 40%, rgba(212,175,55,0.12) 0%, transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(107,29,47,0.25) 0%, transparent 55%)"
-                        }} />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20">
-                          <span className="material-symbols-outlined text-6xl">photo_camera</span>
-                          <span className="text-xs tracking-widest uppercase">{result.card1.title}</span>
-                        </div>
-                      </div>
+                      <img
+                        src="/images/ampera_hero.jpg"
+                        alt={result.card1.title || query || "Sumatera Selatan"}
+                        className="w-full h-full object-cover rounded-3xl"
+                        draggable={false}
+                      />
                     )}
                     {/* Label sumber foto */}
-                    {result.card1.image && !result.card1.image.startsWith("/images/") && (
-                      <div className="absolute bottom-3 right-4 pointer-events-none">
-                        <span className="text-[9px] font-medium text-white/35 tracking-wider uppercase bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                          Wikimedia Commons
-                        </span>
-                      </div>
-                    )}
+                    <div className="absolute bottom-3 right-4 pointer-events-none">
+                      <span className="text-[9px] font-medium text-white/50 tracking-wider uppercase bg-black/60 px-2.5 py-0.5 rounded-full backdrop-blur-md border border-white/10">
+                        {result.card1.image && result.card1.image.startsWith("http")
+                          ? (result.card1.image.includes("wikipedia.org") ? "Wikimedia Commons" : "Dokumentasi Budaya")
+                          : "SORA Koleksi Otentik"}
+                      </span>
+                    </div>
                   </div>
 
 
@@ -668,11 +838,12 @@ function JelajahiContent() {
                       {/* Paragraphs */}
                       <div className="flex flex-col gap-3 text-white/70 text-base leading-relaxed">
                         {result.card2.paragraphs[0] && (
-                          <p>{result.card2.paragraphs[0]}</p>
+                          <p className="whitespace-pre-line">{result.card2.paragraphs[0]}</p>
                         )}
 
                         {result.card2.paragraphs[1] && (
                           <p
+                            className="whitespace-pre-line"
                             style={
                               !expanded
                                 ? { WebkitMaskImage: "linear-gradient(black 30%, transparent 100%)", maskImage: "linear-gradient(black 30%, transparent 100%)" }
@@ -686,11 +857,11 @@ function JelajahiContent() {
                         {/* Expanded details & bullets */}
                         <div
                           className="expanded-body"
-                          style={{ maxHeight: expanded ? "600px" : "0px", opacity: expanded ? 1 : 0 }}
+                          style={{ maxHeight: expanded ? "2000px" : "0px", opacity: expanded ? 1 : 0 }}
                         >
                           <div className="flex flex-col gap-3 pt-2">
                             {result.card2.paragraphs.slice(2).map((p, idx) => (
-                              <p key={idx}>{p}</p>
+                              <p key={idx} className="whitespace-pre-line">{p}</p>
                             ))}
 
                             {result.card2.bulletPoints && result.card2.bulletPoints.length > 0 && (
@@ -778,18 +949,6 @@ function JelajahiContent() {
         </div>
       </main>
 
-      {/* ── FOOTER (PRD Bagian 5) ── */}
-      <footer className="relative z-10 w-full border-t border-white/10 py-6 mt-4">
-        <div className="max-w-7xl mx-auto px-5 md:px-12 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-white/30">
-            <span className="font-bold bg-gradient-to-r from-[#FDE047] via-[#E9C176] to-[#DC2626] bg-clip-text text-transparent select-none text-base">SORA.Culture</span>
-            <span>© Muhammad Firly Marezky & M. Rifqy Aunur Rahman</span>
-            <span className="text-white/15">•</span>
-            <span className="text-white/35 font-medium">2026</span>
-          </div>
-          <span className="text-xs text-white/20">Platform AI Warisan Budaya Sumatera Selatan</span>
-        </div>
-      </footer>
     </>
   );
 }

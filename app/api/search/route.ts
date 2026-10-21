@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  checkRateLimit,
+  checkRateLimitWithInfo,
   generateGeminiSummary,
   fetchWikipediaImage,
+  fetchSmartImage,
   generateLocalFallback,
   findLocalMatch,
+  resolveContextualImage,
   SearchResult,
   geminiDebugLogs,
 } from "@/lib/gemini";
@@ -24,12 +26,30 @@ export async function GET(request: NextRequest) {
     }
 
     const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-    const allowed = checkRateLimit(ip, 30, 60_000);
-    if (!allowed) {
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "127.0.0.1";
+    const rateLimit = checkRateLimitWithInfo(`search_${ip}`, 30, 60_000);
+
+    const rateLimitHeaders = {
+      "X-RateLimit-Limit": String(rateLimit.limit),
+      "X-RateLimit-Remaining": String(rateLimit.remaining),
+      "X-RateLimit-Reset": String(rateLimit.resetSeconds),
+    };
+
+    if (!rateLimit.allowed) {
       return NextResponse.json(
-        { error: "Terlalu banyak permintaan. Silakan coba sebentar lagi." },
-        { status: 429 }
+        {
+          error: "Terlalu banyak permintaan pencarian. Silakan coba sebentar lagi.",
+          retryAfter: rateLimit.resetSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders,
+            "Retry-After": String(rateLimit.resetSeconds),
+          },
+        }
       );
     }
 
@@ -63,31 +83,39 @@ export async function GET(request: NextRequest) {
       _imageSearchQuery?: string;
     } = geminiResult || generateLocalFallback(query);
 
-    // ── Fetch real image from Wikipedia / Wikimedia ───────────────────────────
+    // ── Fetch real image from References first, then other sources ───────────
     if (result.status !== "no_result") {
       const wikiTitleId =
         result._wikiTitleId || result.card1.title || query;
       const wikiTitleEn = result._wikiTitleEn;
       const imageSearchQuery = result._imageSearchQuery || result.card1.title;
 
-      // Always try to get a real web image from Wikipedia / Wikimedia Commons
-      const alreadyHasExternalImage =
-        result.card1.image &&
-        result.card1.image.startsWith("http") &&
-        !result.card1.image.startsWith("/images/");
-
-      if (!alreadyHasExternalImage) {
-        const wikiImg = await fetchWikipediaImage(wikiTitleId, wikiTitleEn, imageSearchQuery);
-        if (wikiImg) {
-          result.card1 = { ...result.card1, image: wikiImg };
-        }
+      let smartImg: string | null = null;
+      // Ambil foto dari web/Wikipedia jika belum ada foto spesifik lokal
+      if (!result.card1.image || result.card1.image === "/images/ampera_hero.jpg") {
+        smartImg = await fetchSmartImage(
+          result.card2?.sources || [],
+          wikiTitleId,
+          wikiTitleEn,
+          imageSearchQuery,
+          query
+        );
       }
+
+      // Pastikan SELALU ada foto yang sesuai konteks pertanyaan (tidak pernah kosong)
+      const finalImage = resolveContextualImage(
+        query,
+        result.card1?.title,
+        result.card3?.themeSlug,
+        smartImg || result.card1?.image
+      );
+      result.card1 = { ...result.card1, image: finalImage };
     }
 
     // Remove internal helper fields before sending to client
     const { _wikiTitleId, _wikiTitleEn, _imageSearchQuery, ...cleanResult } = result;
 
-    return NextResponse.json(cleanResult);
+    return NextResponse.json(cleanResult, { headers: rateLimitHeaders });
   } catch (error: any) {
     console.error("Search API route error:", error);
     return NextResponse.json(

@@ -1,16 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit } from "@/lib/gemini";
+import { checkRateLimitWithInfo } from "@/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-    const allowed = checkRateLimit(`tts_${ip}`, 15, 60_000); // 15 requests per minute
-    if (!allowed) {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "127.0.0.1";
+    const rateLimit = checkRateLimitWithInfo(`tts_${ip}`, 15, 60_000); // 15 requests per minute
+
+    const rateLimitHeaders = {
+      "X-RateLimit-Limit": String(rateLimit.limit),
+      "X-RateLimit-Remaining": String(rateLimit.remaining),
+      "X-RateLimit-Reset": String(rateLimit.resetSeconds),
+    };
+
+    if (!rateLimit.allowed) {
       return NextResponse.json(
-        { available: false, error: "Terlalu banyak permintaan suara. Silakan coba sebentar lagi." },
-        { status: 429 }
+        {
+          available: false,
+          error: "Terlalu banyak permintaan suara. Silakan coba sebentar lagi.",
+          message: "audio belum tersedia",
+          retryAfter: rateLimit.resetSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders,
+            "Retry-After": String(rateLimit.resetSeconds),
+          },
+        }
       );
     }
 
@@ -20,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (!text) {
       return NextResponse.json(
         { available: false, error: "Teks tidak boleh kosong" },
-        { status: 400 }
+        { status: 400, headers: rateLimitHeaders }
       );
     }
 

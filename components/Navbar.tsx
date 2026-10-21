@@ -7,6 +7,7 @@ import { useSession, signOut } from "../lib/auth-client";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [navVisible, setNavVisible] = useState(true);
   const [lang, setLang] = useState<"ID" | "EN">("ID");
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -14,12 +15,46 @@ export default function Navbar() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
+  // Unified visibility: show at top always, show on scroll/mousemove, hide after 2s idle
   useEffect(() => {
+    let hideTimer: ReturnType<typeof setTimeout>;
+
+    const scheduleHide = () => {
+      clearTimeout(hideTimer);
+      if (window.scrollY > 40) {
+        hideTimer = setTimeout(() => {
+          setNavVisible(false);
+        }, 2000);
+      }
+    };
+
+    const handleActivity = () => {
+      setNavVisible(true);
+      scheduleHide();
+    };
+
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
+      if (window.scrollY <= 40) {
+        // At the very top: always show, cancel any hide timer
+        clearTimeout(hideTimer);
+        setNavVisible(true);
+      } else {
+        // Scrolling: show navbar then schedule hide
+        handleActivity();
+      }
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("mousemove", handleActivity);
+    window.addEventListener("touchstart", handleActivity, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("touchstart", handleActivity);
+      clearTimeout(hideTimer);
+    };
   }, []);
 
   // Close avatar menu on outside click
@@ -37,10 +72,10 @@ export default function Navbar() {
     const toast = document.createElement("div");
     toast.id = "soraLiveToast";
     toast.className =
-      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-[#00f2fe]/50 backdrop-blur-xl shadow-[0_12px_36px_rgba(0,242,254,0.25),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
     toast.innerHTML = `
-      <div class="w-6 h-6 rounded-full bg-cyan-950/80 border border-cyan-400 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-[14px] text-cyan-300">info</span>
+      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400/60 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[14px] text-amber-300">info</span>
       </div>
       <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
     `;
@@ -76,10 +111,14 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 py-4 px-6 md:px-12 w-full ${
+      className={`fixed top-0 left-0 right-0 z-[1000] py-4 px-6 md:px-12 w-full transition-all duration-500 ${
         scrolled
-          ? "bg-black/85 backdrop-blur-md shadow-2xl border-b border-white/10"
-          : "bg-black/20 backdrop-blur-md"
+          ? "bg-white/8 backdrop-blur-md border-b border-white/10 shadow-sm"
+          : "bg-white/5 backdrop-blur-sm"
+      } ${
+        navVisible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 -translate-y-2 pointer-events-none"
       }`}
       id="main-nav"
     >
@@ -104,43 +143,55 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/90 drop-shadow">
             <Link
               href="/"
-              className={`transition-colors ${
+              className={`relative group/nav transition-colors ${
                 pathname === "/"
-                  ? "text-white font-semibold border-b-2 border-cyan-400 pb-0.5"
-                  : "text-white/80 hover:text-white"
+                  ? "text-amber-300 font-semibold"
+                  : "text-white/80 hover:text-amber-200"
               }`}
             >
               Beranda
+              <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
+                pathname === "/" ? "w-full" : "w-0 group-hover/nav:w-full"
+              }`}></span>
             </Link>
             <Link
               href="/jelajahi"
-              className={`transition-colors ${
+              className={`relative group/nav transition-colors ${
                 pathname === "/jelajahi"
-                  ? "text-white font-semibold border-b-2 border-cyan-400 pb-0.5"
-                  : "text-white/80 hover:text-white"
+                  ? "text-amber-300 font-semibold"
+                  : "text-white/80 hover:text-amber-200"
               }`}
             >
               Jelajahi
+              <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
+                pathname === "/jelajahi" ? "w-full" : "w-0 group-hover/nav:w-full"
+              }`}></span>
             </Link>
             <Link
               href="/favorit"
-              className={`transition-colors ${
+              className={`relative group/nav transition-colors ${
                 pathname === "/favorit"
-                  ? "text-white font-semibold border-b-2 border-cyan-400 pb-0.5"
-                  : "text-white/80 hover:text-white"
+                  ? "text-amber-300 font-semibold"
+                  : "text-white/80 hover:text-amber-200"
               }`}
             >
               Favorit
+              <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
+                pathname === "/favorit" ? "w-full" : "w-0 group-hover/nav:w-full"
+              }`}></span>
             </Link>
             <Link
               href="/tentang"
-              className={`transition-colors ${
+              className={`relative group/nav transition-colors ${
                 pathname === "/tentang"
-                  ? "text-white font-semibold border-b-2 border-cyan-400 pb-0.5"
-                  : "text-white/80 hover:text-white"
+                  ? "text-amber-300 font-semibold"
+                  : "text-white/80 hover:text-amber-200"
               }`}
             >
               Tentang
+              <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
+                pathname === "/tentang" ? "w-full" : "w-0 group-hover/nav:w-full"
+              }`}></span>
             </Link>
           </nav>
 
@@ -220,7 +271,7 @@ export default function Navbar() {
               // Not logged in: single Sign In button
               <Link
                 href="/masuk"
-                className="bg-[#00f2fe] hover:bg-[#00d6e2] text-slate-950 font-bold px-4 sm:px-5 py-2 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs tracking-wide inline-block whitespace-nowrap"
+                className="bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold px-4 sm:px-5 py-2 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs tracking-wide inline-block whitespace-nowrap"
               >
                 Sign In
               </Link>

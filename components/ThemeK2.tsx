@@ -98,7 +98,7 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
       {
         name: "Museum Kesultanan Palembang",
         badge: "Arsip Sejarah",
-        image: "/images/museum_balaputradewa.jpg",
+        image: "/images/kesultanan_palembang.jpg",
         slug: "kesultanan-palembang",
       },
       {
@@ -130,13 +130,13 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
       {
         name: "Tari Tradisional Adat Pasemah",
         badge: "Tari Penyambutan",
-        image: "/images/tari_pasemah.jpg",
+        image: "/images/tari_kebagh.jpg",
         slug: "tari-kebagh",
       },
       {
         name: "Ghumah Baghi Bersih Dusun",
         badge: "Kearifan Agrikultur",
-        image: "/images/ghumah_baghi.jpg",
+        image: "/images/sedekah_rame.jpg",
         slug: "sedekah-rame",
       },
       {

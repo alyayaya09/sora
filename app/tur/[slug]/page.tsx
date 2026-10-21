@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getDedicatedTour } from "../../../data/sora-content";
@@ -27,33 +27,80 @@ export default function TourDetailPage({ params }: TourPageProps) {
     "konten-terkait",
   ];
 
+  const [currentSection, setCurrentSection] = useState(0);
+  const [isPointerActive, setIsPointerActive] = useState(false);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    // Slide in narrative observer matching LKONTEN.MD
-    const narrativeCards = document.querySelectorAll(".slide-in-narrative");
+    // Observer animasi dinamis (kiri, kanan, fade in / fade out, zoom)
+    const animElements = document.querySelectorAll(
+      ".tur-anim-left, .tur-anim-right, .tur-anim-fade, .tur-anim-zoom"
+    );
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
+          } else {
+            entry.target.classList.remove("is-visible");
           }
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -20px 0px" }
     );
-    narrativeCards.forEach((c) => observer.observe(c));
+    animElements.forEach((c) => observer.observe(c));
 
-    const handleScroll = () => {
+    const updateScrollState = () => {
       const totalScroll =
         document.documentElement.scrollHeight - window.innerHeight;
       if (totalScroll > 0) {
         setScrollProgress((window.scrollY / totalScroll) * 100);
       }
+      const scrollPos = window.scrollY;
+      const effectivePos = scrollPos + window.innerHeight * 0.3;
+      if (scrollPos <= 60) {
+        setCurrentSection(0);
+        return;
+      }
+      let activeIndex = 0;
+      for (let i = 0; i < sectionIds.length; i++) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && effectivePos >= el.offsetTop) {
+          activeIndex = i;
+        }
+      }
+      setCurrentSection(activeIndex);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    updateScrollState();
+    window.addEventListener("scroll", updateScrollState, { passive: true });
     return () => {
       observer.disconnect();
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", updateScrollState);
+    };
+  }, []);
+
+  // Idle auto-hide pointer tracking (muncul saat pointer digerakkan, sembunyi saat pointer diam)
+  useEffect(() => {
+    const handlePointerActivity = () => {
+      setIsPointerActive(true);
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+      idleTimerRef.current = setTimeout(() => {
+        setIsPointerActive(false);
+      }, 2500);
+    };
+
+    window.addEventListener("mousemove", handlePointerActivity, { passive: true });
+    window.addEventListener("scroll", handlePointerActivity, { passive: true });
+    window.addEventListener("touchstart", handlePointerActivity, { passive: true });
+
+    return () => {
+      window.removeEventListener("mousemove", handlePointerActivity);
+      window.removeEventListener("scroll", handlePointerActivity);
+      window.removeEventListener("touchstart", handlePointerActivity);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
   }, []);
 
@@ -64,10 +111,10 @@ export default function TourDetailPage({ params }: TourPageProps) {
     const toast = document.createElement("div");
     toast.id = "soraLiveToast";
     toast.className =
-      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-[#00f2fe]/50 backdrop-blur-xl shadow-[0_12px_36px_rgba(0,242,254,0.25),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
     toast.innerHTML = `
-      <div class="w-6 h-6 rounded-full bg-cyan-950/80 border border-cyan-400 flex items-center justify-center shrink-0">
-        <span class="material-symbols-outlined text-[14px] text-cyan-300">info</span>
+      <div class="w-6 h-6 rounded-full bg-amber-950/80 border border-amber-400/60 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[14px] text-amber-300">info</span>
       </div>
       <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
     `;
@@ -133,6 +180,55 @@ export default function TourDetailPage({ params }: TourPageProps) {
 
   return (
     <div className="bg-[#0d0d0f] font-sans text-neutral-200 antialiased min-h-screen w-full selection:bg-rose-950 selection:text-rose-200 relative overflow-x-hidden pt-16">
+      <style jsx global>{`
+        .tur-anim-left {
+          opacity: 0;
+          transform: translateX(-50px);
+          transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity, transform;
+        }
+        .tur-anim-left.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+
+        .tur-anim-right {
+          opacity: 0;
+          transform: translateX(50px);
+          transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity, transform;
+        }
+        .tur-anim-right.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+
+        .tur-anim-fade {
+          opacity: 0;
+          transform: translateY(28px);
+          transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity, transform;
+        }
+        .tur-anim-fade.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .tur-anim-zoom {
+          opacity: 0;
+          transform: scale(0.94) translateY(24px);
+          transition: opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1), transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: opacity, transform;
+        }
+        .tur-anim-zoom.is-visible {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+
+        .tur-delay-1 { transition-delay: 150ms; }
+        .tur-delay-2 { transition-delay: 300ms; }
+        .tur-delay-3 { transition-delay: 450ms; }
+      `}</style>
       {/* Reading Progress Top Bar */}
       <div
         className="fixed top-0 left-0 h-1 bg-gradient-to-r from-amber-400 via-rose-500 to-cyan-400 z-50 transition-all duration-150"
@@ -167,7 +263,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
 
           {/* Center Hero Monumental Title & Narrative Lead */}
           <div className="relative z-10 max-w-5xl mx-auto w-full text-center flex flex-col items-center gap-3 my-auto pb-6 pt-16">
-            <div className="space-y-2 max-w-4xl">
+            <div className="space-y-2 max-w-4xl tur-anim-fade">
               <h1 className="text-3xl sm:text-5xl md:text-5xl text-white font-medium leading-tight tracking-tight drop-shadow-lg">
                 {tour.title}
               </h1>
@@ -180,7 +276,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
             </div>
 
             {/* Action Pills (Simpan, Salin Tautan, Bagikan) matching LKONTEN.MD */}
-            <div className="flex items-center justify-center gap-4 mx-auto pt-6 pb-2">
+            <div className="flex items-center justify-center gap-4 mx-auto pt-6 pb-2 tur-anim-fade tur-delay-1">
               <div className="relative group/tooltip flex items-center justify-center">
                 <LoveButton
                   itemType="card"
@@ -230,24 +326,8 @@ export default function TourDetailPage({ params }: TourPageProps) {
             </div>
           </div>
 
-          {/* Bottom Subtle Scroll-Down Indicator & Partnership matching LKONTEN.MD */}
-          <div className="relative z-10 max-w-7xl mx-auto w-full flex flex-col items-center justify-center text-center gap-1.5 pb-2 shrink-0">
-            <div className="flex flex-col items-center justify-center gap-1 text-center">
-              <span className="text-[10px] sm:text-[11px] uppercase tracking-widest text-neutral-400 font-semibold opacity-80 mb-1">
-                Bekerja sama dengan
-              </span>
-              <div className="inline-flex items-center justify-center gap-3 sm:gap-4">
-                <span className="text-xs text-amber-300/80 font-semibold border border-amber-400/20 px-3 py-1 rounded-full bg-black/40">
-                  Pemerintah Provinsi Sumatera Selatan
-                </span>
-                <span className="text-xs text-cyan-300/80 font-semibold border border-cyan-400/20 px-3 py-1 rounded-full bg-black/40">
-                  Museum Negeri Balaputradewa
-                </span>
-                <span className="text-xs text-rose-300/80 font-semibold border border-rose-400/20 px-3 py-1 rounded-full bg-black/40">
-                  Pesona Indonesia
-                </span>
-              </div>
-            </div>
+          {/* Bottom Subtle Scroll-Down Indicator matching LKONTEN.MD */}
+          <div className="relative z-10 max-w-7xl mx-auto w-full flex flex-col items-center justify-center text-center gap-1.5 pb-2 shrink-0 tur-anim-fade tur-delay-2">
             <a
               className="inline-flex flex-col items-center text-neutral-400 hover:text-amber-300 transition-colors group cursor-pointer pt-2"
               href="#narasi-seksi-1"
@@ -277,11 +357,8 @@ export default function TourDetailPage({ params }: TourPageProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0f] via-[#0d0d0f]/60 to-black/40 pointer-events-none"></div>
           </div>
-          <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 slide-in-narrative is-visible">
-            <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-                Bagian 01 / 03
-              </span>
+          <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md tur-anim-left">
               <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec1Title}
               </h2>
@@ -308,11 +385,8 @@ export default function TourDetailPage({ params }: TourPageProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0f] via-[#0d0d0f]/50 to-black/40 pointer-events-none"></div>
           </div>
-          <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 slide-in-narrative is-visible">
-            <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md">
-              <span className="text-xs font-bold uppercase tracking-widest text-cyan-400">
-                Bagian 02 / 03
-              </span>
+          <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md tur-anim-right">
               <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec2Title}
               </h2>
@@ -339,11 +413,8 @@ export default function TourDetailPage({ params }: TourPageProps) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0f] via-[#0d0d0f]/50 to-black/40 pointer-events-none"></div>
           </div>
-          <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 slide-in-narrative is-visible">
-            <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md">
-              <span className="text-xs font-bold uppercase tracking-widest text-rose-400">
-                Bagian 03 / 03
-              </span>
+          <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-2xl text-left flex flex-col gap-4 drop-shadow-md tur-anim-left">
               <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight tracking-tight">
                 {tour.sec3Title}
               </h2>
@@ -359,16 +430,16 @@ export default function TourDetailPage({ params }: TourPageProps) {
              5. FINAL VIEWPORT: "KONTEN TERKAIT" (EXACT LKONTEN.MD)
              ========================================== */}
         <div
-          className="min-h-screen w-full flex flex-col justify-between relative overflow-hidden"
+          className="min-h-screen w-full flex flex-col justify-between relative overflow-hidden pb-16"
           id="konten-terkait"
         >
           <section className="relative w-full flex-1 flex flex-col justify-center px-6 md:px-12 py-8 md:py-12 max-w-7xl mx-auto">
-            <div className="flex flex-col items-center justify-center text-center w-full mb-6">
+            <div className="flex flex-col items-center justify-center text-center w-full mb-6 tur-anim-fade">
               <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl text-neutral-200 font-normal tracking-wide drop-shadow-md">
                 Jelajahi kategori terkait...
               </h2>
             </div>
-            <div className="max-w-5xl md:max-w-6xl mx-auto w-full relative rounded-3xl overflow-hidden border border-amber-400/30 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(107,29,47,0.25)] min-h-[320px] md:min-h-[380px] flex items-center justify-center p-6 md:p-12 text-center group">
+            <div className="max-w-5xl md:max-w-6xl mx-auto w-full relative rounded-3xl overflow-hidden border border-amber-400/30 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(107,29,47,0.25)] min-h-[320px] md:min-h-[380px] flex items-center justify-center p-6 md:p-12 text-center group tur-anim-zoom tur-delay-1">
               <img
                 alt={tour.relTitle}
                 className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.1] transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none"
@@ -376,18 +447,15 @@ export default function TourDetailPage({ params }: TourPageProps) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0f]/80 via-[#6b1d2f]/25 to-black/60 pointer-events-none"></div>
               <div className="relative z-10 flex flex-col items-center justify-center max-w-3xl mx-auto">
-                <span className="text-amber-400 text-xs md:text-sm font-semibold tracking-widest uppercase mb-3">
-                  {tour.relCat}
-                </span>
-                <h3 className="font-sans text-3xl md:text-4xl lg:text-5xl text-white font-normal md:font-medium tracking-normal mb-3 drop-shadow-md">
+                <h3 className="font-sans text-3xl md:text-4xl lg:text-5xl text-white font-normal md:font-medium tracking-normal mb-3 drop-shadow-md tur-anim-fade tur-delay-1">
                   {tour.relTitle}
                 </h3>
-                <p className="text-neutral-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-6 font-light drop-shadow-sm">
+                <p className="text-neutral-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-6 font-light drop-shadow-sm tur-anim-fade tur-delay-2">
                   {tour.relDesc}
                 </p>
                 <Link
                   href={tour.relLink}
-                  className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium border border-white/20 backdrop-blur-md transition-all shadow-md active:scale-95"
+                  className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95 text-white text-sm font-medium border border-white/20 backdrop-blur-md transition-all duration-300 shadow-md hover:shadow-[0_0_24px_rgba(251,191,36,0.3)] tur-anim-fade tur-delay-3"
                 >
                   Lihat Tema
                 </Link>
@@ -400,7 +468,11 @@ export default function TourDetailPage({ params }: TourPageProps) {
              FLOATING MINIMALIST ARROW CONTROLS (EXACT LKONTEN.MD)
              ========================================== */}
         <aside
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-opacity duration-300 opacity-100 pointer-events-auto"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-700 ease-in-out ${
+            currentSection >= 1 && isPointerActive
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
           id="navControlsAside"
         >
           <div

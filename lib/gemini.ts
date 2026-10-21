@@ -1,4 +1,5 @@
 import { themes, dedicatedTours, Theme, ThemeItem, DedicatedTour } from "../data/sora-content";
+import { sumselSongs, findSumselSong, SumselSong } from "../data/sumsel-songs";
 import fs from "fs";
 import path from "path";
 
@@ -54,16 +55,59 @@ export let geminiDebugLogs: string[] = [];
 // ─── Rate limiter ───────────────────────────────────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-export function checkRateLimit(identifier: string, limit = 20, windowMs = 60_000): boolean {
+export interface RateLimitInfo {
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  resetSeconds: number;
+}
+
+export function checkRateLimitWithInfo(
+  identifier: string,
+  limit = 20,
+  windowMs = 60_000
+): RateLimitInfo {
   const now = Date.now();
-  const record = rateLimitMap.get(identifier);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
+
+  // Bersihkan entri lama jika Map terlalu besar
+  if (rateLimitMap.size > 2000) {
+    for (const [key, val] of rateLimitMap.entries()) {
+      if (now > val.resetTime) rateLimitMap.delete(key);
+    }
   }
-  if (record.count >= limit) return false;
+
+  let record = rateLimitMap.get(identifier);
+  if (!record || now > record.resetTime) {
+    record = { count: 1, resetTime: now + windowMs };
+    rateLimitMap.set(identifier, record);
+    return {
+      allowed: true,
+      limit,
+      remaining: Math.max(0, limit - 1),
+      resetSeconds: Math.ceil(windowMs / 1000),
+    };
+  }
+
+  if (record.count >= limit) {
+    return {
+      allowed: false,
+      limit,
+      remaining: 0,
+      resetSeconds: Math.max(1, Math.ceil((record.resetTime - now) / 1000)),
+    };
+  }
+
   record.count += 1;
-  return true;
+  return {
+    allowed: true,
+    limit,
+    remaining: Math.max(0, limit - record.count),
+    resetSeconds: Math.max(1, Math.ceil((record.resetTime - now) / 1000)),
+  };
+}
+
+export function checkRateLimit(identifier: string, limit = 20, windowMs = 60_000): boolean {
+  return checkRateLimitWithInfo(identifier, limit, windowMs).allowed;
 }
 
 // ─── Local match helper ─────────────────────────────────────────────────────
@@ -153,8 +197,173 @@ export function isClearlyOffTopic(query: string): boolean {
   return blocked.some((t) => q.includes(t));
 }
 
+// ─── Builder for authentic Sumsel Song result (Zero Hallucination) ───────────
+export function buildSongSearchResult(song: SumselSong, query: string): SearchResult {
+  const theme = themes.find((t) => t.slug === song.themeSlug) || themes[2]; // fallback to tari-musik
+  return {
+    status: "ok",
+    query,
+    card1: {
+      isDedicatedTour: false,
+      title: song.title,
+      subtitle: `Lagu Daerah ${song.region} — Warisan Budaya Takbenda`,
+      image: song.image,
+      badge: "Lagu Daerah Sumsel",
+      href: `/tema/${song.themeSlug}`,
+    },
+    card2: {
+      title: `Lirik Lagu ${song.title}`,
+      highlight: song.highlight,
+      paragraphs: song.lyrics,
+      bulletPoints: [
+        { label: "Asal Daerah", text: song.region },
+        { label: "Pencipta", text: song.creator || "Tradisional" },
+        { label: "Makna Filosofis", text: song.meaning },
+      ],
+      sources: song.sources.map((s, i) => ({
+        ...s,
+        icon: ["W", "🏛", "📚"][i] || "🔗",
+        iconStyle: [
+          "bg-white text-slate-900",
+          "bg-[#6b1d2f] text-white",
+          "bg-amber-700 text-white",
+        ][i] || "bg-slate-700 text-white",
+        img: "",
+      })),
+    },
+    card3: {
+      themeSlug: theme.slug,
+      themeTitle: theme.title,
+      themeLabel: theme.tagline,
+      themeDesc: theme.intro,
+      themeImg: theme.heroImage,
+      themeHref: `/tema/${theme.slug}`,
+      relatedItems: theme.items.slice(0, 4).map((it) => ({
+        name: it.name,
+        desc: it.desc,
+        image: it.image || theme.image,
+        slug: it.slug,
+        link: it.slug ? `/tur/${it.slug}` : `/tema/${theme.slug}`,
+      })),
+    },
+  };
+}
+
+// ─── Resolves a guaranteed high-quality contextual image for every query ─────
+export function resolveContextualImage(
+  query: string,
+  title?: string,
+  themeSlug?: string,
+  externalImage?: string | null
+): string {
+  if (externalImage && isValidImageUrl(externalImage)) {
+    return externalImage;
+  }
+
+  const q = `${query} ${title || ""}`.toLowerCase();
+
+  // 1. Lagu Daerah & Musik Tradisional
+  if (
+    q.includes("lagu") ||
+    q.includes("lirik") ||
+    q.includes("nyanyi") ||
+    q.includes("tembang") ||
+    q.includes("syair") ||
+    q.includes("musik") ||
+    q.includes("burdah") ||
+    q.includes("rebana") ||
+    q.includes("batanghari sembilan")
+  ) {
+    if (q.includes("batanghari sembilan") || q.includes("gitar")) {
+      return "/images/tembang_batanghari_sembilan.jpg";
+    }
+    if (q.includes("kebile") || q.includes("besemah") || q.includes("lahat") || q.includes("pagaralam")) {
+      return "/images/tari_pasemah.jpg";
+    }
+    if (q.includes("cuk mak ilang") || q.includes("senjang") || q.includes("lisan") || q.includes("pantun")) {
+      return "/images/rebana_burdah.jpg";
+    }
+    if (q.includes("dek sangke")) {
+      return "/images/senjang_muba.jpg";
+    }
+    if (q.includes("saman") || q.includes("songket")) {
+      return "/images/songket_lepus.jpg";
+    }
+    return "/images/rebana_burdah.jpg";
+  }
+
+  // 2. Seni Tari Tradisional
+  if (q.includes("tari") || q.includes("joget") || q.includes("gerak") || q.includes("penari")) {
+    if (q.includes("tanggai")) return "/images/tari_tanggai.jpg";
+    if (q.includes("setabik")) return "/images/tari_setabik.jpg";
+    if (q.includes("pagar pengantin")) return "/images/tari_pagar_pengantin.jpg";
+    if (q.includes("pasemah") || q.includes("kebagh")) return "/images/tari_pasemah.jpg";
+    return "/images/tari_gending.jpg";
+  }
+
+  // 3. Kuliner Khas
+  if (q.includes("pempek") || q.includes("cuko")) return "/images/pempek_palembang.jpg";
+  if (q.includes("tekwan") || q.includes("model")) return "/images/tekwan_palembang.jpg";
+  if (q.includes("pindang") || q.includes("patin")) return "/images/pindang_patin.jpg";
+  if (q.includes("mie celor") || q.includes("celor")) return "/images/mie_celor.jpg";
+  if (q.includes("burgo") || q.includes("lakso")) return "/images/burgo_palembang.jpg";
+  if (q.includes("tempoyak") || q.includes("sambal")) return "/images/sambal_tempoyak.jpg";
+  if (q.includes("maksuba") || q.includes("kue")) return "/images/kue_maksuba.jpg";
+  if (q.includes("delapan jam") || q.includes("lapan jam")) return "/images/kue_delapan_jam.jpg";
+  if (q.includes("makan") || q.includes("kuliner") || q.includes("masak") || q.includes("resep")) {
+    return "/images/pempek_palembang.jpg";
+  }
+
+  // 4. Pakaian Adat & Kain Tenun
+  if (q.includes("aesan") || q.includes("pengantin") || q.includes("mahkota")) {
+    return "/images/aesan_gede_banner.jpg";
+  }
+  if (q.includes("songket") || q.includes("tenun")) return "/images/songket_lepus.jpg";
+  if (q.includes("jumputan")) return "/images/kain_jumputan.jpg";
+  if (q.includes("batik")) return "/images/batik_palembang.jpg";
+  if (q.includes("kain") || q.includes("busana") || q.includes("baju")) return "/images/songket_lepus.jpg";
+
+  // 5. Rumah Adat & Arsitektur
+  if (q.includes("limas")) return "/images/rumah_limas.jpg";
+  if (q.includes("rakit")) return "/images/rumah_rakit.jpg";
+  if (q.includes("ulu")) return "/images/rumah_ulu.jpg";
+  if (q.includes("baghi")) return "/images/ghumah_baghi.jpg";
+  if (q.includes("kilapan")) return "/images/rumah_kilapan.jpg";
+  if (q.includes("cara gudang")) return "/images/rumah_cara_gudang.jpg";
+  if (q.includes("rumah") || q.includes("arsitektur") || q.includes("bangunan")) return "/images/rumah_limas.jpg";
+
+  // 6. Tempat, Landmark & Geografi
+  if (q.includes("ampera") || q.includes("jembatan")) return "/images/ampera_hero.jpg";
+  if (q.includes("kuto besak") || q.includes("benteng") || q.includes("bkb")) return "/images/benteng_kuto_besak.jpg";
+  if (q.includes("musi") || q.includes("sungai")) return "/images/musi_landscape.jpg";
+  if (q.includes("bidar")) return "/images/perahu_bidar.jpg";
+  if (q.includes("ketek") || q.includes("perahu")) return "/images/perahu_ketek.jpg";
+  if (q.includes("museum") || q.includes("balaputradewa")) return "/images/museum_balaputradewa.jpg";
+  if (q.includes("dempo") || q.includes("megalitik") || q.includes("pasemah")) return "/images/megalitik_pasemah.jpg";
+
+  // 7. Sejarah, Bahasa & Budaya
+  if (q.includes("aksara") || q.includes("kaganga") || q.includes("surat ulu")) return "/images/aksara_ulu.jpg";
+  if (q.includes("prasasti") || q.includes("kedukan bukit") || q.includes("sriwijaya")) return "/images/prasasti_kedukan_bukit.jpg";
+  if (q.includes("buddha") || q.includes("siguntang")) return "/images/buddha_seguntang.jpg";
+  if (q.includes("teater") || q.includes("dulmuluk")) return "/images/teater_dulmuluk.jpg";
+  if (q.includes("purun") || q.includes("anyaman")) return "/images/purun_pedamaran.jpg";
+
+  // 8. Theme slug matching fallback
+  if (themeSlug === "tari-musik") return "/images/tari_gending.jpg";
+  if (themeSlug === "kuliner") return "/images/pempek_palembang.jpg";
+  if (themeSlug === "kain-pakaian") return "/images/songket_lepus.jpg";
+  if (themeSlug === "rumah-adat") return "/images/rumah_limas.jpg";
+  if (themeSlug === "sejarah") return "/images/prasasti_kedukan_bukit.jpg";
+  if (themeSlug === "bahasa-aksara") return "/images/aksara_ulu.jpg";
+  if (themeSlug === "pertunjukan-lisan") return "/images/teater_dulmuluk.jpg";
+  if (themeSlug === "upacara-adat") return "/images/adat_nindai.jpg";
+
+  // Default universal fallback
+  return "/images/ampera_hero.jpg";
+}
+
 // ─── Filter for clean, authentic photos (avoid diagrams/placeholders) ────────
-function isValidImageUrl(url?: string | null): boolean {
+export function isValidImageUrl(url?: string | null): boolean {
   if (!url || typeof url !== "string") return false;
   const lower = url.toLowerCase();
   if (lower.includes(".svg")) return false;
@@ -165,6 +374,94 @@ function isValidImageUrl(url?: string | null): boolean {
   if (lower.includes("disambig")) return false;
   if (lower.includes("question_book")) return false;
   return true;
+}
+
+// ─── Fetch real image: Direct from references first, then Wikipedia & Commons ───
+export async function fetchSmartImage(
+  sources: SearchSource[] = [],
+  titleId: string,
+  titleEn?: string,
+  searchQuery?: string,
+  query?: string
+): Promise<string | null> {
+  // 1. Coba ambil foto langsung dari sumber referensi (sources) yang valid
+  if (Array.isArray(sources) && sources.length > 0) {
+    for (const src of sources) {
+      if (!src?.url) continue;
+
+      // a. Jika referensi dari Wikipedia, ambil foto artikel aslinya via REST API
+      const wikiMatch = src.url.match(/wikipedia\.org\/wiki\/([^#?]+)/i);
+      if (wikiMatch && wikiMatch[1]) {
+        const pageTitle = decodeURIComponent(wikiMatch[1]);
+        const lang = src.url.includes("en.wikipedia") ? "en" : "id";
+        try {
+          const cleanTitle = pageTitle.replace(/\s+/g, "_");
+          const res = await fetch(
+            `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanTitle)}`,
+            { headers: { "User-Agent": "SORA-App/1.0" }, signal: AbortSignal.timeout(3500) }
+          );
+          if (res.ok) {
+            const d = await res.json();
+            const img = d?.thumbnail?.source || d?.originalimage?.source;
+            if (isValidImageUrl(img)) return img;
+          }
+        } catch {}
+      }
+
+      // b. Jika referensi adalah situs web eksternal berita/budaya, ambil og:image
+      if (src.url.startsWith("http") && !src.url.includes("wikipedia.org")) {
+        try {
+          const res = await fetch(src.url, {
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)" },
+            signal: AbortSignal.timeout(3500),
+          });
+          if (res.ok) {
+            const html = await res.text();
+            const ogMatch =
+              html.match(/<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+              html.match(/<meta\s+[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i) ||
+              html.match(/<meta\s+[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i);
+            if (ogMatch && ogMatch[1]) {
+              let candidate = ogMatch[1].trim();
+              if (candidate.startsWith("//")) candidate = "https:" + candidate;
+              if (candidate.startsWith("http") && isValidImageUrl(candidate)) {
+                return candidate;
+              }
+            }
+          }
+        } catch {}
+      }
+    }
+  }
+
+  // 2. Jika di referensi tidak ada foto, cari di sumber lain (Wikipedia ID/EN + Commons)
+  const directImg = await fetchWikipediaImage(titleId, titleEn, searchQuery || query);
+  if (directImg) return directImg;
+
+  // 3. Coba cari di Wikimedia Commons dengan kata kunci regional spesifik
+  const qTopic = searchQuery || query || titleId;
+  if (qTopic) {
+    try {
+      const res = await fetch(
+        `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(qTopic + " Palembang")}&gsrnamespace=6&gsrlimit=6&prop=imageinfo&iiprop=url|mime&iiurlwidth=800&format=json&origin=*`,
+        { signal: AbortSignal.timeout(4000) }
+      );
+      if (res.ok) {
+        const d = await res.json();
+        const pages = Object.values(d?.query?.pages || {}) as any[];
+        for (const p of pages) {
+          const info = p?.imageinfo?.[0];
+          const mime = info?.mime || "";
+          const url = info?.thumburl || info?.url;
+          if (url && mime.startsWith("image/") && isValidImageUrl(url)) {
+            return url;
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return null;
 }
 
 // ─── Fetch real image: Wikipedia REST + search + Wikimedia Commons ──────────
@@ -288,6 +585,52 @@ Anda adalah SORA AI — asisten cerdas serba bisa yang ahli tentang Sumatera Sel
 
 Query pengguna: "${query}"
 
+REFERENSI RESMI LIRIK LAGU DAERAH SUMATERA SELATAN (ANTI-HALUSINASI MUTLAK):
+Jika menanyakan lagu daerah Sumatera Selatan, Anda WAJIB menggunakan bait kanonikal otentik berikut sesuai judul yang ditanyakan:
+- Palembang Darussalam (Cipt. R.H. Syahril Erwin / Yayak):
+  "Palembang Darussalam...\\nPalembang kota kito\\nTekenal sungi Musinyo...\\nTekenal dengan pempeknyo\\nJembatan Ampera yang anggun\\nMasjid Agungnyo yang cindo\\nMenambah tekenalnyo\\nKota kesayangan kito\\n\\nPalembang Darussalam...\\nPalembang kota kito\\nTekenal rumah limasnyo\\nTekenal dengan songketnyo\\nPulou Kemaro yang tenang\\nBenteng Kuto Besak yang cindo\\nMenambah semaraknyo\\nKota kebanggaan kito\\n\\nBujang gadesnyo... Oi... belagak nian\\nAdat budayonyo tetep dijago\\nHasil buminyo... Oi... banyak nian\\nPembangunannyo rato dimano-mano\\n\\nOi... Palembang Darussalam\\nOi... Palembang Darussalam\\nPalembang kota kito\\nPalembang Darussalam"
+- Pempek Lenjer (Cipt. S. Tarno):
+  "Bulet besak panjang mak lengen\\nKejel-kejel rasonyo marem\\nMasuk ke mulut matonyo mejem\\nMertuo lewat masih ditelen\\n\\nKejel keras sudah biaso\\nAsak bae iwaknyo teraso\\nDigoreng pake minyak kelapo\\nJadi nambah lemak rasonyo\\n\\nReff:\\nPempek lenjer oy pempek lenjer\\nSiapo nyingok pastilah ngiler\\nPempek lenjer oy pempek lenjer\\nMakan sikok pacak kelenger\\n\\nMangcek bicek janganlah lupo\\nNgawak balek oleh-olehnyo\\nPempek lenjer samo cukonyo\\nKito makan bersamo-samo"
+- Kebile-bile / Kabile-bile (Besemah - Lahat & Pagaralam):
+  "Kabile-bile mangke ku lege\\nKabile-bile ku ade kance\\nKabile-bile mangke ku lege\\nKabile-bile ku ade kance\\n\\nKabile nian jagunglah putih\\nPutih dik putih kukendam kina\\nKebile nian ibung kah nulih\\nNulih dik nulih kudendam kina\\n\\nKabile nian mampat begune\\nMangke dik payah ku nandan lagi\\nKebile nian sifat begune\\nMangke dik payah ku midang lagi\\n\\nOh, malang nian nasib ‘mbak ini\\nBilangan jeme lah laut gale\\nAlahkah sedih ai tumbak ini\\nAku ‘mbak ini dide bekance"
+- Ya Saman (Cipt. Kamsul A. Harla):
+  "Nyelek gelumbang perahu bidar di Sungi Musi\\nJanganlah lupo meli telok abang\\nCantik rupo penyabar dan baek hati\\nAdek manis berambut panjang dikuncit kepang\\n\\nLika-liku banyu Batanghari Sembilan\\nMengalir bemuaro ke Sungi Musi jugo\\nElok laku ngaesi rupo cindo menawan\\nMuat kakak siang tekenang malem tejago\\n\\nPulo Kemaro melah Sungi Musi ke Sungsang\\nNak ke Pusri laju kesasar ke Kalidoni\\nBadan saro pikiran resah hati teguncang\\nNgarapke adek kalu be galak jadi bini\\n\\nAy... ya... ya... ya... Ya Saman\\nPecaknyo mudah tapi saro nian\\nAy... ya... ya... ya... Ya Saman\\nNyari bini yang bener-bener setolok an\\n\\nAy... ya... ya... ya... Ya Saman\\nPecaknyo mudah tapi saro nian\\nAy... ya... ya... ya... Ya Saman\\nYa Saman... Ya Saman... Ya Saman..."
+- Cuk Mak Ilang (Palembang):
+  Refrein: "Cuk mak ilang mak ilang cagak batu\\nDimane kucing belang di situ rumah aku"
+  Bait: "Kapal api maso' Palembang\\nBanyu tenang jadi begelombang\\nTengok adek bepayong kembang\\nHati di dalam jadi bimbang"
+  Refrein: "Cuk mak ilang mak ilang cagak batu\\nDimane kucing belang di situ rumah aku"
+  Bait: "Ngaso dulu di bawah pohon\\nAngin sepoi sepoi nyentuh badan\\nAdek manis janganlah mohon\\nKando setia sepanjang zaman"
+- Dek Sangke (Sumsel):
+  "Dek sangke aku dek sangke\\nAwak uke la jadi duwo\\nNemba' bunga putik kelapo\\nBuah jambu la jadi mudo\\nDek sangke aku dek sangke\\nKando batinggal ku de sangke..."
+- Gending Sriwijaya (Palembang):
+  "Di kala ku merindukan keluhuran dahulu kala\\nKutembangkan nyanyi lagu Gending Sriwijaya\\nDalam seni kunikmati lagi zaman bahagia\\nKuciptakan kembali dari kandungan Maha Kala\\nSriwijaya dengan Asrama Agung Sang Maha Guru..."
+
+PANDUAN UTAMA PENJAWABAN (WAJIB TEPAT PADA INTI PERTANYAAN):
+1. JAWABLAH SECARA LANGSUNG, TEPAT, DAN LENGKAP SESUAI DENGAN INTENSI PERTANYAAN:
+   - JIKA MENANYAKAN TENTANG LAGU DAERAH ATAU LIRIK LAGU (contoh: "lagu cuk mak ilang", "lagu pempek lenjer", "lirik ya saman", "cuk mak ilang", dll):
+     * JANGAN PERNAH mengalihkan atau menjawab tentang makanan/objek fisik (contoh: jika ditanya "lagu pempek lenjer", ini adalah LAGU DAERAH ciptaan S. Tarno, BUKAN resep atau makanan pempek lenjer!).
+     * Pada "title": Berikan judul lagu daerah yang jelas (contoh: "Lagu Daerah Palembang: Pempek Lenjer", "Lagu Daerah Sumsel: Cuk Mak Ilang").
+     * Pada "badge": "Lagu & Musik Tradisional".
+     * Pada "highlight": Berikan pengantar 1-2 kalimat tentang lagu tersebut (asal daerah, pencipta, nuansa lagu, dan tema lagunya).
+     * Pada "paragraphs":
+       - Uraikan latar belakang lagu, makna budaya, dan konteks sosialnya.
+       - TULISKAN SELURUH TEKS LIRIK LAGU SECARA LENGKAP BAIT DEMI BAIT (dengan baris-baris lirik rapi menggunakan \\n)! Gunakan teks kanonikal resmi di atas.
+     * Di bagian bulletPoints, cantumkan Pencipta, Asal Daerah, dan Makna Singkat.
+   - JIKA MENANYAKAN RESEP / CARA MEMBUAT / CARA MASAK (contoh: "resep pempek", "resep pempek kapal selam", "resep pempek keriting", "resep tekwan", "cara membuat cuko pempek", "cara masak pindang patin"):
+     * DILARANG HANYA MEMBERIKAN PENJELASAN SEJARAH! Pengguna meminta RESEP DAN PANDUAN CARA MEMASAK!
+     * Pada "title": "Resep & Cara Membuat [Nama Masakan]" (contoh: "Resep Pempek Kapal Selam Asli Palembang", "Resep Pempek Keriting Gurih").
+     * Pada "badge": "Resep Kuliner Tradisional".
+     * Pada "highlight": Ringkasan hidangan dan rahasia kelezatan/tips suksesnya (contoh: takaran perbandingan ikan dan tepung sagu, atau cara memasukkan telur tanpa bocor).
+     * Pada "paragraphs":
+       - Paragraf 1: Daftar bahan utama dan bumbu lengkap beserta takaran/ukurannya yang presisi.
+       - Paragraf 2 & 3: Langkah-langkah pembuatan step-by-step secara terurut mulai dari mengadon, membentuk, merebus/menggoreng, hingga membuat kuah cuko pendampingnya.
+   - JIKA MENANYAKAN SEJARAH / MAKNA / ASAL-USUL / PENJELASAN UMUM:
+     * Sajikan sejarah kronologis, filosofi mendalam, dan fakta autentik.
+   - JIKA MENANYAKAN LOKASI / RUTE / TIKET / WISATA:
+     * Berikan informasi lokasi geografis, alamat, jam operasional, harga tiket, dan rute perjalanan.
+   - JIKA MENANYAKAN CIRI KHAS / DAFTAR / PERBEDAAN:
+     * Uraikan poin-poin karakteristik spesifiknya secara berbobot.
+
 ATURAN KLASIFIKASI:
 1. "status":"ok" — HANYA untuk entitas/topik yang BENAR-BENAR NYATA & FAKTUAL:
    - Segala hal yang nyata ada di Sumatera Selatan: kuliner khas (pempek, tekwan, pindang patin, laksan, maksuba, dll.), tempat wisata/landmark (Monpera, Jembatan Ampera, Jembatan Musi II/IV/VI, Benteng Kuto Besak, Danau Ranau, Gunung Dempo Pagaralam, Pulau Kemaro), sejarah (Sriwijaya, Kesultanan Palembang), busana (songket), adat, seni, budaya, tokoh, alam, kota, hotel, atau rekomendasi umum wisata/kuliner nyata di Sumsel.
@@ -300,8 +643,8 @@ ATURAN KLASIFIKASI:
    - Spam acak (contoh: "asdfghjkl"), kata tanpa arti, judi online, obat terlarang, konten dewasa, atau ujaran kebencian.
 
 PENTING:
-- Jika subjek nyata dan faktual di Sumsel, jawab dengan informatif dan sertakan 2-3 sumber referensi NYATA dengan URL valid (Wikipedia, portal resmi pariwisata pemprov sumselprov.go.id, indonesia.travel, situs berita kredibel kompas.com, detik.com).
-- Berikan "imageSearchQuery": kata kunci spesifik terbaik untuk mencari foto asli (contoh: "Pempek Palembang", "Songket Palembang", "Monumen Perjuangan Rakyat Palembang", "Jembatan Ampera").
+- Sertakan 2-3 sumber referensi NYATA dengan URL valid (Wikipedia, portal resmi pemprov sumselprov.go.id, indonesia.travel, situs berita kredibel kompas.com, detik.com).
+- Berikan "imageSearchQuery": kata kunci spesifik terbaik untuk mencari foto asli (contoh: "Pempek Palembang", "Lagu Cuk Mak Ilang Palembang", "Songket Palembang", "Jembatan Ampera").
 
 Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
 {
@@ -311,16 +654,16 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
   "imageSearchQuery": "Kata kunci pencarian foto spesifik",
   "titleWikipediaId": "Judul halaman Wikipedia Bahasa Indonesia",
   "titleWikipediaEn": "Wikipedia page title in English",
-  "subtitle": "Satu kalimat ringkasan yang informatif",
-  "highlight": "Satu paragraf pembuka yang menarik dan berbobot",
+  "subtitle": "Satu kalimat ringkasan yang langsung menjawab pertanyaan",
+  "highlight": "Jawaban langsung atau pembuka yang langsung menjawab inti pertanyaan",
   "paragraphs": [
-    "Paragraf 1: penjelasan detail, konteks, dan sejarah/relevansinya",
-    "Paragraf 2: variasi, rekomendasi, atau fakta menarik"
+    "Paragraf/Bait 1",
+    "Paragraf/Bait 2",
+    "Paragraf/Bait 3"
   ],
   "bulletPoints": [
-    {"label": "Kategori / Jenis", "text": "Detail 1"},
-    {"label": "Ciri Khas", "text": "Detail 2"},
-    {"label": "Rekomendasi", "text": "Detail 3"}
+    {"label": "Label 1", "text": "Detail 1"},
+    {"label": "Label 2", "text": "Detail 2"}
   ],
   "sources": [
     {
@@ -328,12 +671,6 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
       "url": "https://...",
       "domain": "id.wikipedia.org",
       "excerpt": "Kutipan atau ringkasan informasi"
-    },
-    {
-      "title": "Nama Sumber 2",
-      "url": "https://...",
-      "domain": "kompas.com",
-      "excerpt": "Kutipan informasi relevan"
     }
   ],
   "matchedThemeSlug": "sejarah | rumah-adat | kain-pakaian | bahasa-aksara | tari-musik | kuliner | pertunjukan-lisan | upacara-adat | null"
@@ -341,13 +678,12 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
 `;
 
   try {
-    // Priority order: models that have available free-tier quota first
+    // Priority order: valid Gemini API model IDs (free-tier available)
     const models = [
-      "gemini-3-flash-preview",
+      "gemini-flash-lite-latest",
       "gemini-3.5-flash-lite",
       "gemini-3.1-flash-lite",
       "gemini-3.8-flash",
-      "gemini-3.6-flash",
       "gemini-3.5-flash",
     ];
     let jsonText = "";
@@ -357,7 +693,7 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
       try {
         geminiDebugLogs.push(`Trying ${model} (key: ${apiKey.slice(0, 6)}...${apiKey.slice(-4)})`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -562,6 +898,12 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
 
 // ─── Local fallback (used if Gemini is unreachable) ─────────────────────────
 export function generateLocalFallback(query: string): SearchResult {
+  // Cek lagu daerah Sumsel secara langsung
+  const matchedSong = findSumselSong(query);
+  if (matchedSong) {
+    return buildSongSearchResult(matchedSong, query);
+  }
+
   if (isClearlyOffTopic(query)) {
     return {
       status: "no_result",
