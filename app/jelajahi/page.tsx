@@ -592,38 +592,35 @@ function JelajahiContent() {
                         size="sm"
                       />
                     </div>
-                    {result.card1.image && !result.card1.image.startsWith("/images/") ? (
+                    {result.card1.image ? (
                       <img
                         src={result.card1.image}
-                        alt={result.card1.title}
+                        alt={result.card1.title || query}
                         className="w-full h-full object-cover rounded-3xl"
                         draggable={false}
                         onError={(e) => {
-                          // Jika gambar gagal load, sembunyikan elemen
-                          (e.target as HTMLImageElement).style.display = "none";
+                          const target = e.target as HTMLImageElement;
+                          if (!target.src.includes("/images/ampera_hero.jpg")) {
+                            target.src = "/images/ampera_hero.jpg";
+                          }
                         }}
                       />
                     ) : (
-                      // Elegant dark gradient fallback
-                      <div className="w-full h-full rounded-3xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#3a0a14] via-[#0d0d0f] to-[#1a1200]" />
-                        <div className="absolute inset-0" style={{
-                          background: "radial-gradient(ellipse at 30% 40%, rgba(212,175,55,0.12) 0%, transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(107,29,47,0.25) 0%, transparent 55%)"
-                        }} />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20">
-                          <span className="material-symbols-outlined text-6xl">photo_camera</span>
-                          <span className="text-xs tracking-widest uppercase">{result.card1.title}</span>
-                        </div>
-                      </div>
+                      <img
+                        src="/images/ampera_hero.jpg"
+                        alt={result.card1.title || query || "Sumatera Selatan"}
+                        className="w-full h-full object-cover rounded-3xl"
+                        draggable={false}
+                      />
                     )}
                     {/* Label sumber foto */}
-                    {result.card1.image && !result.card1.image.startsWith("/images/") && (
-                      <div className="absolute bottom-3 right-4 pointer-events-none">
-                        <span className="text-[9px] font-medium text-white/35 tracking-wider uppercase bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                          Wikimedia Commons
-                        </span>
-                      </div>
-                    )}
+                    <div className="absolute bottom-3 right-4 pointer-events-none">
+                      <span className="text-[9px] font-medium text-white/50 tracking-wider uppercase bg-black/60 px-2.5 py-0.5 rounded-full backdrop-blur-md border border-white/10">
+                        {result.card1.image && result.card1.image.startsWith("http")
+                          ? (result.card1.image.includes("wikipedia.org") ? "Wikimedia Commons" : "Dokumentasi Budaya")
+                          : "SORA Koleksi Otentik"}
+                      </span>
+                    </div>
                   </div>
 
 

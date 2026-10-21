@@ -6,6 +6,7 @@ import {
   fetchSmartImage,
   generateLocalFallback,
   findLocalMatch,
+  resolveContextualImage,
   SearchResult,
   geminiDebugLogs,
 } from "@/lib/gemini";
@@ -89,17 +90,26 @@ export async function GET(request: NextRequest) {
       const wikiTitleEn = result._wikiTitleEn;
       const imageSearchQuery = result._imageSearchQuery || result.card1.title;
 
-      const smartImg = await fetchSmartImage(
-        result.card2?.sources || [],
-        wikiTitleId,
-        wikiTitleEn,
-        imageSearchQuery,
-        query
-      );
-
-      if (smartImg) {
-        result.card1 = { ...result.card1, image: smartImg };
+      let smartImg: string | null = null;
+      // Ambil foto dari web/Wikipedia jika belum ada foto spesifik lokal
+      if (!result.card1.image || result.card1.image === "/images/ampera_hero.jpg") {
+        smartImg = await fetchSmartImage(
+          result.card2?.sources || [],
+          wikiTitleId,
+          wikiTitleEn,
+          imageSearchQuery,
+          query
+        );
       }
+
+      // Pastikan SELALU ada foto yang sesuai konteks pertanyaan (tidak pernah kosong)
+      const finalImage = resolveContextualImage(
+        query,
+        result.card1?.title,
+        result.card3?.themeSlug,
+        smartImg || result.card1?.image
+      );
+      result.card1 = { ...result.card1, image: finalImage };
     }
 
     // Remove internal helper fields before sending to client
