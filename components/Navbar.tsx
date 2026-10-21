@@ -217,21 +217,13 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              // Not logged in: Sign in + Create now
-              <>
-                <Link
-                  href="/masuk"
-                  className="text-white/80 hover:text-white font-medium transition-colors drop-shadow hidden sm:inline-block cursor-pointer"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/jelajahi"
-                  className="bg-[#00f2fe] hover:bg-[#00d6e2] text-slate-950 font-bold px-4 sm:px-5 py-2 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs tracking-wide inline-block whitespace-nowrap"
-                >
-                  Create now
-                </Link>
-              </>
+              // Not logged in: single Sign In button
+              <Link
+                href="/masuk"
+                className="bg-[#00f2fe] hover:bg-[#00d6e2] text-slate-950 font-bold px-4 sm:px-5 py-2 rounded-full shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs tracking-wide inline-block whitespace-nowrap"
+              >
+                Sign In
+              </Link>
             )}
           </div>
         </div>

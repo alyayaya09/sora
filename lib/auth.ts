@@ -19,10 +19,12 @@ export const auth = betterAuth({
     },
   }),
 
-  // Email + password auth
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: false, // disable for demo / MVP
+  // Google OAuth
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
   },
 
   // Secret untuk signing token — wajib ada di .env.local
