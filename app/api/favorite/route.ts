@@ -34,7 +34,26 @@ export async function GET(req: NextRequest) {
     .where(eq(favorite.userId, user.id))
     .orderBy(desc(favorite.createdAt));
 
-  return NextResponse.json({ favorites: items });
+  const mapped = items.map((f) => ({
+    id: f.id,
+    userId: f.userId,
+    user_id: f.userId,
+    itemType: f.itemType,
+    item_type: f.itemType,
+    itemRef: f.itemRef,
+    item_ref: f.itemRef,
+    title: f.title,
+    imageUrl: f.imageUrl,
+    image_url: f.imageUrl,
+    creator: f.creator,
+    sourceUrl: f.sourceUrl,
+    source_url: f.sourceUrl,
+    license: f.license,
+    createdAt: f.createdAt ? f.createdAt.toISOString() : new Date().toISOString(),
+    created_at: f.createdAt ? f.createdAt.toISOString() : new Date().toISOString(),
+  }));
+
+  return NextResponse.json({ favorites: mapped });
 }
 
 export async function POST(req: NextRequest) {
@@ -43,7 +62,13 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { itemType, itemRef, title, imageUrl, creator, sourceUrl, license } = body;
+  const itemType = body.itemType || body.item_type;
+  const itemRef = body.itemRef || body.item_ref;
+  const title = body.title;
+  const imageUrl = body.imageUrl || body.image_url;
+  const creator = body.creator;
+  const sourceUrl = body.sourceUrl || body.source_url;
+  const license = body.license;
 
   if (!itemType || !itemRef) {
     return NextResponse.json({ error: "itemType dan itemRef wajib diisi" }, { status: 400 });
@@ -74,7 +99,8 @@ export async function DELETE(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { itemType, itemRef } = body;
+  const itemType = body.itemType || body.item_type;
+  const itemRef = body.itemRef || body.item_ref;
 
   if (!itemType || !itemRef) {
     return NextResponse.json({ error: "itemType dan itemRef wajib diisi" }, { status: 400 });
@@ -92,3 +118,4 @@ export async function DELETE(req: NextRequest) {
 
   return NextResponse.json({ success: true });
 }
+

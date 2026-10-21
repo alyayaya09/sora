@@ -8,15 +8,21 @@ import AmbientBackground from "../../components/AmbientBackground";
 
 interface FavoriteItem {
   id: string;
-  user_id: string;
-  item_type: "card" | "theme" | "image";
-  item_ref: string;
+  user_id?: string;
+  userId?: string;
+  item_type?: "card" | "theme" | "image";
+  itemType?: "card" | "theme" | "image";
+  item_ref?: string;
+  itemRef?: string;
   title: string | null;
   image_url: string | null;
+  imageUrl?: string | null;
   creator: string | null;
   source_url: string | null;
+  sourceUrl?: string | null;
   license: string | null;
-  created_at: string;
+  created_at?: string;
+  createdAt?: string;
 }
 
 type TabType = "stories" | "gambar";
@@ -74,27 +80,34 @@ export default function FavoritPage() {
 
   const handleRemoveFavorite = async (e: React.MouseEvent, item: FavoriteItem) => {
     e.stopPropagation();
+    const type = item.item_type || item.itemType;
+    const ref = item.item_ref || item.itemRef;
     try {
       await fetch("/api/favorite", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemType: item.item_type, itemRef: item.item_ref }),
+        body: JSON.stringify({ itemType: type, itemRef: ref }),
       });
       setFavorites((prev) => prev.filter((f) => f.id !== item.id));
-      showToast("Dihapus dari Favorit", item.title || item.item_ref, true);
+      showToast("Dihapus dari Favorit", item.title || ref || "Item", true);
     } catch {
       showToast("Gagal menghapus", "Coba lagi nanti", true);
     }
   };
 
-  const storiesFavs = favorites.filter((f) => f.item_type === "card" || f.item_type === "theme");
-  const imageFavs = favorites.filter((f) => f.item_type === "image");
+  const storiesFavs = favorites.filter((f) => {
+    const type = f.item_type || f.itemType;
+    return type === "card" || type === "theme";
+  });
+  const imageFavs = favorites.filter((f) => (f.item_type || f.itemType) === "image");
   const displayedFavs = activeTab === "stories" ? storiesFavs : imageFavs;
 
   const getItemLink = (item: FavoriteItem) => {
-    if (item.item_type === "card") return `/tur/${item.item_ref}`;
-    if (item.item_type === "theme") return `/tema/${item.item_ref}`;
-    if (item.source_url) return item.source_url;
+    const type = item.item_type || item.itemType;
+    const ref = item.item_ref || item.itemRef;
+    if (type === "card") return `/tur/${ref}`;
+    if (type === "theme") return `/tema/${ref}`;
+    if (item.source_url || item.sourceUrl) return (item.source_url || item.sourceUrl)!;
     return "/jelajahi";
   };
 
@@ -234,10 +247,10 @@ export default function FavoritPage() {
                   className="group relative rounded-2xl overflow-hidden border border-white/10 aspect-[3/4] flex flex-col justify-between p-4 cursor-pointer shadow-lg hover:border-amber-400/30 transition-all duration-500 bg-black/60 heritage-card"
                 >
                   {/* Background Image */}
-                  {item.image_url && (
+                  {(item.image_url || item.imageUrl) && (
                     <img
-                      alt={item.title || item.item_ref}
-                      src={item.image_url}
+                      alt={item.title || item.item_ref || item.itemRef || "Favorit"}
+                      src={(item.image_url || item.imageUrl)!}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
                       }}
@@ -246,17 +259,21 @@ export default function FavoritPage() {
                   )}
 
                   {/* No image placeholder */}
-                  {!item.image_url && (
+                  {!(item.image_url || item.imageUrl) && (
                     <div className="absolute inset-0 bg-gradient-to-br from-[#6b1d2f]/40 to-[#0d0d0f] z-0 flex items-center justify-center">
                       <span className="material-symbols-outlined text-5xl text-white/20">photo_camera</span>
                     </div>
                   )}
 
                   {/* Badge */}
-                  {item.item_type && (
+                  {(item.item_type || item.itemType) && (
                     <div className="absolute top-3 left-3 z-20">
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-black/50 text-[#f3d38c] border border-[#d4af37]/30 backdrop-blur-sm capitalize">
-                        {item.item_type === "card" ? "Tur Digital" : item.item_type === "theme" ? "Tema" : "Gambar"}
+                        {(item.item_type || item.itemType) === "card"
+                          ? "Tur Digital"
+                          : (item.item_type || item.itemType) === "theme"
+                          ? "Tema"
+                          : "Gambar"}
                       </span>
                     </div>
                   )}

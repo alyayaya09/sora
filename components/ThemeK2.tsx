@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { Theme } from "../data/sora-content";
+import LoveButton from "./LoveButton";
 
 interface ThemeK2Props {
   theme: Theme;
@@ -266,6 +267,20 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
             >
               {theme.intro}
             </p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <LoveButton
+                itemType="theme"
+                itemRef={theme.slug}
+                title={theme.title}
+                imageUrl={theme.heroImage || theme.image}
+                creator="Sumatera Selatan"
+                sourceUrl={`/tema/${theme.slug}`}
+                size="md"
+              />
+              <span className="text-xs text-white/60 font-sans tracking-wide">
+                Simpan ke Favorit
+              </span>
+            </div>
           </div>
         </header>
         {/* END: HeroSection */}

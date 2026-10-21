@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getDedicatedTour } from "../../../data/sora-content";
+import LoveButton from "../../../components/LoveButton";
 
 interface TourPageProps {
   params?: {
@@ -16,7 +17,6 @@ export default function TourDetailPage({ params }: TourPageProps) {
   const slug = (routerParams?.slug as string) || params?.slug || "songket-palembang";
   const tour = getDedicatedTour(slug);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [showToast, setShowToast] = useState<string | null>(null);
 
   const sectionIds = [
@@ -182,31 +182,22 @@ export default function TourDetailPage({ params }: TourPageProps) {
             {/* Action Pills (Simpan, Salin Tautan, Bagikan) matching LKONTEN.MD */}
             <div className="flex items-center justify-center gap-4 mx-auto pt-6 pb-2">
               <div className="relative group/tooltip flex items-center justify-center">
-                <button
-                  aria-label="Favorit"
-                  className="group inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#6b1d2f]/25 hover:bg-[#6b1d2f]/40 border border-rose-500/30 text-rose-400 backdrop-blur-md transition-all duration-300 shadow-sm focus:outline-none hover:-translate-y-0.5 hover:shadow-lg active:scale-95 cursor-pointer"
-                  type="button"
-                  onClick={() => {
-                    setIsFavorited(!isFavorited);
+                <LoveButton
+                  itemType="card"
+                  itemRef={slug}
+                  title={tour.title}
+                  imageUrl={tour.heroImage}
+                  creator={tour.subtitle}
+                  sourceUrl={`/tur/${slug}`}
+                  variant="rounded-2xl"
+                  onToggle={(fav) => {
                     triggerToast(
-                      !isFavorited ? "Tersimpan di Favorit" : "Dihapus dari Favorit"
+                      fav ? "Tersimpan di Favorit" : "Dihapus dari Favorit"
                     );
                   }}
-                >
-                  <svg
-                    className="w-5 h-5 transition-transform duration-200 group-hover:scale-110 group-active:scale-125"
-                    fill={isFavorited ? "#f43f5e" : "none"}
-                    stroke="#f43f5e"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                  </svg>
-                </button>
+                />
                 <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md bg-[#1b1b1d]/90 border border-white/10 text-neutral-200 text-[10px] tracking-wide opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 backdrop-blur-md shadow-md z-20">
-                  {isFavorited ? "Hapus dari Favorit" : "Simpan ke Favorit"}
+                  Favorit
                 </div>
               </div>
 

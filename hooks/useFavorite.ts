@@ -34,8 +34,9 @@ export function useFavorite(itemType: string, itemRef: string) {
         if (Array.isArray(favorites)) {
           setIsFav(
             favorites.some(
-              (f: { item_type: string; item_ref: string }) =>
-                f.item_type === itemType && f.item_ref === itemRef
+              (f: { item_type?: string; itemType?: string; item_ref?: string; itemRef?: string }) =>
+                (f.item_type === itemType || f.itemType === itemType) &&
+                (f.item_ref === itemRef || f.itemRef === itemRef)
             )
           );
         }

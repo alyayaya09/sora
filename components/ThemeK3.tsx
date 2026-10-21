@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Theme } from "../data/sora-content";
+import LoveButton from "./LoveButton";
 
 interface ThemeK3Props {
   theme: Theme;
@@ -11,7 +12,6 @@ interface ThemeK3Props {
 export default function ThemeK3({ theme }: ThemeK3Props) {
   const [activeFannedIndex, setActiveFannedIndex] = useState(2); // Default card 3 active matching K3.MD
   const [activeExpert, setActiveExpert] = useState(6); // Default 7th card active (0-indexed 6) matching K3.MD
-  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     const slideElements = document.querySelectorAll(".scroll-slide");
@@ -149,33 +149,20 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
 
           {/* Interactive Actions: Favorite & Share */}
           <div className="flex items-center gap-6 mt-6">
-            <button
-              aria-label="Suka"
-              className="text-white/90 hover:text-white hover:scale-110 transition-transform cursor-pointer"
-              type="button"
-              onClick={() => {
-                setIsFavorited(!isFavorited);
+            <LoveButton
+              itemType="theme"
+              itemRef={theme.slug}
+              title={theme.title}
+              imageUrl={theme.heroImage || theme.image}
+              creator="Sumatera Selatan"
+              sourceUrl={`/tema/${theme.slug}`}
+              size="md"
+              onToggle={(fav) => {
                 triggerToast(
-                  !isFavorited ? "Tersimpan ke Favorit" : "Dihapus dari Favorit"
+                  fav ? "Tersimpan ke Favorit" : "Dihapus dari Favorit"
                 );
               }}
-            >
-              <svg
-                className={`w-6 h-6 stroke-current ${
-                  isFavorited
-                    ? "fill-red-500 stroke-red-500"
-                    : "fill-transparent hover:fill-red-500 hover:stroke-red-500"
-                } transition-colors`}
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>
-              </svg>
-            </button>
+            />
             <button
               aria-label="Bagikan"
               className="text-white/90 hover:text-white hover:scale-110 transition-transform cursor-pointer"

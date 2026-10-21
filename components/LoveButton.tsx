@@ -20,8 +20,12 @@ interface LoveButtonProps {
   license?: string;
   /** Visual size variant */
   size?: "sm" | "md" | "lg";
+  /** Shape variant */
+  variant?: "circle" | "rounded-2xl" | "pill";
   /** Extra class names */
   className?: string;
+  /** Optional callback on status change */
+  onToggle?: (isFavorited: boolean) => void;
 }
 
 export default function LoveButton({
@@ -33,7 +37,9 @@ export default function LoveButton({
   sourceUrl,
   license,
   size = "md",
+  variant = "circle",
   className = "",
+  onToggle,
 }: LoveButtonProps) {
   const { data: session } = useSession();
   const router = useRouter();
@@ -48,12 +54,12 @@ export default function LoveButton({
       .then((r) => r.json())
       .then(({ favorites }) => {
         if (Array.isArray(favorites)) {
-          setIsFav(
-            favorites.some(
-              (f: { item_type: string; item_ref: string }) =>
-                f.item_type === itemType && f.item_ref === itemRef
-            )
+          const exists = favorites.some(
+            (f: { item_type?: string; itemType?: string; item_ref?: string; itemRef?: string }) =>
+              (f.item_type === itemType || f.itemType === itemType) &&
+              (f.item_ref === itemRef || f.itemRef === itemRef)
           );
+          setIsFav(exists);
         }
       })
       .catch(() => {});
@@ -61,7 +67,7 @@ export default function LoveButton({
 
   const showMiniToast = (msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 2000);
+    setTimeout(() => setToast(null), 2200);
   };
 
   const handleClick = async (e: React.MouseEvent) => {
@@ -82,6 +88,7 @@ export default function LoveButton({
           body: JSON.stringify({ itemType, itemRef }),
         });
         setIsFav(false);
+        onToggle?.(false);
         showMiniToast("Dihapus dari Favorit");
       } else {
         await fetch("/api/favorite", {
@@ -90,7 +97,8 @@ export default function LoveButton({
           body: JSON.stringify({ itemType, itemRef, title, imageUrl, creator, sourceUrl, license }),
         });
         setIsFav(true);
-        showMiniToast("Ditambahkan ke Favorit ❤");
+        onToggle?.(true);
+        showMiniToast("Disimpan ke Favorit ❤");
       }
     } catch {
       showMiniToast("Gagal, coba lagi");
@@ -100,7 +108,15 @@ export default function LoveButton({
   };
 
   const iconSize = size === "sm" ? "text-base" : size === "lg" ? "text-2xl" : "text-xl";
-  const btnSize = size === "sm" ? "p-1.5" : size === "lg" ? "p-3" : "p-2";
+  const btnSize =
+    variant === "rounded-2xl"
+      ? "w-12 h-12"
+      : size === "sm"
+      ? "p-1.5"
+      : size === "lg"
+      ? "p-3"
+      : "p-2";
+  const roundedClass = variant === "rounded-2xl" ? "rounded-2xl" : "rounded-full";
 
   return (
     <div className="relative inline-flex flex-col items-center">
@@ -111,12 +127,12 @@ export default function LoveButton({
         aria-label={isFav ? "Hapus dari Favorit" : "Tambah ke Favorit"}
         title={isFav ? "Hapus dari Favorit" : "Tambah ke Favorit"}
         className={`
-          ${btnSize} rounded-full transition-all duration-300 cursor-pointer
+          ${btnSize} ${roundedClass} flex items-center justify-center transition-all duration-300 cursor-pointer
           ${isFav
-            ? "bg-[#6b1d2f]/80 text-[#f3d38c] border border-[#d4af37]/50 shadow-lg shadow-[#6b1d2f]/30"
-            : "bg-black/40 text-white/60 border border-white/20 hover:text-red-400 hover:border-red-400/40 hover:bg-black/60"
+            ? "bg-[#6b1d2f]/90 text-rose-300 border border-rose-500/50 shadow-lg shadow-[#6b1d2f]/40 hover:bg-[#8b273e]"
+            : "bg-black/40 text-white/70 border border-white/20 hover:text-rose-400 hover:border-rose-400/40 hover:bg-black/60"
           }
-          backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed
+          backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:scale-95
           ${className}
         `}
       >
@@ -124,7 +140,7 @@ export default function LoveButton({
           <div className={`${iconSize} w-[1em] h-[1em] border-2 border-current border-t-transparent rounded-full animate-spin`} />
         ) : (
           <svg
-            className={`${iconSize} w-[1em] h-[1em] ${isFav ? "fill-current" : "fill-none stroke-current stroke-2"}`}
+            className={`${iconSize} w-[1em] h-[1em] transition-transform duration-200 hover:scale-110 ${isFav ? "fill-rose-500 stroke-rose-500" : "fill-none stroke-current stroke-2"}`}
             viewBox="0 0 24 24"
           >
             <path
@@ -138,7 +154,7 @@ export default function LoveButton({
 
       {/* Mini toast */}
       {toast && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#1a1a1e]/95 text-white text-xs px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-xl shadow-lg pointer-events-none z-50 animate-fade-in">
+        <div className="absolute bottom-full mb-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#141014]/95 text-amber-200 text-xs px-3.5 py-1.5 rounded-xl border border-amber-400/40 backdrop-blur-2xl shadow-[0_8px_24px_rgba(0,0,0,0.8)] pointer-events-none z-50 animate-fade-in font-medium tracking-wide">
           {toast}
         </div>
       )}

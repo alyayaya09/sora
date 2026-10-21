@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { Theme } from "../data/sora-content";
+import LoveButton from "./LoveButton";
 
 interface ThemeK1Props {
   theme: Theme;
@@ -116,6 +117,20 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
             <p className="mt-5 text-lg sm:text-xl text-[#f3f4f6] font-normal leading-relaxed drop-shadow-md max-w-xl">
               {theme.tagline}
             </p>
+            <div className="mt-6 flex items-center gap-3">
+              <LoveButton
+                itemType="theme"
+                itemRef={theme.slug}
+                title={theme.title}
+                imageUrl={theme.heroImage || theme.image}
+                creator="Sumatera Selatan"
+                sourceUrl={`/tema/${theme.slug}`}
+                size="md"
+              />
+              <span className="text-xs text-white/60 font-sans tracking-wide">
+                Simpan ke Favorit
+              </span>
+            </div>
           </div>
         </div>
 
