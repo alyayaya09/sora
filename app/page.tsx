@@ -66,7 +66,19 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Auto-mute video saat hero keluar dari viewport, unmute saat kembali terlihat
+  // Baca preferensi mute user dari sessionStorage saat mount
+  useEffect(() => {
+    const saved = sessionStorage.getItem("sora-hero-muted");
+    // Default muted = true (browser policy); hanya unmute jika user pernah pilih unmute
+    const shouldMute = saved === null ? true : saved === "true";
+    setIsMuted(shouldMute);
+    if (videoRef.current) {
+      videoRef.current.muted = shouldMute;
+      videoRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  // Auto-mute video saat hero keluar dari viewport, restore saat kembali terlihat
   useEffect(() => {
     const heroEl = document.getElementById("hero-ampera");
     if (!heroEl || !videoRef.current) return;
@@ -77,28 +89,33 @@ export default function HomePage() {
         const video = videoRef.current;
         if (!video) return;
         if (!entry.isIntersecting) {
-          // Hero sudah tidak terlihat → mute video
+          // Hero tidak terlihat → mute (tapi jangan ubah sessionStorage)
           video.muted = true;
           setIsMuted(true);
         } else {
-          // Hero terlihat kembali → kembalikan state mute sesuai tombol
-          // (tidak paksa unmute, biarkan user yang kontrol)
+          // Hero terlihat kembali → kembalikan preferensi user
+          const saved = sessionStorage.getItem("sora-hero-muted");
+          const shouldMute = saved === null ? true : saved === "true";
+          video.muted = shouldMute;
+          setIsMuted(shouldMute);
+          if (!shouldMute) {
+            video.play().catch(() => {});
+          }
         }
       },
-      { threshold: 0.05 } // mute jika < 5% hero yang terlihat
+      { threshold: 0.05 }
     );
 
     observer.observe(heroEl);
     return () => observer.disconnect();
   }, []);
 
-  // Cleanup: mute video saat komponen unmount (navigasi ke halaman lain)
+  // Cleanup: hanya mute audio, biarkan autoPlay menangani restart saat kembali ke halaman
   useEffect(() => {
     return () => {
       if (videoRef.current) {
         try {
           videoRef.current.muted = true;
-          videoRef.current.pause();
         } catch {}
       }
     };
@@ -329,6 +346,8 @@ export default function HomePage() {
             onClick={() => {
               const nextMuted = !isMuted;
               setIsMuted(nextMuted);
+              // Simpan preferensi user ke sessionStorage
+              sessionStorage.setItem("sora-hero-muted", String(nextMuted));
               if (videoRef.current) {
                 videoRef.current.muted = nextMuted;
                 if (!nextMuted) {
