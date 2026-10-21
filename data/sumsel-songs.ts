@@ -17,36 +17,36 @@ export interface SumselSong {
 
 export const sumselSongs: SumselSong[] = [
   {
-    id: "cuk-mak-ilang",
-    title: "Cuk Mak Ilang",
+    id: "palembang-darussalam",
+    title: "Palembang Darussalam",
     aliases: [
-      "cuk mak ilang",
-      "cuk mak ilang mak ilang",
-      "lagu cuk mak ilang",
-      "lirik lagu cuk mak ilang",
-      "lirik cuk mak ilang",
-      "lagu daerah cuk mak ilang",
-      "cuk mak ilang palembang",
+      "palembang darussalam",
+      "lagu palembang darussalam",
+      "lirik palembang darussalam",
+      "lirik lagu palembang darussalam",
+      "palembang kota kito",
+      "tekenal sungi musinyo",
+      "tekenal dengan pempeknyo",
+      "lagu daerah palembang darussalam",
     ],
-    region: "Palembang, Sumatera Selatan",
-    creator: "Tradisional Palembang",
-    highlight: "Berikut adalah lirik lengkap lagu daerah khas Palembang 'Cuk Mak Ilang' beserta bait pantun aslinya:",
+    region: "Kota Palembang, Sumatera Selatan",
+    creator: "R.H. Syahril Erwin / Yayak",
+    highlight: "Berikut adalah lirik lengkap lagu daerah kebanggaan warga Palembang 'Palembang Darussalam':",
     lyrics: [
-      "Cuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku\nCuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku",
-      "Kapal api maso' Palembang\nBanyu tenang jadi begelombang\nTengok adek bepayong kembang\nHati di dalam jadi bimbang",
-      "Cuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku\nCuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku",
-      "Ngaso dulu di bawah pohon\nAngin sepoi sepoi nyentuh badan\nAdek manis janganlah mohon\nKando setia sepanjang zaman",
-      "Cuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku\nCuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku",
+      "Palembang Darussalam...\nPalembang kota kito\nTekenal sungi Musinyo...\nTekenal dengan pempeknyo\nJembatan Ampera yang anggun\nMasjid Agungnyo yang cindo\nMenambah tekenalnyo\nKota kesayangan kito",
+      "Palembang Darussalam...\nPalembang kota kito\nTekenal rumah limasnyo\nTekenal dengan songketnyo\nPulou Kemaro yang tenang\nBenteng Kuto Besak yang cindo\nMenambah semaraknyo\nKota kebanggaan kito",
+      "Bujang gadesnyo... Oi... belagak nian\nAdat budayonyo tetep dijago\nHasil buminyo... Oi... banyak nian\nPembangunannyo rato dimano-mano",
+      "Oi... Palembang Darussalam\nOi... Palembang Darussalam\nPalembang kota kito\nPalembang Darussalam",
     ],
-    meaning: "Lagu 'Cuk Mak Ilang' merupakan lagu pantun rakyat Palembang yang sangat populer dan ceria. Mengisahkan pergaulan muda-mudi Melayu Palembang dengan kiasan jenaka dan rayuan kasih sayang di tepian Sungai Musi.",
-    image: "/images/rebana_burdah.jpg",
+    meaning: "Lagu 'Palembang Darussalam' mengagungkan keelokan dan kemegahan Kota Palembang. Menggambarkan kekayaan ikonik seperti Sungai Musi, Pempek, Jembatan Ampera, Masjid Agung Sultan Mahmud Badaruddin I, Rumah Limas, Songket, Benteng Kuto Besak, dan Pulau Kemaro.",
+    image: "/images/ampera_hero.jpg",
     themeSlug: "tari-musik",
     sources: [
       {
-        title: "Cuk Mak Ilang — Lagu Daerah Sumatera Selatan",
-        url: "https://id.wikipedia.org/wiki/Sumatra_Selatan",
+        title: "Palembang Darussalam — Kidung Kebanggaan Palembang",
+        url: "https://id.wikipedia.org/wiki/Kota_Palembang",
         domain: "id.wikipedia.org",
-        excerpt: "Lagu rakyat Melayu Palembang bertempo lincah dengan struktur pantun bersahut.",
+        excerpt: "Lagu daerah Palembang ciptaan R.H. Syahril Erwin yang mendeskripsikan pesona ikon-ikon utama Palembang.",
       },
       {
         title: "Koleksi Lagu Tradisional Sumatera Selatan — Dinas Kebudayaan",
@@ -57,29 +57,69 @@ export const sumselSongs: SumselSong[] = [
     ],
   },
   {
+    id: "pempek-lenjer",
+    title: "Pempek Lenjer",
+    aliases: [
+      "pempek lenjer",
+      "lagu pempek lenjer",
+      "lirik pempek lenjer",
+      "lirik lagu pempek lenjer",
+      "bulet besak panjang mak lengen",
+      "pempek lenjer oy pempek lenjer",
+      "lagu daerah pempek lenjer",
+    ],
+    region: "Kota Palembang, Sumatera Selatan",
+    creator: "S. Tarno",
+    highlight: "Berikut adalah lirik lengkap lagu daerah jenaka khas Palembang 'Pempek Lenjer' (Ciptaan S. Tarno):",
+    lyrics: [
+      "Bulet besak panjang mak lengen\nKejel-kejel rasonyo marem\nMasuk ke mulut matonyo mejem\nMertuo lewat masih ditelen",
+      "Kejel keras sudah biaso\nAsak bae iwaknyo teraso\nDigoreng pake minyak kelapo\nJadi nambah lemak rasonyo",
+      "Pempek lenjer oy pempek lenjer\nSiapo nyingok pastilah ngiler\nPempek lenjer oy pempek lenjer\nMakan sikok pacak kelenger",
+      "Mangcek bicek janganlah lupo\nNgawak balek oleh-olehnyo\nPempek lenjer samo cukonyo\nKito makan bersamo-samo",
+      "Pempek lenjer oy pempek lenjer\nSiapo nyingok pastilah ngiler\nPempek lenjer oy pempek lenjer\nMakan sikok pacak kelenger",
+    ],
+    meaning: "Lagu 'Pempek Lenjer' karya S. Tarno adalah tembang rakyat Palembang bernada jenaka yang merayakan kelezatan pempek lenjer—kuliner legendaris berbahan ikan dan tepung sagu yang kenyal, gurih, dan menggugah selera disantap bersama cuko pekat.",
+    image: "/images/pempek_palembang.jpg",
+    themeSlug: "kuliner",
+    sources: [
+      {
+        title: "Pempek Lenjer — Khazanah Kuliner dan Musik Palembang",
+        url: "https://id.wikipedia.org/wiki/Pempek",
+        domain: "id.wikipedia.org",
+        excerpt: "Tembang daerah Palembang yang mengabadikan ikon kuliner pempek lenjer dalam bait-bait lincah.",
+      },
+    ],
+  },
+  {
     id: "kebile-bile",
     title: "Kebile-bile",
     aliases: [
       "kebile bile",
       "kebile-bile",
+      "kabile bile",
+      "kabile-bile",
       "lagu kebile bile",
       "lirik lagu kebile bile",
       "lirik kebile bile",
+      "lagu kabile bile",
+      "lirik lagu kabile bile",
+      "lirik kabile bile",
       "lagu daerah kebile bile",
       "kebile bile lahat",
       "kebile bile pagaralam",
+      "kabile bile mangke ku lege",
+      "kabile-bile mangke ku lege",
     ],
     region: "Lahat / Pagaralam (Besemah), Sumatera Selatan",
     creator: "Tradisional Suku Besemah",
-    highlight: "Berikut adalah lirik lengkap lagu daerah Besemah Sumatera Selatan 'Kebile-bile' yang sarat kepasrahan dan kerinduan:",
+    highlight: "Berikut adalah lirik autentik lagu daerah Besemah Sumatera Selatan 'Kebile-bile' (Kabile-bile):",
     lyrics: [
-      "Kebile-bile mangke ku luge\nKebile-bile ku ade kance\nKebile-bile mangke ku luge\nKebile-bile ku ade kance",
-      "Kebile nian jagung la rapus\nKite begulai sendok la patah\nKebile nian daging la angus\nKite berumah tangga la punah",
-      "Kebile-bile mangke ku luge\nKebile-bile ku ade kance\nKebile-bile mangke ku luge\nKebile-bile ku ade kance",
-      "Kebile nian linjang tebuang\nKite bemandi ayek la keruh\nKebile nian badan melayang\nKite bedudok la jauh-jauh",
-      "Kebile-bile mangke ku luge\nKebile-bile ku ade kance",
+      "Kabile-bile mangke ku lege\nKabile-bile ku ade kance\nKabile-bile mangke ku lege\nKabile-bile ku ade kance",
+      "Kabile nian jagunglah putih\nPutih dik putih kukendam kina\nKebile nian ibung kah nulih\nNulih dik nulih kudendam kina",
+      "Kabile nian mampat begune\nMangke dik payah ku nandan lagi\nKebile nian sifat begune\nMangke dik payah ku midang lagi",
+      "Oh, malang nian nasib ‘mbak ini\nBilangan jeme lah laut gale\nAlahkah sedih ai tumbak ini\nAku ‘mbak ini dide bekance",
     ],
-    meaning: "Lagu 'Kebile-bile' adalah tembang ratapan suku Besemah yang mempertanyakan kapan ('kebile-bile') nasib kesendirian akan berakhir dan kapan kebahagiaan serta sahabat hidup ('kance') akan datang mengiringi langkah.",
+    meaning: "Lagu 'Kebile-bile' (Kabile-bile) adalah tembang ratapan syahdu masyarakat dataran tinggi Besemah (Lahat & Pagaralam). Menggambarkan kepasrahan batin menghadapi nasib kesendirian, merindukan saat-saat tibanya kebahagiaan dan sahabat sejati ('kance') dalam perjalanan hidup.",
     image: "/images/tari_pasemah.jpg",
     themeSlug: "tari-musik",
     sources: [
@@ -87,13 +127,85 @@ export const sumselSongs: SumselSong[] = [
         title: "Kebile-bile — Musik Daerah Besemah",
         url: "https://id.wikipedia.org/wiki/Kabupaten_Lahat",
         domain: "id.wikipedia.org",
-        excerpt: "Lagu daerah melankolis dari dataran tinggi Besemah, Lahat, dan Pagaralam.",
+        excerpt: "Tembang klasik Batanghari Sembilan suku Besemah di lereng Gunung Dempo.",
       },
       {
-        title: "Tembang Batanghari Sembilan — Warisan Budaya Sumsel",
+        title: "Warisan Budaya Takbenda Sumatera Selatan",
         url: "https://sumselprov.go.id",
         domain: "sumselprov.go.id",
-        excerpt: "Khazanah petikan dawai gitar tunggal dan nyanyian pedalaman Sumsel.",
+        excerpt: "Kidung rakyat autentik Lahat dan Pagaralam dalam tradisi tutur lisan Sumsel.",
+      },
+    ],
+  },
+  {
+    id: "ya-saman",
+    title: "Ya Saman",
+    aliases: [
+      "ya saman",
+      "lagu ya saman",
+      "lirik ya saman",
+      "lirik lagu ya saman",
+      "lagu daerah ya saman",
+      "ya saman palembang",
+      "nyelek gelumbang perahu bidar",
+      "nyelek gelumbang perahu bidar di sungai musi",
+      "nyelek belumban perahu bidar",
+    ],
+    region: "Kota Palembang, Sumatera Selatan",
+    creator: "Kamsul A. Harla (Kamsul Harun)",
+    highlight: "Berikut adalah lirik lengkap lagu daerah Palembang 'Ya Saman' dengan bait pembuka perahu bidar di Sungai Musi:",
+    lyrics: [
+      "Nyelek gelumbang perahu bidar di Sungi Musi\nJanganlah lupo meli telok abang\nCantik rupo penyabar dan baek hati\nAdek manis berambut panjang dikuncit kepang",
+      "Lika-liku banyu Batanghari Sembilan\nMengalir bemuaro ke Sungi Musi jugo\nElok laku ngaesi rupo cindo menawan\nMuat kakak siang tekenang malem tejago",
+      "Pulo Kemaro melah Sungi Musi ke Sungsang\nNak ke Pusri laju kesasar ke Kalidoni\nBadan saro pikiran resah hati teguncang\nNgarapke adek kalu be galak jadi bini",
+      "Ay... ya... ya... ya... Ya Saman\nPecaknyo mudah tapi saro nian\nAy... ya... ya... ya... Ya Saman\nNyari bini yang bener-bener setolok an",
+      "Ay... ya... ya... ya... Ya Saman\nPecaknyo mudah tapi saro nian\nAy... ya... ya... ya... Ya Saman\nYa Saman... Ya Saman... Ya Saman...",
+    ],
+    meaning: "Lagu ciptaan Kamsul A. Harla ini mengekspresikan seruan khas Palembang ('Ya Saman!') tentang susahnya mencari pasangan hidup yang sepadan ('setolok an'), dibalut suasana semarak Sungai Musi dengan perahu bidar, telok abang, dan keelokan paras gadis Palembang.",
+    image: "/images/perahu_bidar.jpg",
+    themeSlug: "tari-musik",
+    sources: [
+      {
+        title: "Ya Saman — Lagu Daerah Palembang",
+        url: "https://id.wikipedia.org/wiki/Kota_Palembang",
+        domain: "id.wikipedia.org",
+        excerpt: "Lagu ciptaan Kamsul A. Harla tentang tradisi sungai, perahu bidar, dan pesona gadis Palembang.",
+      },
+    ],
+  },
+  {
+    id: "cuk-mak-ilang",
+    title: "Cuk Mak Ilang",
+    aliases: [
+      "cuk mak ilang",
+      "cuk mak ilang mak ilang",
+      "lagu cuk mak ilang",
+      "lirik lagu cuk mak ilang",
+      "lirik cuk mak ilang",
+      "lagu daerah cuk mak ilang",
+      "cuk mak ilang palembang",
+      "cuk mak ilang cagak batu",
+      "dimane kucing belang",
+    ],
+    region: "Palembang, Sumatera Selatan",
+    creator: "Tradisional Palembang",
+    highlight: "Berikut adalah lirik lengkap lagu pantun daerah Palembang 'Cuk Mak Ilang' beserta bait aslinya:",
+    lyrics: [
+      "Cuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku\nCuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku",
+      "Kapal api maso' Palembang\nBanyu tenang jadi begelombang\nTengok adek bepayong kembang\nHati di dalam jadi bimbang",
+      "Cuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku\nCuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku",
+      "Ngaso dulu di bawah pohon\nAngin sepoi sepoi nyentuh badan\nAdek manis janganlah mohon\nKando setia sepanjang zaman",
+      "Cuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku\nCuk mak ilang mak ilang cagak batu\nDimane kucing belang di situ rumah aku",
+    ],
+    meaning: "Lagu 'Cuk Mak Ilang' merupakan pantun rakyat Palembang yang ceria dan jenaka. Mengisahkan pergaulan bujang dan gadis di tepian Sungai Musi dengan kiasan pantun bersahut yang mengundang senyum.",
+    image: "/images/rebana_burdah.jpg",
+    themeSlug: "tari-musik",
+    sources: [
+      {
+        title: "Cuk Mak Ilang — Lagu Daerah Sumatera Selatan",
+        url: "https://id.wikipedia.org/wiki/Sumatra_Selatan",
+        domain: "id.wikipedia.org",
+        excerpt: "Kidung pantun Melayu Palembang bertempo riang dengan struktur sampiran dan isi yang khas.",
       },
     ],
   },
@@ -107,17 +219,18 @@ export const sumselSongs: SumselSong[] = [
       "lirik lagu dek sangke",
       "lirik dek sangke",
       "lagu daerah dek sangke",
+      "awak uke la jadi duwo",
     ],
     region: "Sumatera Selatan",
     creator: "Tradisional Sumatera Selatan",
-    highlight: "Berikut adalah lirik autentik lagu daerah Sumatera Selatan 'Dek Sangke' yang terkenal dengan pantun sindiran halusnya:",
+    highlight: "Berikut adalah lirik autentik lagu daerah Sumatera Selatan 'Dek Sangke' yang sarat pantun sindiran halus:",
     lyrics: [
       "Dek sangke aku dek sangke\nAwak uke la jadi duwo\nDek sangke aku dek sangke\nAwak uke la jadi duwo",
       "Nemba' bunga putik kelapo\nBuah jambu la jadi mudo\nNemba' bunga putik kelapo\nBuah jambu la jadi mudo",
       "Dek sangke aku dek sangke\nKando batinggal ku de sangke\nDek sangke aku dek sangke\nKando batinggal ku de sangke",
       "Siang malam ku de nyangke\nHati tebakar rindu mambang\nBiarlah luluh tulang belulang\nAsal kando selamat pulang",
     ],
-    meaning: "Lagu 'Dek Sangke' bermakna 'tidak menyangka'. Liriknya berisi pantun perumpamaan khas masyarakat Sumsel tentang perubahan sikap seseorang yang di luar dugaan, disampaikan dengan nada riang dan jenaka.",
+    meaning: "Lagu 'Dek Sangke' bermakna 'tidak menyangka'. Menyiratkan rasa kaget atas perubahan sikap seseorang atau kenyataan hidup yang berlawanan dengan harapan, dibalut pantun sindiran bersahaja khas Sumsel.",
     image: "/images/senjang_muba.jpg",
     themeSlug: "tari-musik",
     sources: [
@@ -147,7 +260,7 @@ export const sumselSongs: SumselSong[] = [
       "Sriwijaya dengan Asrama Agung Sang Maha Guru\nTutur sabda Dharmakirti sakti membimbing jiwaku\nHarum mawar maha suci suling Dengkiar bertalu\nMenenangkan khayalan jiwa beralun membubung tinggi",
       "Kembali memuja Maha Hyang\nMembawa harum bakti sekapur sirih\nPersembahan tulus suci\nRakyat jelata memuliakan Sriwijaya",
     ],
-    meaning: "Gending Sriwijaya adalah lagu dan tarian sakral Palembang yang diciptakan untuk mengenang keluhuran dan kejayaan kemaharajaan Sriwijaya sebagai pusat peradaban bahari dan pendidikan agama Buddha terbesar di Asia Tenggara.",
+    meaning: "Gending Sriwijaya adalah kidung agung Palembang yang diciptakan untuk mengenang keluhuran kemaharajaan maritim Sriwijaya sebagai pusat peradaban dan ilmu pengetahuan di Nusantara.",
     image: "/images/tari_gending.jpg",
     themeSlug: "tari-musik",
     sources: [
@@ -177,7 +290,7 @@ export const sumselSongs: SumselSong[] = [
       "Tangan melentik berhias tanggai\nGerak kemilau gemulai berseri\nSembah sujud tanda beradat\nHormat mulia sepanjang hari",
       "Sirih sekapur kami haturkan\nTanda mesra jalin persaudaraan\nDi bumi Sriwijaya nan permai\nSemoga damai selalu bersemi",
     ],
-    meaning: "Lagu pengiring Tari Tanggai menyuarakan penghormatan tertinggi kepada para tamu agung yang hadir di Palembang, diiringi lentiknya kuku keemasan (tanggai) dan persembahan sekapur sirih.",
+    meaning: "Lagu pengiring Tari Tanggai melantunkan penghormatan tulus kepada para tamu agung yang singgah di Palembang dengan lentiknya hiasan kuku emas (tanggai).",
     image: "/images/tari_tanggai.jpg",
     themeSlug: "tari-musik",
     sources: [
@@ -186,38 +299,6 @@ export const sumselSongs: SumselSong[] = [
         url: "https://id.wikipedia.org/wiki/Tari_Tanggai",
         domain: "id.wikipedia.org",
         excerpt: "Tarian khas Palembang untuk menyambut tamu kehormatan dengan lentik tanggai perunggu.",
-      },
-    ],
-  },
-  {
-    id: "ya-saman",
-    title: "Ya Saman",
-    aliases: [
-      "ya saman",
-      "lagu ya saman",
-      "lirik ya saman",
-      "lirik lagu ya saman",
-      "lagu daerah ya saman",
-      "ya saman palembang",
-    ],
-    region: "Palembang, Sumatera Selatan",
-    creator: "Kamsul Harun",
-    highlight: "Berikut adalah lirik lengkap lagu daerah populer Palembang 'Ya Saman' yang penuh kekaguman:",
-    lyrics: [
-      "Antara Musi rengep belago\nNengok budak beselendang sutro\nAdek manis la berambut panjang\nBikin hati abang melayang",
-      "Ya Saman, ya Saman\nUji uwong Palembang\nYa Saman, ya Saman\nElok nian rupo gades Palembang",
-      "Baju kurung kain songket\nJalan melenggang bikin terpikat\nKalu jodoh dak lari kemano\nKito beiring naik pelaminan",
-      "Ya Saman, ya Saman\nUji uwong Palembang\nYa Saman, ya Saman\nElok nian rupo gades Palembang",
-    ],
-    meaning: "Lagu ciptaan Kamsul Harun ini mengekspresikan rasa kagum masyarakat Palembang ('Ya Saman!') atas keanggunan dan kecantikan gadis Palembang yang mengenakan selendang sutra dan kain songket.",
-    image: "/images/songket_lepus.jpg",
-    themeSlug: "tari-musik",
-    sources: [
-      {
-        title: "Ya Saman — Lagu Palembang",
-        url: "https://id.wikipedia.org/wiki/Kota_Palembang",
-        domain: "id.wikipedia.org",
-        excerpt: "Lagu populer Palembang ciptaan Kamsul Harun bertema pesona gadis berbusana tradisional.",
       },
     ],
   },
@@ -238,7 +319,7 @@ export const sumselSongs: SumselSong[] = [
       "Sayang selayak burung lempipi\nSayang selayak burung lempipi\nMenclok di genteng ayeknyo tenang\nKalu ku tau bujang pedengki\nKalu ku tau bujang pedengki\nDak kando adek kusuruh datang",
       "Sayang selayak burung lempipi\nSayang selayak burung lempipi\nTerbang melayang ke tanah seberang\nAlangkah sakit menahan rindu\nBadan kurus dimakan bayang",
     ],
-    meaning: "Lagu Sayang Selayak mengisahkan sindiran halus dan petuah pergaulan muda-mudi Lematang dengan metafora burung lempipi yang hinggap di bubungan rumah.",
+    meaning: "Lagu Sayang Selayak mengajarkan kehati-hatian dalam memilih pasangan hidup dan menjaga kehormatan diri dengan metafora burung lempipi di bubungan atap rumah.",
     image: "/images/kamar_rumah_limas.jpg",
     themeSlug: "tari-musik",
     sources: [
@@ -268,8 +349,8 @@ export const sumselSongs: SumselSong[] = [
       "Petanglah petang mengambang petang\nPetang kemano denie dingin\nPetanglah petang mengambang petang\nPetang kemano denie dingin",
       "Badanlah melang melangkah pulang\nKemano badan tempat bergantung\nKalu lah petang hari lah malam\nLampu dipasang di pucuk tiang\nKemano badan hendak bertandang\nSatu pun kance dide lah datang",
     ],
-    meaning: "Lagu 'Petang-Petang' merefleksikan perenungan di kala senja hari di kaki Gunung Dempo, saat seseorang merasa sebatang kara dan merindukan kehangatan keluarga serta sahabat.",
-    image: "/images/tari_pasemah.jpg",
+    meaning: "Lagu 'Petang-Petang' mengekspresikan perenungan senja di kaki Gunung Dempo saat rasa sepi dan rindu melanda pengelana yang jauh dari sanak keluarga.",
+    image: "/images/megalitik_pasemah.jpg",
     themeSlug: "tari-musik",
     sources: [
       {
@@ -296,7 +377,7 @@ export const sumselSongs: SumselSong[] = [
       "Kemano badan kemano diriku\nSukat malang nasibku ini\nIbarat perahu di tengah lautan\nDihantam ombak dihembus angin",
       "Nasib malang jangan diratap\nSudah takdir dari Yang Kuasa\nKuatkan hati tabahkan jiwa\nHari esok pasti bahagia",
     ],
-    meaning: "Lagu 'Sukat Malang' adalah tembang gitar tunggal Batanghari Sembilan yang mengajarkan ketabahan jiwa menghadapi lika-liku nasib dan cobaan hidup.",
+    meaning: "Lagu 'Sukat Malang' adalah tembang gitar tunggal Batanghari Sembilan yang mengajarkan ketabahan jiwa menghadapi pasang-surut nasib hidup.",
     image: "/images/senjang_muba.jpg",
     themeSlug: "tari-musik",
     sources: [
@@ -338,18 +419,77 @@ export const sumselSongs: SumselSong[] = [
   },
 ];
 
-// Helper to find song by query
+// Helper to find song by query with exact and phrase matching
 export function findSumselSong(query: string): SumselSong | null {
-  const cleanQ = query.toLowerCase().trim();
+  if (!query) return null;
+  const cleanQ = query.toLowerCase().replace(/['".,?!]/g, " ").replace(/\s+/g, " ").trim();
+
+  // 1. Cek specific keyword unik langsung (prioritas teratas)
+  if (cleanQ.includes("darussalam") || (cleanQ.includes("palembang") && cleanQ.includes("kota kito")) || cleanQ.includes("sungi musinyo") || cleanQ.includes("pempeknyo")) {
+    const s = sumselSongs.find((x) => x.id === "palembang-darussalam");
+    if (s) return s;
+  }
+  if (cleanQ.includes("lenjer") || cleanQ.includes("mak lengen") || cleanQ.includes("kejel") || cleanQ.includes("kelenger")) {
+    const s = sumselSongs.find((x) => x.id === "pempek-lenjer");
+    if (s) return s;
+  }
+  if (cleanQ.includes("kebile") || cleanQ.includes("kabile") || cleanQ.includes("lege") || cleanQ.includes("ibung kah nulih") || cleanQ.includes("kukendam kina")) {
+    const s = sumselSongs.find((x) => x.id === "kebile-bile");
+    if (s) return s;
+  }
+  if (cleanQ.includes("saman") || cleanQ.includes("perahu bidar") || cleanQ.includes("telok abang") || cleanQ.includes("setolok an")) {
+    const s = sumselSongs.find((x) => x.id === "ya-saman");
+    if (s) return s;
+  }
+  if (cleanQ.includes("cuk mak ilang") || cleanQ.includes("cagak batu") || cleanQ.includes("kucing belang") || cleanQ.includes("bepayong kembang")) {
+    const s = sumselSongs.find((x) => x.id === "cuk-mak-ilang");
+    if (s) return s;
+  }
+  if (cleanQ.includes("sangke")) {
+    const s = sumselSongs.find((x) => x.id === "dek-sangke");
+    if (s) return s;
+  }
+  if (cleanQ.includes("gending sriwijaya") || (cleanQ.includes("gending") && !cleanQ.includes("alat"))) {
+    const s = sumselSongs.find((x) => x.id === "gending-sriwijaya");
+    if (s) return s;
+  }
+  if (cleanQ.includes("tanggai") && (cleanQ.includes("lagu") || cleanQ.includes("lirik") || cleanQ.includes("tari"))) {
+    const s = sumselSongs.find((x) => x.id === "tari-tanggai");
+    if (s) return s;
+  }
+  if (cleanQ.includes("sayang selayak") || cleanQ.includes("lempipi")) {
+    const s = sumselSongs.find((x) => x.id === "sayang-selayak");
+    if (s) return s;
+  }
+  if (cleanQ.includes("petang petang") || cleanQ.includes("petang-petang")) {
+    const s = sumselSongs.find((x) => x.id === "petang-petang");
+    if (s) return s;
+  }
+  if (cleanQ.includes("sukat malang")) {
+    const s = sumselSongs.find((x) => x.id === "sukat-malang");
+    if (s) return s;
+  }
+  if (cleanQ.includes("ribang kemambang")) {
+    const s = sumselSongs.find((x) => x.id === "ribang-kemambang");
+    if (s) return s;
+  }
+
+  // 2. Cek match alias dari yang terpanjang ke terpendek
+  let bestMatch: { song: SumselSong; score: number } | null = null;
   for (const song of sumselSongs) {
-    if (song.aliases.some((alias) => cleanQ.includes(alias) || alias.includes(cleanQ))) {
-      return song;
-    }
-    // Also check word boundary match
-    const words = song.title.toLowerCase().split(/\s+/);
-    if (words.every((w) => cleanQ.includes(w))) {
-      return song;
+    for (const alias of song.aliases) {
+      const cleanAlias = alias.toLowerCase().replace(/['".,?!]/g, " ").replace(/\s+/g, " ").trim();
+      if (cleanQ === cleanAlias) {
+        return song;
+      }
+      if (cleanQ.includes(cleanAlias)) {
+        const score = cleanAlias.length;
+        if (!bestMatch || score > bestMatch.score) {
+          bestMatch = { song, score };
+        }
+      }
     }
   }
-  return null;
+
+  return bestMatch ? bestMatch.song : null;
 }
