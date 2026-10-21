@@ -10,12 +10,21 @@ import { db } from "../../../lib/db";
 import { favorite } from "../../../lib/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { headers } from "next/headers";
+import { checkRateLimitWithInfo } from "@/lib/gemini";
 
 function dbNotReady() {
   return NextResponse.json(
     { error: "Database belum dikonfigurasi. Isi DATABASE_URL di .env.local" },
     { status: 503 }
   );
+}
+
+function checkFavRateLimit(req: NextRequest) {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "127.0.0.1";
+  return checkRateLimitWithInfo(`fav_${ip}`, 60, 60_000);
 }
 
 async function getUser(req: NextRequest) {
@@ -57,6 +66,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = checkFavRateLimit(req);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Terlalu banyak aktivitas. Silakan coba sebentar lagi." },
+      { status: 429, headers: { "Retry-After": String(rl.resetSeconds) } }
+    );
+  }
+
   if (!db) return dbNotReady();
   const user = await getUser(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -94,6 +111,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const rl = checkFavRateLimit(req);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Terlalu banyak aktivitas. Silakan coba sebentar lagi." },
+      { status: 429, headers: { "Retry-After": String(rl.resetSeconds) } }
+    );
+  }
+
   if (!db) return dbNotReady();
   const user = await getUser(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

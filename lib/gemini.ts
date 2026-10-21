@@ -54,16 +54,59 @@ export let geminiDebugLogs: string[] = [];
 // ─── Rate limiter ───────────────────────────────────────────────────────────
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-export function checkRateLimit(identifier: string, limit = 20, windowMs = 60_000): boolean {
+export interface RateLimitInfo {
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  resetSeconds: number;
+}
+
+export function checkRateLimitWithInfo(
+  identifier: string,
+  limit = 20,
+  windowMs = 60_000
+): RateLimitInfo {
   const now = Date.now();
-  const record = rateLimitMap.get(identifier);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
+
+  // Bersihkan entri lama jika Map terlalu besar
+  if (rateLimitMap.size > 2000) {
+    for (const [key, val] of rateLimitMap.entries()) {
+      if (now > val.resetTime) rateLimitMap.delete(key);
+    }
   }
-  if (record.count >= limit) return false;
+
+  let record = rateLimitMap.get(identifier);
+  if (!record || now > record.resetTime) {
+    record = { count: 1, resetTime: now + windowMs };
+    rateLimitMap.set(identifier, record);
+    return {
+      allowed: true,
+      limit,
+      remaining: Math.max(0, limit - 1),
+      resetSeconds: Math.ceil(windowMs / 1000),
+    };
+  }
+
+  if (record.count >= limit) {
+    return {
+      allowed: false,
+      limit,
+      remaining: 0,
+      resetSeconds: Math.max(1, Math.ceil((record.resetTime - now) / 1000)),
+    };
+  }
+
   record.count += 1;
-  return true;
+  return {
+    allowed: true,
+    limit,
+    remaining: Math.max(0, limit - record.count),
+    resetSeconds: Math.max(1, Math.ceil((record.resetTime - now) / 1000)),
+  };
+}
+
+export function checkRateLimit(identifier: string, limit = 20, windowMs = 60_000): boolean {
+  return checkRateLimitWithInfo(identifier, limit, windowMs).allowed;
 }
 
 // ─── Local match helper ─────────────────────────────────────────────────────

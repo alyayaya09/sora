@@ -95,6 +95,15 @@ function JelajahiContent() {
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
       if (!res.ok) {
+        if (res.status === 429) {
+          const errData = await res.json().catch(() => ({}));
+          triggerToast(
+            errData?.error || "Terlalu banyak pencarian. Silakan tunggu beberapa detik.",
+            "hourglass_empty"
+          );
+          setLoading(false);
+          return;
+        }
         throw new Error(`Gagal memuat data (${res.status})`);
       }
       const data: SearchResult = await res.json();
@@ -219,6 +228,16 @@ function JelajahiContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: textToSpeak }),
       });
+
+      if (res.status === 429) {
+        const errData = await res.json().catch(() => ({}));
+        setIsPlaying(false);
+        triggerToast(
+          errData?.error || "Terlalu banyak permintaan suara. Silakan coba sebentar lagi.",
+          "volume_off"
+        );
+        return;
+      }
 
       const data = await res.json().catch(() => ({}));
 

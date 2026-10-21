@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  checkRateLimit,
+  checkRateLimitWithInfo,
   generateGeminiSummary,
   fetchWikipediaImage,
   generateLocalFallback,
@@ -24,12 +24,30 @@ export async function GET(request: NextRequest) {
     }
 
     const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-    const allowed = checkRateLimit(ip, 30, 60_000);
-    if (!allowed) {
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "127.0.0.1";
+    const rateLimit = checkRateLimitWithInfo(`search_${ip}`, 30, 60_000);
+
+    const rateLimitHeaders = {
+      "X-RateLimit-Limit": String(rateLimit.limit),
+      "X-RateLimit-Remaining": String(rateLimit.remaining),
+      "X-RateLimit-Reset": String(rateLimit.resetSeconds),
+    };
+
+    if (!rateLimit.allowed) {
       return NextResponse.json(
-        { error: "Terlalu banyak permintaan. Silakan coba sebentar lagi." },
-        { status: 429 }
+        {
+          error: "Terlalu banyak permintaan pencarian. Silakan coba sebentar lagi.",
+          retryAfter: rateLimit.resetSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders,
+            "Retry-After": String(rateLimit.resetSeconds),
+          },
+        }
       );
     }
 
@@ -87,7 +105,7 @@ export async function GET(request: NextRequest) {
     // Remove internal helper fields before sending to client
     const { _wikiTitleId, _wikiTitleEn, _imageSearchQuery, ...cleanResult } = result;
 
-    return NextResponse.json(cleanResult);
+    return NextResponse.json(cleanResult, { headers: rateLimitHeaders });
   } catch (error: any) {
     console.error("Search API route error:", error);
     return NextResponse.json(
