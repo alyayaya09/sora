@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, Suspense } from "react";
+import React, { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchResult } from "@/lib/gemini";
@@ -52,6 +52,32 @@ function JelajahiContent() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioReqIdRef = useRef(0);
+
+  // Fungsi penghenti audio total (HTML5 Audio + SpeechSynthesis)
+  const stopAudio = useCallback(() => {
+    audioReqIdRef.current += 1;
+    if (activeAudioRef.current) {
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.currentTime = 0;
+      } catch {}
+      activeAudioRef.current = null;
+    }
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
+    setIsPlaying(false);
+  }, []);
+
+  // Cleanup audio saat komponen unmount (beralih ke halaman lain)
+  useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, [stopAudio]);
 
   // Trigger custom toast notification
   const triggerToast = (msg: string, icon = "mic") => {
@@ -78,6 +104,7 @@ function JelajahiContent() {
 
   // Fetch search results from backend API
   const performSearch = async (searchTerm: string) => {
+    stopAudio();
     const term = searchTerm.trim();
     if (!term) {
       setResult(null);
@@ -85,12 +112,6 @@ function JelajahiContent() {
     }
 
     setLoading(true);
-    // Stop any ongoing audio
-    if (activeAudioRef.current) {
-      activeAudioRef.current.pause();
-      activeAudioRef.current = null;
-    }
-    setIsPlaying(false);
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
@@ -118,6 +139,7 @@ function JelajahiContent() {
 
   // Sync state and perform search whenever URL query param changes
   useEffect(() => {
+    stopAudio();
     if (urlQuery) {
       setQuery(urlQuery);
       setInputValue(urlQuery);
@@ -127,7 +149,7 @@ function JelajahiContent() {
       setInputValue("");
       setResult(null);
     }
-  }, [urlQuery]);
+  }, [urlQuery, stopAudio]);
 
   // Ambient parallax effect on mouse move
   useEffect(() => {
@@ -192,6 +214,7 @@ function JelajahiContent() {
   };
 
   const handleSearch = (q: string) => {
+    stopAudio();
     const trimmed = q.trim();
     if (!trimmed) return;
     setQuery(trimmed);
@@ -204,18 +227,14 @@ function JelajahiContent() {
   // Audio Playback Handler (PRD F3 & F14: Gemini TTS with "audio belum tersedia" fallback)
   const handleToggleAudio = async () => {
     if (isPlaying) {
-      if (activeAudioRef.current) {
-        activeAudioRef.current.pause();
-        activeAudioRef.current = null;
-      }
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      setIsPlaying(false);
+      stopAudio();
       return;
     }
 
     if (!result || !result.card2) return;
+
+    audioReqIdRef.current += 1;
+    const currentReqId = audioReqIdRef.current;
 
     setIsPlaying(true);
     triggerToast("Menyiapkan audio SORA...", "volume_up");
@@ -229,6 +248,10 @@ function JelajahiContent() {
         body: JSON.stringify({ text: textToSpeak }),
       });
 
+      if (audioReqIdRef.current !== currentReqId) {
+        return;
+      }
+
       if (res.status === 429) {
         const errData = await res.json().catch(() => ({}));
         setIsPlaying(false);
@@ -240,6 +263,10 @@ function JelajahiContent() {
       }
 
       const data = await res.json().catch(() => ({}));
+
+      if (audioReqIdRef.current !== currentReqId) {
+        return;
+      }
 
       if (data?.available && data?.audioBase64) {
         const audioSrc = `data:${data.mimeType || "audio/wav"};base64,${data.audioBase64}`;
@@ -257,12 +284,20 @@ function JelajahiContent() {
           triggerToast("audio belum tersedia", "volume_off");
         };
 
+        if (audioReqIdRef.current !== currentReqId) {
+          audio.pause();
+          return;
+        }
+
         await audio.play();
         return;
       }
 
       // If external Gemini TTS is unavailable, try browser SpeechSynthesis as fallback
       if ("speechSynthesis" in window) {
+        if (audioReqIdRef.current !== currentReqId) {
+          return;
+        }
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
         utterance.lang = "id-ID";
         utterance.rate = 0.95;
@@ -272,6 +307,9 @@ function JelajahiContent() {
           triggerToast("audio belum tersedia", "volume_off");
         };
         window.speechSynthesis.cancel();
+        if (audioReqIdRef.current !== currentReqId) {
+          return;
+        }
         window.speechSynthesis.speak(utterance);
         return;
       }
