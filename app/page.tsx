@@ -3,10 +3,13 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { themes } from "../data/sora-content";
+import { getThemes } from "../data/sora-content";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function HomePage() {
   const router = useRouter();
+  const { lang, t } = useLanguage();
+  const themes = getThemes(lang);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
@@ -269,7 +272,7 @@ export default function HomePage() {
               </span>
               <input
                 className="bg-transparent border-none outline-none text-sm md:text-base text-white placeholder-white/40 w-full focus:placeholder-white/20 focus:ring-0 font-medium"
-                placeholder="Tanya apa saja tentang seni & budaya Sumsel..."
+                placeholder={t("Tanya apa saja tentang seni & budaya Sumsel...", "Ask anything about South Sumatra arts & culture...")}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -307,7 +310,7 @@ export default function HomePage() {
               </button>
               <button
                 className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-all transform active:scale-95 border border-white/20 shadow-md cursor-pointer"
-                title="Cari Budaya"
+                title={t("Cari Budaya", "Search Culture")}
                 type="submit"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,7 +357,7 @@ export default function HomePage() {
                   videoRef.current.play().catch(() => {});
                 }
               }
-              triggerToast(nextMuted ? "Audio dibisukan" : "Audio video diaktifkan");
+              triggerToast(nextMuted ? t("Audio dibisukan", "Audio muted") : t("Audio video diaktifkan", "Video audio enabled"));
             }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -394,17 +397,17 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
-              Mulai dari satu tema.
+              {t("Mulai dari satu tema.", "Begin with one theme.")}
             </h2>
             <p className="text-3xl sm:text-4xl md:text-5xl font-bold italic text-white drop-shadow-md">
-              <span className="font-normal font-sans not-italic text-white/95">Jelajahi</span>{" "}
-              Seluruh Budaya Sumsel
+              <span className="font-normal font-sans not-italic text-white/95">{t("Jelajahi", "Explore")}</span>{" "}
+              {t("Seluruh Budaya Sumsel", "All South Sumatra Cultures")}
             </p>
             <div className="flex items-center justify-center gap-2 mt-4 text-xs tracking-wider text-white/60">
               <svg className="w-3.5 h-3.5 text-[#fbc270]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
               </svg>
-              <span>Gerakan otomatis ke kanan • Arahkan kursor atau drag untuk menggeser</span>
+              <span>{t("Gerakan otomatis ke kanan • Arahkan kursor atau drag untuk menggeser", "Auto-scroll rightward • Hover or drag to navigate")}</span>
             </div>
           </div>
         </div>
@@ -503,7 +506,7 @@ export default function HomePage() {
       >
         <header className="w-full text-center mb-10 anim-center anim-out-bottom" data-purpose="page-header">
           <h1 className="text-3xl sm:text-4xl tracking-normal font-normal text-white heading-shadow">
-            Apa waktu favoritmu di Palembang?
+            {t("Apa waktu favoritmu di Palembang?", "What is your favorite time in Palembang?")}
           </h1>
         </header>
 
@@ -522,10 +525,10 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                 <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
-                  Pagi di Tepian Musi
+                  {t("Pagi di Tepian Musi", "Morning on the Musi Riverbank")}
                 </h2>
                 <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-95">
-                  Aroma pempek hangat dan denyut perahu ketek di fajar hari
+                  {t("Aroma pempek hangat dan denyut perahu ketek di fajar hari", "Aroma of warm pempek and rhythm of ketek riverboats at dawn")}
                 </p>
               </div>
             </Link>
@@ -545,10 +548,10 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                   <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
-                    Senja di Jembatan Ampera
+                    {t("Senja di Jembatan Ampera", "Twilight at Ampera Bridge")}
                   </h2>
                   <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-95">
-                    Langit oranye keemasan merona di atas aliran Musi
+                    {t("Langit oranye keemasan merona di atas aliran Musi", "Golden crimson skies glowing above the Musi currents")}
                   </p>
                 </div>
               </Link>
@@ -566,10 +569,10 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                   <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
-                    Malam di Benteng Kuto Besak
+                    {t("Malam di Benteng Kuto Besak", "Night at Kuto Besak Fortress")}
                   </h2>
                   <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-95">
-                    Lampu kota dan siluet benteng peninggalan Sultan SMB I
+                    {t("Lampu kota dan siluet benteng peninggalan Sultan SMB I", "City lights and silhouettes of Sultan Mahmud Badaruddin I's fortress")}
                   </p>
                 </div>
               </Link>
@@ -588,10 +591,10 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-6 text-white pointer-events-none">
                 <h2 className="text-xl font-bold text-shadow-custom leading-tight mb-1">
-                  Fajar di Sungai Musi
+                  {t("Fajar di Sungai Musi", "Dawn on the Musi River")}
                 </h2>
                 <p className="text-xs text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-95">
-                  Rumah rakit terapung menyongsong semilir angin sungai purba
+                  {t("Rumah rakit terapung menyongsong semilir angin sungai purba", "Floating raft houses meeting the gentle breeze of the ancient river")}
                 </p>
               </div>
             </Link>
@@ -617,19 +620,22 @@ export default function HomePage() {
         <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col justify-end pb-12 md:pb-16">
           <div className="anim-left max-w-2xl flex flex-col items-start gap-4 anim-out-bottom">
             <span className="text-xs font-semibold tracking-widest uppercase text-[#fbc270] drop-shadow">
-              Warisan Budaya Nusantara
+              {t("Warisan Budaya Nusantara", "Cultural Heritage of the Archipelago")}
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white heading-shadow leading-tight">
-              Pakaian Adat Palembang
+              {t("Pakaian Adat Palembang", "Traditional Palembang Attire")}
             </h2>
             <p className="text-sm md:text-base text-gray-200 text-shadow-custom font-normal leading-relaxed opacity-95 max-w-xl">
-              Keanggunan busana adat Aesan Gede dan kain songket berlapis emas khas Palembang, Sumatra Selatan.
+              {t(
+                "Keanggunan busana adat Aesan Gede dan kain songket berlapis emas khas Palembang, Sumatra Selatan.",
+                "The supreme elegance of Aesan Gede royal attire and gold-threaded Songket textiles of Palembang, South Sumatra."
+              )}
             </p>
             <Link
               href="/tur/songket-palembang"
               className="mt-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold px-7 py-3 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-sm tracking-wide inline-flex items-center gap-2"
             >
-              <span>Masuklah ke dalam</span>
+              <span>{t("Masuklah ke dalam", "Step inside")}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
               </svg>
@@ -647,7 +653,7 @@ export default function HomePage() {
       >
         <header className="w-full text-center mb-10 anim-center anim-out-bottom" data-purpose="page-header">
           <h2 className="text-3xl sm:text-4xl tracking-normal font-normal text-white heading-shadow">
-            Kemilau Kain Palembang
+            {t("Kemilau Kain Palembang", "Luster of Palembang Woven Textiles")}
           </h2>
         </header>
 
@@ -781,10 +787,10 @@ export default function HomePage() {
           <div className="anim-center flex flex-col items-center justify-center text-center relative mb-8 anim-out-bottom">
             <div className="text-center">
               <h2 className="text-3xl sm:text-4xl md:text-[40px] tracking-tight font-normal text-white heading-shadow mb-2 leading-tight">
-                Teruslah menjelajah...
+                {t("Teruslah menjelajah...", "Keep exploring...")}
               </h2>
               <p className="text-sm sm:text-base text-gray-300 text-shadow-custom font-normal opacity-95">
-                Selami budaya dari seluruh Sumatera Selatan
+                {t("Selami budaya dari seluruh Sumatera Selatan", "Immerse in cultures from all across South Sumatra")}
               </p>
             </div>
           </div>
@@ -810,7 +816,7 @@ export default function HomePage() {
                   href="/tur/tari-gending-sriwijaya"
                   className="w-fit px-5 py-2 rounded-full border border-white/70 hover:border-white text-white hover:bg-white/10 text-xs font-semibold tracking-wide transition-all shadow-sm"
                 >
-                  Jelajahi
+                  {t("Jelajahi", "Explore")}
                 </Link>
               </div>
             </article>
@@ -834,7 +840,7 @@ export default function HomePage() {
                   href="/tur/rumah-limas"
                   className="w-fit px-5 py-2 rounded-full border border-white/70 hover:border-white text-white hover:bg-white/10 text-xs font-semibold tracking-wide transition-all shadow-sm"
                 >
-                  Jelajahi
+                  {t("Jelajahi", "Explore")}
                 </Link>
               </div>
             </article>
@@ -858,7 +864,7 @@ export default function HomePage() {
                   href="/tur/kerajaan-sriwijaya"
                   className="w-fit px-5 py-2 rounded-full border border-white/70 hover:border-white text-white hover:bg-white/10 text-xs font-semibold tracking-wide transition-all shadow-sm"
                 >
-                  Jelajahi
+                  {t("Jelajahi", "Explore")}
                 </Link>
               </div>
             </article>
@@ -882,7 +888,7 @@ export default function HomePage() {
                   href="/tur/perahu-bidar"
                   className="w-fit px-5 py-2 rounded-full border border-white/70 hover:border-white text-white hover:bg-white/10 text-xs font-semibold tracking-wide transition-all shadow-sm"
                 >
-                  Jelajahi
+                  {t("Jelajahi", "Explore")}
                 </Link>
               </div>
             </article>
@@ -936,10 +942,13 @@ export default function HomePage() {
                   data-purpose="photo-collection-card"
                 >
                   <h2 className="text-white text-2xl sm:text-[27px] md:text-[30px] font-bold leading-[1.25] tracking-tight mb-3">
-                    Koleksi Foto &amp; Ragam Budaya
+                    {t("Koleksi Foto & Ragam Budaya", "Photo Collections & Cultural Diversity")}
                   </h2>
                   <p className="text-white/90 text-sm sm:text-base font-normal leading-relaxed">
-                    Kumpulan dokumentasi foto dan mahakarya warisan kebudayaan Sumatera Selatan dalam susunan kolase.
+                    {t(
+                      "Kumpulan dokumentasi foto dan mahakarya warisan kebudayaan Sumatera Selatan dalam susunan kolase.",
+                      "Curated photo documentation and masterpieces of South Sumatra cultural heritage in a mosaic layout."
+                    )}
                   </p>
                 </section>
 
@@ -985,11 +994,11 @@ export default function HomePage() {
             <div className="flex items-center space-x-2">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#bf4320]"></span>
               <span className="font-medium text-white/80">
-                Koleksi Foto &amp; Dokumentasi Budaya SORA Arts &amp; Culture
+                {t("Koleksi Foto & Dokumentasi Budaya SORA Arts & Culture", "Photo Collection & Cultural Documentation SORA Arts & Culture")}
               </span>
             </div>
             <div className="italic text-white/50 text-[11px] sm:text-xs mt-1 sm:mt-0">
-              Dokumentasi visual ragam seni, arsitektur, dan tradisi Sumatera Selatan
+              {t("Dokumentasi visual ragam seni, arsitektur, dan tradisi Sumatera Selatan", "Visual documentation of the arts, architecture, and traditions of South Sumatra")}
             </div>
           </div>
         </div>

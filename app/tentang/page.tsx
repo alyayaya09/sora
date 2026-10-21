@@ -3,8 +3,10 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import AmbientBackground from "../../components/AmbientBackground";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function TentangPage() {
+  const { t } = useLanguage();
   useEffect(() => {
     const animatedElements = document.querySelectorAll(".scroll-anim");
     const prefersReducedMotion = window.matchMedia(
@@ -64,7 +66,10 @@ export default function TentangPage() {
               #SORACulture
             </h1>
             <p className="mt-4 text-sm sm:text-base md:text-lg text-white/85 max-w-2xl mx-auto font-light leading-relaxed drop-shadow">
-              Platform Pelestarian Seni, Tradisi, dan Warisan Luhur Peradaban Sriwijaya Sumatera Selatan Bertenaga Kecerdasan Buatan.
+              {t(
+                "Platform Pelestarian Seni, Tradisi, dan Warisan Luhur Peradaban Sriwijaya Sumatera Selatan Bertenaga Kecerdasan Buatan.",
+                "AI-Powered Preservation Platform for the Arts, Traditions, and Noble Heritage of South Sumatra's Sriwijaya Civilization."
+              )}
             </p>
           </div>
 
@@ -96,7 +101,10 @@ export default function TentangPage() {
                 </h2>
               </div>
               <p className="text-[11px] leading-relaxed text-gray-300 font-normal">
-                Rangkuman interaktif Gemini bertenaga AI dengan sintesis suara naratif untuk mempelajari filosofi budaya Sumsel secara mendalam.
+                {t(
+                  "Rangkuman interaktif Gemini bertenaga AI dengan sintesis suara naratif untuk mempelajari filosofi budaya Sumsel secara mendalam.",
+                  "Gemini AI-powered interactive summaries with voice synthesis to explore South Sumatra's cultural philosophy in depth."
+                )}
               </p>
             </div>
 
@@ -107,11 +115,14 @@ export default function TentangPage() {
                   <span className="material-symbols-outlined text-[22px]">explore</span>
                 </div>
                 <h2 className="text-[11px] font-bold tracking-wider uppercase text-[#fbc270]">
-                  Tur Digital Imersif
+                  {t("Tur Digital Imersif", "Immersive Digital Tours")}
                 </h2>
               </div>
               <p className="text-[11px] leading-relaxed text-gray-300 font-normal">
-                Dedicated card sinematik layar penuh untuk menyelami Songket Lepus, Rumah Limas, Kerajaan Sriwijaya, hingga Perahu Bidar.
+                {t(
+                  "Dedicated card sinematik layar penuh untuk menyelami Songket Lepus, Rumah Limas, Kerajaan Sriwijaya, hingga Perahu Bidar.",
+                  "Cinematic full-screen dedicated cards to explore Songket Lepus, Limas House, Sriwijaya Empire, and Bidar Boat Races."
+                )}
               </p>
             </div>
 
@@ -122,11 +133,14 @@ export default function TentangPage() {
                   <span className="material-symbols-outlined text-[22px]">museum</span>
                 </div>
                 <h2 className="text-[11px] font-bold tracking-wider uppercase text-[#fbc270]">
-                  8 Tema Kebudayaan
+                  {t("8 Tema Kebudayaan", "8 Cultural Themes")}
                 </h2>
               </div>
               <p className="text-[11px] leading-relaxed text-gray-300 font-normal">
-                Kurasi menyeluruh mencakup arsitektur adat, busana tenun, kuliner khas, tradisi lisan Dulmuluk, hingga Aksara Ulu kuno.
+                {t(
+                  "Kurasi menyeluruh mencakup arsitektur adat, busana tenun, kuliner khas, tradisi lisan Dulmuluk, hingga Aksara Ulu kuno.",
+                  "Comprehensive curation spanning traditional architecture, woven attire, signature cuisine, Dulmuluk oral traditions, to ancient Ulu script."
+                )}
               </p>
             </div>
 
@@ -137,11 +151,14 @@ export default function TentangPage() {
                   <span className="material-symbols-outlined text-[22px]">verified</span>
                 </div>
                 <h2 className="text-[11px] font-bold tracking-wider uppercase text-[#fbc270]">
-                  Etika &amp; Data Terbuka
+                  {t("Etika & Data Terbuka", "Ethics & Open Data")}
                 </h2>
               </div>
               <p className="text-[11px] leading-relaxed text-gray-300 font-normal">
-                Komitmen keotentikan sejarah: atribusi pencipta, verifikasi sumber ilmiah, dan transparansi penuh terhadap konten AI.
+                {t(
+                  "Komitmen keotentikan sejarah: atribusi pencipta, verifikasi sumber ilmiah, dan transparansi penuh terhadap konten AI.",
+                  "Commitment to historical authenticity: creator attribution, academic source verification, and full transparency on AI content."
+                )}
               </p>
             </div>
           </div>
@@ -168,20 +185,30 @@ export default function TentangPage() {
             <div className="lg:col-span-6 flex flex-col justify-center scroll-anim scroll-anim-right delay-150">
               <div className="w-12 h-1 bg-[#dda758] mb-5 rounded-full" />
               <span className="text-xs uppercase tracking-widest text-amber-300 font-semibold mb-2">
-                Inisiasi &amp; Visi Riset
+                {t("Inisiasi & Visi Riset", "Initiative & Research Vision")}
               </span>
               <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-wider uppercase mb-6">
-                Siapa Kami di Balik SORA
+                {t("Siapa Kami di Balik SORA", "Who We Are Behind SORA")}
               </h2>
               <div className="space-y-4 text-sm text-gray-200/90 font-normal leading-relaxed text-justify">
                 <p>
-                  <strong>SORA (South Sumatra) Arts &amp; Culture</strong> lahir sebagai inisiatif karya pada kompetisi vibecoding tingkat kampus dengan tema kebangsaan: <em>"Empowering Culture Through AI-Driven Innovation"</em>.
+                  <strong>SORA (South Sumatra) Arts &amp; Culture</strong>{" "}
+                  {t(
+                    "lahir sebagai inisiatif karya pada kompetisi vibecoding tingkat kampus dengan tema kebangsaan: \"Empowering Culture Through AI-Driven Innovation\".",
+                    "was born as an innovative project for a campus vibecoding competition under the national theme: \"Empowering Culture Through AI-Driven Innovation\"."
+                  )}
                 </p>
                 <p>
-                  Platform ini dirancang dan dibangun oleh <strong>Muhammad Firly Marezky</strong> dan <strong>M. Rifqi Aunur Rahman</strong>. Bertolak dari keresahan kami terhadap media pelestarian budaya konvensional yang kerap disajikan melalui teks panjang monoton, kami bertekad menghadirkan pengalaman visual yang hidup, dinamis, dan intuitif.
+                  {t(
+                    "Platform ini dirancang dan dibangun oleh Muhammad Firly Marezky dan M. Rifqi Aunur Rahman. Bertolak dari keresahan kami terhadap media pelestarian budaya konvensional yang kerap disajikan melalui teks panjang monoton, kami bertekad menghadirkan pengalaman visual yang hidup, dinamis, dan intuitif.",
+                    "This platform was designed and built by Muhammad Firly Marezky and M. Rifqi Aunur Rahman. Driven by our concern over conventional cultural preservation media often presented in monotonous long texts, we set out to create a vibrant, dynamic, and intuitive visual experience."
+                  )}
                 </p>
                 <p>
-                  Dengan mengintegrasikan teknologi kecerdasan buatan Gemini API, kurasi arsip museum digital, dan desain antarmuka modern berakar pada estetika Kesultanan Palembang serta Kedatuan Sriwijaya, SORA mengajak generasi muda untuk kembali bangga merawat pusaka adiluhung Sumatera Selatan.
+                  {t(
+                    "Dengan mengintegrasikan teknologi kecerdasan buatan Gemini API, kurasi arsip museum digital, dan desain antarmuka modern berakar pada estetika Kesultanan Palembang serta Kedatuan Sriwijaya, SORA mengajak generasi muda untuk kembali bangga merawat pusaka adiluhung Sumatera Selatan.",
+                    "By integrating Gemini API artificial intelligence, digital museum archive curation, and modern UI design rooted in the aesthetics of the Palembang Sultanate and Sriwijaya Realm, SORA invites younger generations to take pride once more in South Sumatra's exalted heritage."
+                  )}
                 </p>
               </div>
             </div>
@@ -211,16 +238,22 @@ export default function TentangPage() {
                 >
                   <div className="w-10 h-0.5 bg-white mb-4" />
                   <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider leading-tight mb-4 text-white">
-                    INOVASI KECERDASAN BUATAN<br />UNTUK BUDAYA LOKAL
+                    {t(
+                      "INOVASI KECERDASAN BUATAN UNTUK BUDAYA LOKAL",
+                      "ARTIFICIAL INTELLIGENCE INNOVATION FOR LOCAL CULTURE"
+                    )}
                   </h3>
                   <p className="text-xs md:text-sm font-normal leading-relaxed mb-8 max-w-md text-white/95">
-                    Hanya butuh beberapa detik bagi pengunjung untuk terhubung dengan nilai luhur suatu warisan. SORA memanfaatkan AI bukan untuk menggantikan keaslian cerita, melainkan sebagai kompas yang merangkum sejarah, mengonversi teks ke audio puitis, dan memandu eksplorasi budaya secara cerdas.
+                    {t(
+                      "Hanya butuh beberapa detik bagi pengunjung untuk terhubung dengan nilai luhur suatu warisan. SORA memanfaatkan AI bukan untuk menggantikan keaslian cerita, melainkan sebagai kompas yang merangkum sejarah, mengonversi teks ke audio puitis, dan memandu eksplorasi budaya secara cerdas.",
+                      "It takes just seconds for visitors to connect with the noble value of a cultural heritage. SORA harnesses AI not to replace storytelling authenticity, but as a compass that synthesizes history, converts text into poetic narration, and guides cultural exploration."
+                    )}
                   </p>
                   <Link
                     href="/jelajahi"
                     className="inline-block bg-white text-[#1c1013] text-xs font-bold uppercase px-6 py-3 tracking-wider hover:bg-amber-100 transition shadow-lg rounded-full"
                   >
-                    MULAI JELAJAHI SORA
+                    {t("MULAI JELAJAHI SORA", "START EXPLORING SORA")}
                   </Link>
                 </div>
 
@@ -235,17 +268,20 @@ export default function TentangPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                     <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end text-white">
                       <h3 className="text-xl md:text-2xl font-extrabold uppercase tracking-wide leading-tight mb-3 drop-shadow">
-                        DEDICATED CARDS<br />&amp; TUR DIGITAL<br />SINEMATIK
+                        {t("DEDICATED CARDS & TUR DIGITAL SINEMATIK", "DEDICATED CARDS & CINEMATIC DIGITAL TOURS")}
                       </h3>
                       <p className="text-xs md:text-sm text-white/90 leading-relaxed mb-6 max-w-xs drop-shadow">
-                        Rasakan keindahan Jembatan Ampera, kemilau tenun Songket Lepus benang emas, dan arsitektur undakan Rumah Limas dalam format visual imersif.
+                        {t(
+                          "Rasakan keindahan Jembatan Ampera, kemilau tenun Songket Lepus benang emas, dan arsitektur undakan Rumah Limas dalam format visual imersif.",
+                          "Experience the majesty of Ampera Bridge, the shimmer of gold-threaded Songket Lepus, and the stepped architecture of Limas House in an immersive visual format."
+                        )}
                       </p>
                       <Link
                         href="/tur/songket-palembang"
                         className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-white hover:text-[#fbc270] transition-colors"
                       >
                         <span className="material-symbols-outlined text-base">explore</span>
-                        <span>Lihat Tur Digital</span>
+                        <span>{t("Lihat Tur Digital", "View Digital Tour")}</span>
                         <span className="material-symbols-outlined text-sm">arrow_forward</span>
                       </Link>
                     </div>
@@ -264,17 +300,20 @@ export default function TentangPage() {
                   <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/85" />
                   <div className="relative z-20 px-8 py-16 md:px-12 text-white flex flex-col items-center">
                     <h3 className="text-2xl md:text-3xl font-extrabold uppercase tracking-widest leading-snug mb-5 drop-shadow-md">
-                      ETIKA AI &amp;<br />VERIFIKASI SUMBER
+                      {t("ETIKA AI & VERIFIKASI SUMBER", "AI ETHICS & SOURCE VERIFICATION")}
                     </h3>
                     <p className="text-xs md:text-sm text-white/90 leading-relaxed max-w-sm mx-auto mb-8 font-light drop-shadow text-justify">
-                      Sesuai pedoman etika dalam PRD SORA: Rangkuman kecerdasan buatan dapat mengalami ketidakakuratan lokal. Karena itu, setiap hasil pencarian selalu kami lengkapi dengan rujukan pustaka (seperti Wikimedia Commons, Kemdikbud Warisan Budaya, dan Balai Pelestarian Kebudayaan) serta penandaan transparan terhadap ilustrasi visual.
+                      {t(
+                        "Sesuai pedoman etika dalam PRD SORA: Rangkuman kecerdasan buatan dapat mengalami ketidakakuratan lokal. Karena itu, setiap hasil pencarian selalu kami lengkapi dengan rujukan pustaka (seperti Wikimedia Commons, Kemdikbud Warisan Budaya, dan Balai Pelestarian Kebudayaan) serta penandaan transparan terhadap ilustrasi visual.",
+                        "In accordance with ethical guidelines in the SORA PRD: AI summaries may experience local inaccuracies. Therefore, every search result is coupled with bibliographic references (such as Wikimedia Commons, Kemdikbud Cultural Heritage, and Balai Pelestarian Kebudayaan) along with transparent labeling."
+                      )}
                     </p>
                     <Link
                       href="/tema/rumah-adat"
                       className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-white hover:text-[#fbc270] transition-colors border-b border-transparent hover:border-[#fbc270] pb-0.5"
                     >
                       <span className="material-symbols-outlined text-base">auto_stories</span>
-                      <span>Telusuri Tema Budaya</span>
+                      <span>{t("Telusuri Tema Budaya", "Explore Cultural Themes")}</span>
                     </Link>
                   </div>
                 </div>
@@ -366,19 +405,22 @@ export default function TentangPage() {
             <div className="lg:col-span-5 flex flex-col items-start lg:pl-6 scroll-anim scroll-anim-right delay-150">
               <div className="w-12 h-1 bg-[#dda758] mb-4 rounded-full" />
               <span className="text-xs uppercase tracking-widest text-amber-300 font-semibold mb-2">
-                Pusaka Maritim Nusantara
+                {t("Pusaka Maritim Nusantara", "Maritime Heritage of the Archipelago")}
               </span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-wider uppercase mb-5">
-                JEJAK BATANGHARI SEMBILAN
+                {t("JEJAK BATANGHARI SEMBILAN", "FOOTPRINTS OF BATANGHARI SEMBILAN")}
               </h2>
               <p className="text-sm text-gray-200/90 font-normal leading-relaxed text-justify mb-8">
-                Sungai Musi dengan sembilan anak sungainya (Batanghari Sembilan) membentuk urat nadi peradaban maritim yang melahirkan beragam dialek, kuliner fermentasi tempoyak, ukiran limas, hingga syair pantun Senjang. SORA hadir sebagai ruang temu digital bagi siapa saja yang ingin mengenal dan mewariskan kekayaan budaya ini kepada dunia.
+                {t(
+                  "Sungai Musi dengan sembilan anak sungainya (Batanghari Sembilan) membentuk urat nadi peradaban maritim yang melahirkan beragam dialek, kuliner fermentasi tempoyak, ukiran limas, hingga syair pantun Senjang. SORA hadir sebagai ruang temu digital bagi siapa saja yang ingin mengenal dan mewariskan kekayaan budaya ini kepada dunia.",
+                  "The Musi River and its nine tributaries (Batanghari Sembilan) form the lifeline of a maritime civilization that gave birth to diverse dialects, fermented tempoyak cuisine, limas woodcarvings, and Senjang pantun verses. SORA serves as a digital meeting space to learn and share this cultural wealth with the world."
+                )}
               </p>
               <Link
                 href="/jelajahi"
                 className="inline-flex items-center gap-2 bg-[#dda758] text-[#1c1013] text-xs font-bold uppercase tracking-wider px-8 py-3.5 shadow-xl hover:bg-[#fbc270] transition duration-300 rounded-full"
               >
-                <span>JELAJAHI SEKARANG</span>
+                <span>{t("JELAJAHI SEKARANG", "EXPLORE NOW")}</span>
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </Link>
             </div>

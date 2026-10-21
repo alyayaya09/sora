@@ -1996,45 +1996,100 @@ export const dedicatedTours: Record<string, DedicatedTour> = {
   },
 };
 
-// Helper: Get dedicated tour with robust fallback so any item clicked always renders properly
-export function getDedicatedTour(slug: string): DedicatedTour {
-  if (!slug) {
+import { themeTranslationsEn, dedicatedToursEn } from "./sora-content-en";
+
+// Helper: Get dedicated tour with robust fallback and multi-language support
+export function getDedicatedTour(slug: string, lang: "ID" | "EN" = "ID"): DedicatedTour {
+  const baseTour = (() => {
+    if (!slug) {
+      return dedicatedTours["songket-palembang"];
+    }
+
+    if (dedicatedTours[slug]) {
+      return dedicatedTours[slug];
+    }
+
+    // Find in themes items
+    for (const theme of themes) {
+      const item = theme.items.find(
+        (it) => it.slug === slug || it.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === slug
+      );
+      if (item) {
+        return {
+          id: slug,
+          title: item.name,
+          subtitle: item.desc,
+          heroImg: item.image || theme.heroImage || "/images/ampera_hero.jpg",
+          sec1Title: `${item.name}: Makna & Nilai Budaya Luhur`,
+          sec1Desc: `${item.desc}. Warisan ini telah mengakar dalam kehidupan masyarakat Sumatera Selatan dari generasi ke generasi, melambangkan kebersamaan dan identitas budaya lokal yang tak ternilai.`,
+          sec1Img: item.image || theme.heroImage || "/images/ampera_hero.jpg",
+          sec2Title: "Kearifan Lokal & Keindahan Tradisi",
+          sec2Desc: `Setiap detail dari ${item.name} mencerminkan kearifan adaptasi manusia terhadap alam sekitar, sungai-sungai besar, serta keagungan peradaban kesultanan dan kedatuan masa lampau di bumi Sriwijaya.`,
+          sec2Img: theme.image || "/images/songket_lepus.jpg",
+          sec3Title: "Upaya Pelestarian di Era Digital",
+          sec3Desc: `Melalui platform SORA Arts & Culture, dokumentasi ${item.name} dihadirkan secara visual dan interaktif agar generasi penerus dapat mengapresiasi dan bangga akan kekayaan warisan budaya Sumatera Selatan.`,
+          sec3Img: theme.heroImage || "/images/ampera_hero.jpg",
+          relCat: `KATEGORI ${theme.title.toUpperCase()}`,
+          relTitle: theme.title,
+          relDesc: theme.intro,
+          relLink: `/tema/${theme.slug}`,
+          relImg: theme.heroImage || "/images/ampera_hero.jpg",
+        };
+      }
+    }
+
+    // Default fallback to songket-palembang
     return dedicatedTours["songket-palembang"];
-  }
+  })();
 
-  if (dedicatedTours[slug]) {
-    return dedicatedTours[slug];
-  }
-
-  // Find in themes items
-  for (const theme of themes) {
-    const item = theme.items.find(
-      (it) => it.slug === slug || it.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === slug
-    );
-    if (item) {
+  if (lang === "EN") {
+    const enTour = dedicatedToursEn[slug] || dedicatedToursEn[baseTour.id];
+    if (enTour) {
       return {
-        id: slug,
-        title: item.name,
-        subtitle: item.desc,
-        heroImg: item.image || theme.heroImage || "/images/ampera_hero.jpg",
-        sec1Title: `${item.name}: Makna & Nilai Budaya Luhur`,
-        sec1Desc: `${item.desc}. Warisan ini telah mengakar dalam kehidupan masyarakat Sumatera Selatan dari generasi ke generasi, melambangkan kebersamaan dan identitas budaya lokal yang tak ternilai.`,
-        sec1Img: item.image || theme.heroImage || "/images/ampera_hero.jpg",
-        sec2Title: "Kearifan Lokal & Keindahan Tradisi",
-        sec2Desc: `Setiap detail dari ${item.name} mencerminkan kearifan adaptasi manusia terhadap alam sekitar, sungai-sungai besar, serta keagungan peradaban kesultanan dan kedatuan masa lampau di bumi Sriwijaya.`,
-        sec2Img: theme.image || "/images/songket_lepus.jpg",
-        sec3Title: "Upaya Pelestarian di Era Digital",
-        sec3Desc: `Melalui platform SORA Arts & Culture, dokumentasi ${item.name} dihadirkan secara visual dan interaktif agar generasi penerus dapat mengapresiasi dan bangga akan kekayaan warisan budaya Sumatera Selatan.`,
-        sec3Img: theme.heroImage || "/images/ampera_hero.jpg",
-        relCat: `KATEGORI ${theme.title.toUpperCase()}`,
-        relTitle: theme.title,
-        relDesc: theme.intro,
-        relLink: `/tema/${theme.slug}`,
-        relImg: theme.heroImage || "/images/ampera_hero.jpg",
+        ...baseTour,
+        ...enTour,
       };
     }
   }
 
-  // Default fallback to songket-palembang
-  return dedicatedTours["songket-palembang"];
+  return baseTour;
 }
+
+export function getTheme(slug: string, lang: "ID" | "EN" = "ID"): Theme | undefined {
+  const baseTheme = themes.find((t) => t.slug === slug);
+  if (!baseTheme) return undefined;
+  if (lang === "EN") {
+    const enTrans = themeTranslationsEn[slug];
+    if (enTrans) {
+      return {
+        ...baseTheme,
+        title: enTrans.title || baseTheme.title,
+        cta: enTrans.cta || baseTheme.cta,
+        tagline: enTrans.tagline || baseTheme.tagline,
+        intro: enTrans.intro || baseTheme.intro,
+        guidebook: enTrans.guidebook || baseTheme.guidebook,
+        items: baseTheme.items.map((item) => {
+          const itemTrans = enTrans.items?.[item.name];
+          if (itemTrans) {
+            return {
+              ...item,
+              name: itemTrans.name || item.name,
+              desc: itemTrans.desc || item.desc,
+              badge: itemTrans.badge || item.badge,
+            };
+          }
+          return item;
+        }),
+      };
+    }
+  }
+  return baseTheme;
+}
+
+export function getThemes(lang: "ID" | "EN" = "ID"): Theme[] {
+  if (lang === "EN") {
+    return themes.map((theme) => getTheme(theme.slug, "EN") || theme);
+  }
+  return themes;
+}
+

@@ -4,11 +4,12 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "../lib/auth-client";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
-  const [lang, setLang] = useState<"ID" | "EN">("ID");
+  const { lang, toggleLang, t } = useLanguage();
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -88,9 +89,9 @@ export default function Navbar() {
   };
 
   const toggleLanguage = () => {
+    toggleLang();
     const next = lang === "ID" ? "EN" : "ID";
-    setLang(next);
-    triggerToast(`Bahasa diubah ke ${next}`);
+    triggerToast(next === "EN" ? "Language changed to English" : "Bahasa diubah ke Indonesia");
   };
 
   const handleSignOut = async () => {
@@ -149,7 +150,7 @@ export default function Navbar() {
                   : "text-white/80 hover:text-amber-200"
               }`}
             >
-              Beranda
+              {t("Beranda", "Home")}
               <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
                 pathname === "/" ? "w-full" : "w-0 group-hover/nav:w-full"
               }`}></span>
@@ -162,7 +163,7 @@ export default function Navbar() {
                   : "text-white/80 hover:text-amber-200"
               }`}
             >
-              Jelajahi
+              {t("Jelajahi", "Explore")}
               <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
                 pathname === "/jelajahi" ? "w-full" : "w-0 group-hover/nav:w-full"
               }`}></span>
@@ -175,7 +176,7 @@ export default function Navbar() {
                   : "text-white/80 hover:text-amber-200"
               }`}
             >
-              Favorit
+              {t("Favorit", "Favorites")}
               <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
                 pathname === "/favorit" ? "w-full" : "w-0 group-hover/nav:w-full"
               }`}></span>
@@ -188,7 +189,7 @@ export default function Navbar() {
                   : "text-white/80 hover:text-amber-200"
               }`}
             >
-              Tentang
+              {t("Tentang", "About")}
               <span className={`absolute -bottom-0.5 left-0 h-[2px] bg-amber-400 transition-all duration-300 ${
                 pathname === "/tentang" ? "w-full" : "w-0 group-hover/nav:w-full"
               }`}></span>
@@ -254,7 +255,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-2.5 text-white/70 hover:text-white hover:bg-white/5 transition-colors text-sm"
                     >
                       <span className="material-symbols-outlined text-base">favorite</span>
-                      Favorit Saya
+                      {t("Favorit Saya", "My Favorites")}
                     </Link>
                     <button
                       type="button"
@@ -262,7 +263,7 @@ export default function Navbar() {
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors text-sm text-left"
                     >
                       <span className="material-symbols-outlined text-base">logout</span>
-                      Keluar
+                      {t("Keluar", "Sign Out")}
                     </button>
                   </div>
                 )}
@@ -273,7 +274,7 @@ export default function Navbar() {
                 href="/masuk"
                 className="bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold px-4 sm:px-5 py-2 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs tracking-wide inline-block whitespace-nowrap"
               >
-                Sign In
+                {t("Masuk", "Sign In")}
               </Link>
             )}
           </div>

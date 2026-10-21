@@ -4,9 +4,10 @@ import React, { useState, useRef, useEffect, useCallback, Suspense } from "react
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchResult } from "@/lib/gemini";
-import { themes } from "@/data/sora-content";
+import { getThemes } from "@/data/sora-content";
 import LoveButton from "@/components/LoveButton";
 import { useSession } from "@/lib/auth-client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ─── Orb / Ambient Background ───
 function AmbientBackground() {
@@ -41,6 +42,8 @@ function JelajahiContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlQuery = searchParams.get("q") || "";
+  const { lang, t } = useLanguage();
+  const themes = getThemes(lang);
 
   const [query, setQuery] = useState(urlQuery || "");
   const [inputValue, setInputValue] = useState(urlQuery || "");
@@ -322,7 +325,7 @@ function JelajahiContent() {
     const currentReqId = audioReqIdRef.current;
 
     setIsPlaying(true);
-    triggerToast("Menyiapkan audio SORA...", "volume_up");
+    triggerToast(t("Menyiapkan audio SORA...", "Preparing SORA audio..."), "volume_up");
 
     const textToSpeak = `${result.card2.title}. ${result.card2.highlight} ${result.card2.paragraphs[0] || ""}`;
 
@@ -476,7 +479,7 @@ function JelajahiContent() {
                     onChange={(e) => setInputValue(e.target.value)}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    placeholder="Cari budaya, sejarah, kuliner Sumsel..."
+                    placeholder={t("Cari budaya, sejarah, kuliner Sumsel...", "Search culture, history, culinary of South Sumatra...")}
                     className="flex-1 min-w-0 bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-base md:text-[17px] text-white placeholder:text-white/30 font-medium"
                   />
                   {inputValue && (
@@ -516,13 +519,13 @@ function JelajahiContent() {
                   <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[#141014]/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl overflow-hidden z-[200]">
                     {/* Header Riwayat */}
                     <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-white/[0.06] select-none">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-white/40">Riwayat Pencarian</span>
+                      <span className="text-xs font-semibold uppercase tracking-wider text-white/40">{t("Riwayat Pencarian", "Search History")}</span>
                       <button
                         type="button"
                         onMouseDown={clearAllHistory}
                         className="text-[11px] text-white/35 hover:text-rose-400 transition-colors font-medium cursor-pointer"
                       >
-                        Hapus Semua
+                        {t("Hapus Semua", "Clear All")}
                       </button>
                     </div>
 
@@ -559,7 +562,7 @@ function JelajahiContent() {
                           item.toLowerCase().includes(inputValue.toLowerCase())
                         ).length === 0 && (
                           <div className="px-4 py-3 text-xs text-white/35 italic">
-                            Tidak ada riwayat yang cocok
+                            {t("Tidak ada riwayat yang cocok", "No matching search history")}
                           </div>
                         )}
                     </div>
@@ -577,7 +580,7 @@ function JelajahiContent() {
                 <div className="absolute inset-2 rounded-full border-2 border-rose-500/20 border-b-rose-400 animate-spin" style={{ animationDirection: "reverse", animationDuration: "1.2s" }} />
               </div>
               <p className="text-sm md:text-base font-medium text-amber-200/80 animate-pulse">
-                Menganalisis warisan budaya Sumatera Selatan dengan SORA AI...
+                {t("Menganalisis warisan budaya Sumatera Selatan dengan SORA AI...", "Analyzing South Sumatra cultural heritage with SORA AI...")}
               </p>
             </div>
           )}
@@ -587,10 +590,13 @@ function JelajahiContent() {
             <div className="flex flex-col gap-10 py-6">
               <div className="flex flex-col items-center text-center gap-3 max-w-2xl mx-auto">
                 <h2 className="text-3xl md:text-4xl text-white font-serif font-medium">
-                  Jelajahi Khazanah Bumi Sriwijaya
+                  {t("Jelajahi Khazanah Bumi Sriwijaya", "Explore the Treasury of the Sriwijaya Realm")}
                 </h2>
                 <p className="text-sm md:text-base text-white/60 leading-relaxed">
-                  Pilih salah satu dari 8 pilar tema budaya, atau ketik topik spesifik seperti nama kain tenun, rumah adat, atau kuliner favorit Anda.
+                  {t(
+                    "Pilih salah satu dari 8 pilar tema budaya, atau ketik topik spesifik seperti nama kain tenun, rumah adat, atau kuliner favorit Anda.",
+                    "Choose one of the 8 cultural pillars, or type a specific topic such as traditional textiles, stilt houses, or your favorite culinary delicacies."
+                  )}
                 </p>
               </div>
 
@@ -628,19 +634,19 @@ function JelajahiContent() {
               </div>
               <div className="flex flex-col gap-2">
                 <h2 className="text-2xl md:text-3xl text-white font-medium">
-                  Pertanyaan Tidak Dapat Dijawab
+                  {t("Pertanyaan Tidak Dapat Dijawab", "Question Could Not Be Answered")}
                 </h2>
                 <p className="text-sm md:text-base text-white/60 leading-relaxed">
-                  SORA AI dapat menjawab pertanyaan tentang{" "}
-                  <strong className="text-amber-300 font-semibold">Sumatera Selatan</strong>,
-                  tempat wisata, kuliner, sejarah, dan pengetahuan umum.
-                  Coba ubah kata kunci Anda.
+                  {t(
+                    "SORA AI dapat menjawab pertanyaan tentang Sumatera Selatan, tempat wisata, kuliner, sejarah, dan pengetahuan umum. Coba ubah kata kunci Anda.",
+                    "SORA AI can answer questions about South Sumatra, attractions, culinary heritage, history, and general knowledge. Please try adjusting your keywords."
+                  )}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 w-full pt-2">
                 <p className="text-xs uppercase font-semibold tracking-wider text-white/40">
-                  Coba contoh pertanyaan:
+                  {t("Coba contoh pertanyaan:", "Try sample questions:")}
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   {[
@@ -672,7 +678,7 @@ function JelajahiContent() {
               {/* Header Label */}
               <div className="flex items-center gap-2.5">
                 <span className="material-symbols-outlined text-2xl text-amber-300">auto_awesome</span>
-                <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Rangkuman SORA</h1>
+                <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">{t("Rangkuman SORA", "SORA Summary")}</h1>
               </div>
 
               {/* Outside Sumsel Notice (PRD Bagian 9) */}
@@ -753,7 +759,7 @@ function JelajahiContent() {
                       style={{ maxHeight: expanded ? "500px" : "0px", opacity: expanded ? 1 : 0 }}
                     >
                       <div className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl p-4 flex flex-col gap-3 shadow-xl">
-                        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.15em] px-1">Sumber Referensi</p>
+                        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.15em] px-1">{t("Sumber Referensi", "Reference Sources")}</p>
                         {result.card2.sources.map((art, i) => (
                           <div key={i}>
                             {i > 0 && <div className="h-px bg-white/[0.06] my-1" />}
@@ -808,7 +814,7 @@ function JelajahiContent() {
                           {isPlaying ? "pause" : "volume_up"}
                         </span>
                         <span className="text-2xl md:text-3xl text-white font-normal select-none leading-none">
-                          {isPlaying ? "Memutar SORA..." : "Dengarkan SORA"}
+                          {isPlaying ? t("Memutar SORA...", "Playing SORA...") : t("Dengarkan SORA", "Listen to SORA")}
                         </span>
                         {isPlaying && (
                           <span className="flex items-end gap-0.5 h-4 px-1">
@@ -884,7 +890,7 @@ function JelajahiContent() {
                         aria-expanded={expanded}
                         className="w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-amber-400/40 text-white text-sm font-medium tracking-wide transition-all backdrop-blur-md focus:outline-none shadow-sm cursor-pointer"
                       >
-                        <span>{expanded ? "Tampilkan lebih sedikit" : "Tampilkan lebih banyak"}</span>
+                        <span>{expanded ? t("Tampilkan lebih sedikit", "Show less") : t("Tampilkan lebih banyak", "Show more")}</span>
                         <span
                           className="material-symbols-outlined text-base transition-transform duration-300"
                           style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -902,10 +908,10 @@ function JelajahiContent() {
                 <section className="flex flex-col gap-6 mt-12 pt-4">
                   <div>
                     <span className="text-xs uppercase font-semibold text-amber-300 tracking-wider">
-                      Eksplorasi Lanjutan
+                      {t("Eksplorasi Lanjutan", "Further Exploration")}
                     </span>
                     <h2 className="text-2xl md:text-3xl text-white font-serif font-medium mt-1">
-                      Kategori Terkait: {result.card3.themeTitle}
+                      {t("Kategori Terkait", "Related Category")}: {result.card3.themeTitle}
                     </h2>
                   </div>
 
@@ -933,7 +939,7 @@ function JelajahiContent() {
                       </p>
                       <div className="pt-3">
                         <span className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 hover:border-amber-400/50 text-white hover:text-amber-300 text-sm font-medium tracking-wide transition-all backdrop-blur-md shadow-lg">
-                          Jelajahi Tema Ini
+                          {t("Jelajahi Tema Ini", "Explore This Theme")}
                           <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                         </span>
                       </div>

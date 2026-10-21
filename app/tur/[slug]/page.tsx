@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getDedicatedTour } from "../../../data/sora-content";
 import LoveButton from "../../../components/LoveButton";
+import { useLanguage } from "../../../contexts/LanguageContext";
 
 interface TourPageProps {
   params?: {
@@ -15,7 +16,8 @@ interface TourPageProps {
 export default function TourDetailPage({ params }: TourPageProps) {
   const routerParams = useParams();
   const slug = (routerParams?.slug as string) || params?.slug || "songket-palembang";
-  const tour = getDedicatedTour(slug);
+  const { lang, t } = useLanguage();
+  const tour = getDedicatedTour(slug, lang);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showToast, setShowToast] = useState<string | null>(null);
 
@@ -174,7 +176,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
   const handleCopyLink = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
-      triggerToast("Tautan disalin ke papan klip");
+      triggerToast(t("Tautan disalin ke papan klip", "Link copied to clipboard"));
     }
   };
 
@@ -269,7 +271,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
               </h1>
               <p className="text-sm sm:text-base md:text-lg text-neutral-300 font-normal max-w-2xl mx-auto leading-relaxed drop-shadow-md">
                 <span className="text-amber-400 font-medium italic">
-                  Kemilau Peradaban Sriwijaya&nbsp;
+                  {t("Kemilau Peradaban Sriwijaya ", "Splendor of Sriwijaya Civilization ")}
                 </span>
                 {tour.subtitle}
               </p>
@@ -288,13 +290,13 @@ export default function TourDetailPage({ params }: TourPageProps) {
                   variant="rounded-2xl"
                 />
                 <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md bg-[#1b1b1d]/90 border border-white/10 text-neutral-200 text-[10px] tracking-wide opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 backdrop-blur-md shadow-md z-20">
-                  Favorit
+                  {t("Favorit", "Favorite")}
                 </div>
               </div>
 
               <div className="relative group/tooltip flex items-center justify-center">
                 <button
-                  aria-label="Salin Tautan"
+                  aria-label={t("Salin Tautan", "Copy Link")}
                   className="group inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/[0.05] border border-white/15 hover:border-white/50 text-white/80 hover:text-white backdrop-blur-md transition-all duration-300 shadow-sm focus:outline-none hover:-translate-y-0.5 hover:shadow-lg active:scale-95 hover:bg-white/10 cursor-pointer"
                   onClick={handleCopyLink}
                   type="button"
@@ -304,15 +306,15 @@ export default function TourDetailPage({ params }: TourPageProps) {
                   </span>
                 </button>
                 <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md bg-[#1b1b1d]/90 border border-white/10 text-neutral-200 text-[10px] tracking-wide opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 backdrop-blur-md shadow-md z-20">
-                  Salin Tautan
+                  {t("Salin Tautan", "Copy Link")}
                 </div>
               </div>
 
               <div className="relative group/tooltip flex items-center justify-center">
                 <button
-                  aria-label="Bagikan"
+                  aria-label={t("Bagikan", "Share")}
                   className="group inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#af8d11]/20 hover:bg-[#af8d11]/15 border border-amber-400/30 text-amber-300 backdrop-blur-md transition-all duration-300 shadow-sm focus:outline-none hover:-translate-y-0.5 hover:shadow-lg active:scale-95 cursor-pointer"
-                  onClick={() => triggerToast("Tautan siap dibagikan")}
+                  onClick={() => triggerToast(t("Tautan siap dibagikan", "Link ready to share"))}
                   type="button"
                 >
                   <span className="material-symbols-outlined text-[20px] text-amber-300 transition-transform group-hover:scale-110">
@@ -320,7 +322,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
                   </span>
                 </button>
                 <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md bg-[#1b1b1d]/90 border border-white/10 text-neutral-200 text-[10px] tracking-wide opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 backdrop-blur-md shadow-md z-20">
-                  Bagikan
+                  {t("Bagikan", "Share")}
                 </div>
               </div>
             </div>
@@ -333,7 +335,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
               href="#narasi-seksi-1"
             >
               <span className="text-[10px] sm:text-[11px] tracking-widest uppercase font-semibold text-white/70 group-hover:text-amber-300">
-                GULIR UNTUK MENELUSURI NARASI
+                {t("GULIR UNTUK MENELUSURI NARASI", "SCROLL TO EXPLORE THE NARRATIVE")}
               </span>
               <span className="material-symbols-outlined text-base animate-bounce text-amber-300 mt-2">
                 keyboard_arrow_down
@@ -436,7 +438,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
           <section className="relative w-full flex-1 flex flex-col justify-center px-6 md:px-12 py-8 md:py-12 max-w-7xl mx-auto">
             <div className="flex flex-col items-center justify-center text-center w-full mb-6 tur-anim-fade">
               <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl text-neutral-200 font-normal tracking-wide drop-shadow-md">
-                Jelajahi kategori terkait...
+                {t("Jelajahi kategori terkait...", "Explore related category...")}
               </h2>
             </div>
             <div className="max-w-5xl md:max-w-6xl mx-auto w-full relative rounded-3xl overflow-hidden border border-amber-400/30 shadow-[0_20px_50px_rgba(0,0,0,0.4),0_0_40px_rgba(107,29,47,0.25)] min-h-[320px] md:min-h-[380px] flex items-center justify-center p-6 md:p-12 text-center group tur-anim-zoom tur-delay-1">
@@ -457,7 +459,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
                   href={tour.relLink}
                   className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95 text-white text-sm font-medium border border-white/20 backdrop-blur-md transition-all duration-300 shadow-md hover:shadow-[0_0_24px_rgba(251,191,36,0.3)] tur-anim-fade tur-delay-3"
                 >
-                  Lihat Tema
+                  {t("Lihat Tema", "View Theme")}
                 </Link>
               </div>
             </div>
@@ -480,7 +482,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
             id="centerNavWidget"
           >
             <button
-              aria-label="Seksi sebelumnya"
+              aria-label={t("Seksi sebelumnya", "Previous section")}
               className="w-10 h-10 rounded-full flex items-center justify-center text-amber-300 hover:text-amber-200 hover:bg-white/10 active:bg-amber-400/20 active:scale-95 transition-all cursor-pointer"
               onClick={() => navigateSection(-1)}
               type="button"
@@ -491,7 +493,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
             </button>
             <div className="w-px h-5 bg-white/15 mx-1"></div>
             <button
-              aria-label="Seksi berikutnya"
+              aria-label={t("Seksi berikutnya", "Next section")}
               className="w-10 h-10 rounded-full flex items-center justify-center text-amber-300 hover:text-amber-200 hover:bg-white/10 active:bg-amber-400/20 active:scale-95 transition-all cursor-pointer"
               onClick={() => navigateSection(1)}
               type="button"

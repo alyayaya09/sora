@@ -2,13 +2,16 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { Theme } from "../data/sora-content";
+import { Theme, getTheme } from "../data/sora-content";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface ThemeK2Props {
   theme: Theme;
 }
 
-export default function ThemeK2({ theme }: ThemeK2Props) {
+export default function ThemeK2({ theme: initialTheme }: ThemeK2Props) {
+  const { lang, t } = useLanguage();
+  const theme = getTheme(initialTheme.slug, lang) || initialTheme;
   useEffect(() => {
     const animatedElements = document.querySelectorAll(".scroll-anim");
     if (!("IntersectionObserver" in window)) {
@@ -310,7 +313,7 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
                           {item.badge || "WARISAN"}
                         </div>
                         <div className="text-[11px] text-white/60 uppercase tracking-widest -mt-1 mb-2 font-sans font-light">
-                          SUMATERA SELATAN
+                          {t("SUMATERA SELATAN", "SOUTH SUMATRA")}
                         </div>
                         <h3 className="text-xs sm:text-sm font-medium text-white truncate drop-shadow-sm">
                           {item.name}
@@ -348,7 +351,7 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
                           {item.badge || "WARISAN"}
                         </div>
                         <div className="text-[11px] text-white/60 uppercase tracking-widest -mt-1 mb-2 font-sans font-light">
-                          SUMATERA SELATAN
+                          {t("SUMATERA SELATAN", "SOUTH SUMATRA")}
                         </div>
                         <h3 className="text-xs sm:text-sm font-medium text-white truncate drop-shadow-sm">
                           {item.name}
@@ -373,7 +376,7 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
         >
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl sm:text-2xl font-normal text-white drop-shadow-md">
-              3 tema
+              {t("3 tema", "3 themes")}
             </h2>
           </div>
 
@@ -487,14 +490,17 @@ export default function ThemeK2({ theme }: ThemeK2Props) {
           <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-5 bg-transparent flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
               <span className="text-[11px] font-semibold tracking-wider text-amber-300 uppercase block mb-1">
-                Mozaik Kolase Warisan
+                {t("Mozaik Kolase Warisan", "Heritage Collage Mosaic")}
               </span>
               <h2 className="text-xl sm:text-2xl font-normal text-white drop-shadow-md">
-                Koleksi Seni &amp; Peninggalan Budaya
+                {t("Koleksi Seni & Peninggalan Budaya", "Art Collections & Cultural Heritage")}
               </h2>
             </div>
             <p className="text-xs text-white/60">
-              Dokumentasi visual dan artefak budaya terpilih dari tema {theme.title}
+              {t(
+                `Dokumentasi visual dan artefak budaya terpilih dari tema ${theme.title}`,
+                `Curated visual documentation and cultural artifacts from ${theme.title}`
+              )}
             </p>
           </div>
 

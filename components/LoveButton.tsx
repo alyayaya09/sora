@@ -9,6 +9,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "../lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface LoveButtonProps {
   itemType: "card" | "theme" | "image";
@@ -43,6 +44,7 @@ export default function LoveButton({
 }: LoveButtonProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const { t } = useLanguage();
   const [isFav, setIsFav] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -110,7 +112,7 @@ export default function LoveButton({
         });
         setIsFav(false);
         onToggle?.(false);
-        showToastNotification("Dihapus dari Favorit", false);
+        showToastNotification(t("Dihapus dari Favorit", "Removed from Favorites"), false);
       } else {
         await fetch("/api/favorite", {
           method: "POST",
@@ -119,10 +121,10 @@ export default function LoveButton({
         });
         setIsFav(true);
         onToggle?.(true);
-        showToastNotification("Disimpan ke Favorit ❤", true);
+        showToastNotification(t("Disimpan ke Favorit ❤", "Saved to Favorites ❤"), true);
       }
     } catch {
-      showToastNotification("Gagal, coba lagi", false);
+      showToastNotification(t("Gagal, coba lagi", "Failed, please try again"), false);
     } finally {
       setLoading(false);
     }

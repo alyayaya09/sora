@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "../../lib/auth-client";
 import AmbientBackground from "../../components/AmbientBackground";
 import { getDedicatedTour } from "../../data/sora-content";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface FavoriteItem {
   id: string;
@@ -31,6 +32,7 @@ type TabType = "stories" | "gambar";
 export default function FavoritPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
+  const { t } = useLanguage();
   const user = session?.user;
 
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
@@ -90,9 +92,9 @@ export default function FavoritPage() {
         body: JSON.stringify({ itemType: type, itemRef: ref }),
       });
       setFavorites((prev) => prev.filter((f) => f.id !== item.id));
-      showToast("Dihapus dari Favorit", item.title || ref || "Item", true);
+      showToast(t("Dihapus dari Favorit", "Removed from Favorites"), item.title || ref || "Item", true);
     } catch {
-      showToast("Gagal menghapus", "Coba lagi nanti", true);
+      showToast(t("Gagal menghapus", "Failed to remove"), t("Coba lagi nanti", "Please try again later"), true);
     }
   };
 
@@ -211,7 +213,7 @@ export default function FavoritPage() {
                     : "text-white/50 hover:text-white/80"
                 }`}
               >
-                Tur Digital
+                {t("Tur Digital", "Digital Tours")}
                 {activeTab === "stories" && (
                   <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
                 )}
@@ -225,7 +227,7 @@ export default function FavoritPage() {
                     : "text-white/50 hover:text-white/80"
                 }`}
               >
-                Gambar
+                {t("Gambar", "Images")}
                 {activeTab === "gambar" && (
                   <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
                 )}
@@ -239,7 +241,7 @@ export default function FavoritPage() {
           <div className="flex items-center justify-between mb-5 pb-1">
             <div className="flex items-baseline gap-3">
               <h2 className="font-sans text-2xl sm:text-3xl font-semibold tracking-wide text-[#F9F8F6] drop-shadow-sm">
-                {activeTab === "stories" ? "Tur Digital" : "Gambar"}
+                {activeTab === "stories" ? t("Tur Digital", "Digital Tours") : t("Gambar", "Images")}
               </h2>
               <span className="font-sans text-xs text-[#e2be74] font-medium px-2.5 py-0.5 rounded-full bg-[#6b1d2f]/40 border border-amber-400/30">
                 {displayedFavs.length}
@@ -263,10 +265,15 @@ export default function FavoritPage() {
               </div>
               <div className="max-w-md">
                 <h3 className="font-sans text-xl font-semibold text-white mb-1">
-                  Belum Ada {activeTab === "stories" ? "Tur Digital" : "Gambar"} Favorit
+                  {activeTab === "stories"
+                    ? t("Belum Ada Tur Digital Favorit", "No Favorite Digital Tours Yet")
+                    : t("Belum Ada Gambar Favorit", "No Favorite Images Yet")}
                 </h3>
                 <p className="text-sm text-white/60 leading-relaxed">
-                  Tekan ikon ❤ pada konten untuk menyimpannya ke favorit.
+                  {t(
+                    "Tekan ikon ❤ pada konten untuk menyimpannya ke favorit.",
+                    "Click the ❤ icon on any content to save it to your favorites."
+                  )}
                 </p>
               </div>
               <div className="flex gap-3 mt-2">
@@ -274,7 +281,7 @@ export default function FavoritPage() {
                   href="/jelajahi"
                   className="px-6 py-2.5 rounded-full bg-[#6b1d2f] hover:bg-[#8b273e] text-white text-sm font-medium transition-all shadow-md"
                 >
-                  Jelajahi Budaya
+                  {t("Jelajahi Budaya", "Explore Culture")}
                 </Link>
               </div>
             </div>
@@ -332,7 +339,7 @@ export default function FavoritPage() {
                   {/* Center hover "Eksplor" */}
                   <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                     <span className="inline-flex items-center justify-center px-5 py-2 rounded-full text-white text-sm font-semibold tracking-wide border border-white/40 shadow-lg bg-black/40 backdrop-blur-sm">
-                      Eksplor
+                      {t("Eksplor", "Explore")}
                     </span>
                   </div>
 

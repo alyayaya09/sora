@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { authClient } from "../../lib/auth-client";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function MasukPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useLanguage();
 
   const handleGoogleLogin = async () => {
     setError("");
@@ -17,7 +19,7 @@ export default function MasukPage() {
         callbackURL: "/",
       });
     } catch {
-      setError("Gagal masuk dengan Google. Coba lagi.");
+      setError(t("Gagal masuk dengan Google. Coba lagi.", "Failed to sign in with Google. Please try again."));
       setLoading(false);
     }
   };
@@ -47,7 +49,7 @@ export default function MasukPage() {
             </span>
           </Link>
           <p className="text-white/40 text-sm mt-2 font-sans">
-            Jelajahi warisan budaya Sumatera Selatan
+            {t("Jelajahi warisan budaya Sumatera Selatan", "Explore the cultural heritage of South Sumatra")}
           </p>
         </div>
 
@@ -56,9 +58,11 @@ export default function MasukPage() {
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#6b1d2f] to-[#8b273e] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#6b1d2f]/40">
               <span className="material-symbols-outlined text-[#f3d38c] text-2xl">person</span>
             </div>
-            <h1 className="text-white font-semibold text-xl font-sans mb-1">Masuk ke SORA</h1>
+            <h1 className="text-white font-semibold text-xl font-sans mb-1">
+              {t("Masuk ke SORA", "Sign in to SORA")}
+            </h1>
             <p className="text-white/50 text-sm font-sans">
-              Simpan favorit dan personalisasi pengalamanmu
+              {t("Simpan favorit dan personalisasi pengalamanmu", "Save your favorites and personalize your experience")}
             </p>
           </div>
 
@@ -73,7 +77,7 @@ export default function MasukPage() {
             {loading ? (
               <>
                 <div className="w-5 h-5 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
-                <span>Menghubungkan...</span>
+                <span>{t("Menghubungkan...", "Connecting...")}</span>
               </>
             ) : (
               <>
@@ -96,7 +100,7 @@ export default function MasukPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span>Masuk dengan Google</span>
+                <span>{t("Masuk dengan Google", "Sign in with Google")}</span>
               </>
             )}
           </button>
@@ -109,8 +113,10 @@ export default function MasukPage() {
           )}
 
           <p className="text-white/30 text-xs font-sans mt-6 leading-relaxed">
-            Dengan masuk, Anda menyetujui syarat penggunaan SORA Arts & Culture.
-            Data Anda aman dan tidak dibagikan.
+            {t(
+              "Dengan masuk, Anda menyetujui syarat penggunaan SORA Arts & Culture. Data Anda aman dan tidak dibagikan.",
+              "By signing in, you agree to the terms of SORA Arts & Culture. Your data is safe and never shared."
+            )}
           </p>
         </div>
 

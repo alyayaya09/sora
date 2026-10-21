@@ -2,10 +2,12 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function Footer() {
   const pathname = usePathname();
   const isTourPage = pathname?.startsWith("/tur");
+  const { t } = useLanguage();
 
   return (
     <footer
@@ -24,7 +26,12 @@ export default function Footer() {
           <span className="text-white/15">•</span>
           <span className="text-white/35 font-medium">2026</span>
         </div>
-        <span className="text-xs text-white/20">Platform AI Warisan Budaya Sumatera Selatan</span>
+        <span className="text-xs text-white/20">
+          {t(
+            "Platform AI Warisan Budaya Sumatera Selatan",
+            "South Sumatra AI Cultural Heritage Platform"
+          )}
+        </span>
       </div>
     </footer>
   );

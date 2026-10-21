@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { LanguageProvider } from "../contexts/LanguageContext";
 
 export const metadata: Metadata = {
   title: "SORA Arts & Culture — Pelestarian Seni & Budaya Sumatera Selatan",
@@ -29,9 +30,11 @@ export default function RootLayout({
         />
       </head>
       <body className="text-[#f5dce1] min-h-screen selection:bg-cyan-500 selection:text-black antialiased relative overflow-x-hidden flex flex-col justify-between animated-gradient-bg">
-        <Navbar />
-        <main className="flex-1 w-full">{children}</main>
-        <Footer />
+        <LanguageProvider>
+          <Navbar />
+          <main className="flex-1 w-full">{children}</main>
+          <Footer />
+        </LanguageProvider>
       </body>
     </html>
   );

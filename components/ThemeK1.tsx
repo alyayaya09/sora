@@ -2,13 +2,16 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { Theme } from "../data/sora-content";
+import { Theme, getTheme } from "../data/sora-content";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface ThemeK1Props {
   theme: Theme;
 }
 
-export default function ThemeK1({ theme }: ThemeK1Props) {
+export default function ThemeK1({ theme: initialTheme }: ThemeK1Props) {
+  const { lang, t } = useLanguage();
+  const theme = getTheme(initialTheme.slug, lang) || initialTheme;
   useEffect(() => {
     // Carousel Hover & Sticky Active State Interactivity matching K1.MD
     const itemWrappers = document.querySelectorAll(
@@ -120,7 +123,7 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
         </div>
 
         <div className="relative z-10 w-full text-white/70 py-3.5 border-b border-white/10 bg-black/20 backdrop-blur-sm flex items-center justify-center text-xs tracking-wide">
-          <span>Kolaborasi Kurasi Warisan Budaya Sumatera Selatan — SORA Arts &amp; Culture</span>
+          <span>{t("Kolaborasi Kurasi Warisan Budaya Sumatera Selatan — SORA Arts & Culture", "South Sumatra Cultural Heritage Curated Collaboration — SORA Arts & Culture")}</span>
         </div>
       </section>
       {/* END: HeroSection */}
@@ -134,17 +137,17 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
         <header className="text-center mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-white drop-shadow-sm">
             {theme.slug === "rumah-adat"
-              ? "Falsafah Ruang & Arsitektur Sungai"
+              ? t("Falsafah Ruang & Arsitektur Sungai", "Philosophy of Space & River Architecture")
               : theme.slug === "pertunjukan-lisan"
-              ? "Tradisi Tutur & Seni Panggung Rakyat"
-              : "Semuanya dimulai dengan sebuah titik"}
+              ? t("Tradisi Tutur & Seni Panggung Rakyat", "Oral Traditions & Folk Performing Arts")
+              : t("Semuanya dimulai dengan sebuah titik", "It all begins with a single dot")}
           </h2>
           <p className="mt-3 text-base sm:text-lg font-normal text-[#f3f4f6]">
             {theme.slug === "rumah-adat"
-              ? "Menyelami kearifan rancang bangun hunian tradisional Sumatera Selatan"
+              ? t("Menyelami kearifan rancang bangun hunian tradisional Sumatera Selatan", "Exploring the architectural wisdom of South Sumatra traditional dwellings")
               : theme.slug === "pertunjukan-lisan"
-              ? "Cerita, pantun berirama, dan petuah leluhur yang tak lekang waktu"
-              : "Temukan bahasa unik dari titik dan garis"}
+              ? t("Cerita, pantun berirama, dan petuah leluhur yang tak lekang waktu", "Stories, rhythmic pantun poetry, and timeless ancestral wisdom")
+              : t("Temukan bahasa unik dari titik dan garis", "Discover the unique visual language of dots and lines")}
           </p>
         </header>
 
@@ -232,17 +235,17 @@ export default function ThemeK1({ theme }: ThemeK1Props) {
           <header className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-white drop-shadow-sm">
               {theme.slug === "rumah-adat"
-                ? "Ragam Struktur & Konstruksi"
+                ? t("Ragam Struktur & Konstruksi", "Diverse Structures & Timber Construction")
                 : theme.slug === "pertunjukan-lisan"
-                ? "Lakon Seni & Tembang Rakyat"
-                : "Dimulai dari titik"}
+                ? t("Lakon Seni & Tembang Rakyat", "Dramatic Arts & Folk Ballads")
+                : t("Dimulai dari titik", "Beginning from a point")}
             </h2>
             <p className="mt-3 text-base sm:text-lg font-normal text-[#f3f4f6]">
               {theme.slug === "rumah-adat"
-                ? "Pelajari arsitektur panggung yang berbicara tentang sungai, status, dan alam"
+                ? t("Pelajari arsitektur panggung yang berbicara tentang sungai, status, dan alam", "Learn stilt architecture that speaks of rivers, status, and nature")
                 : theme.slug === "pertunjukan-lisan"
-                ? "Pelajari seni tutur, pantun bersahut, dan pementasan teater tradisional"
-                : "Pelajari mengenai kain yang dipakai oleh semua"}
+                ? t("Pelajari seni tutur, pantun bersahut, dan pementasan teater tradisional", "Explore the art of storytelling, rhymed pantun dialogues, and folk theater")
+                : t("Pelajari mengenai kain yang dipakai oleh semua", "Explore timeless woven textiles cherished by all")}
             </p>
           </header>
 

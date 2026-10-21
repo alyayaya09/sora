@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Theme } from "../data/sora-content";
+import { Theme, getTheme } from "../data/sora-content";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface ThemeK3Props {
   theme: Theme;
 }
 
-export default function ThemeK3({ theme }: ThemeK3Props) {
+export default function ThemeK3({ theme: initialTheme }: ThemeK3Props) {
+  const { lang, t } = useLanguage();
+  const theme = getTheme(initialTheme.slug, lang) || initialTheme;
   const [activeFannedIndex, setActiveFannedIndex] = useState(2); // Default card 3 active matching K3.MD
   const [activeExpert, setActiveExpert] = useState(6); // Default 7th card active matching K3.MD
   const [playingVideo, setPlayingVideo] = useState<{
@@ -222,10 +225,10 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
             {/* Curved speech bubble tail */}
             <div className="absolute -bottom-4 left-6 w-0 h-0 border-t-[20px] border-t-[#FFCA00] border-r-[22px] border-r-transparent"></div>
             <h1 className="text-white font-sans text-4xl md:text-5xl font-black uppercase tracking-tight text-center leading-none drop-shadow-sm select-none">
-              Tari &amp; Musik
+              {t("Tari & Musik", "Dance & Music")}
             </h1>
             <p className="text-white font-sans text-lg md:text-xl font-extrabold uppercase tracking-wide mt-2 text-center leading-tight drop-shadow-sm select-none">
-              Sumatera<br />Selatan
+              {t("Sumatera", "South")}<br />{t("Selatan", "Sumatra")}
             </p>
           </div>
 
@@ -237,10 +240,10 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
           {/* Interactive Actions: Share */}
           <div className="flex items-center gap-6 mt-6">
             <button
-              aria-label="Bagikan"
+              aria-label={t("Bagikan", "Share")}
               className="text-white/90 hover:text-white hover:scale-110 transition-transform cursor-pointer"
               type="button"
-              onClick={() => triggerToast("Tautan tema siap dibagikan")}
+              onClick={() => triggerToast(t("Tautan tema siap dibagikan", "Theme link ready to share"))}
             >
               <svg
                 className="w-6 h-6 stroke-current"
@@ -290,7 +293,7 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
         id="ritme-bahasa"
       >
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-10 tracking-tight text-white text-shadow-custom">
-          Ritme &amp; Gerak Tari
+          {t("Ritme & Gerak Tari", "Rhythm & Dance Movements")}
         </h2>
 
         <div className="relative w-full max-w-7xl px-2 sm:px-4">
@@ -352,7 +355,7 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
       >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl lg:text-4xl font-bold text-center mb-14 tracking-tight text-white text-shadow-custom">
-            Temui ikon kesenian tari &amp; musik
+            {t("Temui ikon kesenian tari & musik", "Meet the icons of traditional dance & music")}
           </h2>
 
           {/* Fanned Cards with Smooth GPU Transform & Sticky Active State (Exact K1 Dimensions) */}
@@ -412,7 +415,7 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
       >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 tracking-tight text-white text-shadow-custom">
-            Sejarah di balik kesenian
+            {t("Sejarah di balik kesenian", "History behind the arts")}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
@@ -499,7 +502,7 @@ export default function ThemeK3({ theme }: ThemeK3Props) {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3 text-white text-shadow-custom">
-              Kumpulan Video Seni Tari Sumatera Selatan
+              {t("Kumpulan Video Seni Tari Sumatera Selatan", "South Sumatra Traditional Dance Video Collection")}
             </h2>
           </div>
 
