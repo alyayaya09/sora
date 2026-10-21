@@ -45,7 +45,6 @@ export default function LoveButton({
   const router = useRouter();
   const [isFav, setIsFav] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
 
   // Check initial state
   useEffect(() => {
@@ -65,9 +64,31 @@ export default function LoveButton({
       .catch(() => {});
   }, [session, itemType, itemRef]);
 
-  const showMiniToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2200);
+  const showToastNotification = (msg: string, isSaved: boolean) => {
+    if (typeof document === "undefined") return;
+    const existing = document.getElementById("soraFavoriteLiveToast");
+    if (existing) existing.remove();
+
+    const toastEl = document.createElement("div");
+    toastEl.id = "soraFavoriteLiveToast";
+    toastEl.className =
+      "fixed bottom-8 left-1/2 -translate-x-1/2 z-[400] flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#141014]/95 border border-amber-400/40 backdrop-blur-xl shadow-[0_12px_36px_rgba(245,158,11,0.2),0_4px_16px_rgba(0,0,0,0.8)] transition-all duration-300 transform translate-y-0 opacity-100 select-none text-white pointer-events-none";
+    toastEl.innerHTML = `
+      <div class="w-6 h-6 rounded-full ${
+        isSaved ? "bg-[#6b1d2f]/90 border border-rose-400/60 text-rose-300" : "bg-neutral-800 border border-white/20 text-neutral-300"
+      } flex items-center justify-center shrink-0">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <span class="text-xs font-medium tracking-wide text-neutral-100">${msg}</span>
+    `;
+    document.body.appendChild(toastEl);
+    setTimeout(() => {
+      toastEl.style.opacity = "0";
+      toastEl.style.transform = "translate(-50%, 8px)";
+      setTimeout(() => toastEl.remove(), 300);
+    }, 2400);
   };
 
   const handleClick = async (e: React.MouseEvent) => {
@@ -89,7 +110,7 @@ export default function LoveButton({
         });
         setIsFav(false);
         onToggle?.(false);
-        showMiniToast("Dihapus dari Favorit");
+        showToastNotification("Dihapus dari Favorit", false);
       } else {
         await fetch("/api/favorite", {
           method: "POST",
@@ -98,10 +119,10 @@ export default function LoveButton({
         });
         setIsFav(true);
         onToggle?.(true);
-        showMiniToast("Disimpan ke Favorit ❤");
+        showToastNotification("Disimpan ke Favorit ❤", true);
       }
     } catch {
-      showMiniToast("Gagal, coba lagi");
+      showToastNotification("Gagal, coba lagi", false);
     } finally {
       setLoading(false);
     }
@@ -151,13 +172,6 @@ export default function LoveButton({
           </svg>
         )}
       </button>
-
-      {/* Mini toast */}
-      {toast && (
-        <div className="absolute bottom-full mb-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#141014]/95 text-amber-200 text-xs px-3.5 py-1.5 rounded-xl border border-amber-400/40 backdrop-blur-2xl shadow-[0_8px_24px_rgba(0,0,0,0.8)] pointer-events-none z-50 animate-fade-in font-medium tracking-wide">
-          {toast}
-        </div>
-      )}
     </div>
   );
 }

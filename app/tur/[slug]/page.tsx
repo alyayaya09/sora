@@ -190,11 +190,6 @@ export default function TourDetailPage({ params }: TourPageProps) {
                   creator={tour.subtitle}
                   sourceUrl={`/tur/${slug}`}
                   variant="rounded-2xl"
-                  onToggle={(fav) => {
-                    triggerToast(
-                      fav ? "Tersimpan di Favorit" : "Dihapus dari Favorit"
-                    );
-                  }}
                 />
                 <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-1 rounded-md bg-[#1b1b1d]/90 border border-white/10 text-neutral-200 text-[10px] tracking-wide opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 backdrop-blur-md shadow-md z-20">
                   Favorit
