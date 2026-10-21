@@ -2048,6 +2048,11 @@ export function getDedicatedTour(slug: string, lang: "ID" | "EN" = "ID"): Dedica
       return {
         ...baseTour,
         ...enTour,
+        heroImg: enTour.heroImg || baseTour.heroImg,
+        sec1Img: enTour.sec1Img || baseTour.sec1Img,
+        sec2Img: enTour.sec2Img || baseTour.sec2Img,
+        sec3Img: enTour.sec3Img || baseTour.sec3Img,
+        relImg: enTour.relImg || baseTour.relImg,
       };
     }
   }
