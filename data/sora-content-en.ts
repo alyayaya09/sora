@@ -19,7 +19,7 @@ export interface ThemeTranslation {
 export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   "rumah-adat": {
     "title": "Traditional Architecture",
-    "cta": "Explore Architecture ↗",
+    "cta": "Explore Architecture",
     "tagline": "Stilt houses that speak of rivers, social status, and nature.",
     "intro": "Traditional houses of South Sumatra are almost invariably built on stilts, adapting gracefully to riverbanks, wetlands, and mountain highlands. Their architecture, timber joinery, and carved ornaments reflect social hierarchy and harmonious coexistence with nature.",
     "guidebook": [
@@ -61,7 +61,7 @@ export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   },
   "kain-pakaian": {
     "title": "Traditional Textiles & Attire",
-    "cta": "Explore Woven Textiles ↗",
+    "cta": "Explore Woven Textiles",
     "tagline": "Golden threads that weave the luxury of the Sultanate and the kingdom.",
     "intro": "From Songket Lepus woven with real gold thread to intricate tie-dye Jumputan, South Sumatra's textile traditions celebrate royal splendor and the skilled hands of master artisans.",
     "guidebook": [
@@ -98,7 +98,7 @@ export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   },
   "bahasa-aksara": {
     "title": "Regional Languages & Scripts",
-    "cta": "Explore Languages & Scripts ↗",
+    "cta": "Explore Languages & Scripts",
     "tagline": "The heartbeat of dialogue from the plains of Musi to the highlands of Besemah.",
     "intro": "Sumatera Selatan preserves dozens of Austronesian dialects and the ancient Surat Ulu (Kaganga) script written on tree bark, bamboo slips, and buffalo horns since the 14th century.",
     "guidebook": [
@@ -150,7 +150,7 @@ export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   },
   "tari-musik": {
     "title": "Traditional Dance & Music",
-    "cta": "Explore Dance & Music ↗",
+    "cta": "Explore Dance & Music",
     "tagline": "Graceful movements and melodic resonance celebrating golden heritage.",
     "intro": "Sumatera Selatan's performing arts combine solemn court elegance with vibrant folk vitality, ranging from the majestic Gending Sriwijaya dance to the soulful acoustic picking of Gitar Tunggal Batanghari Sembilan.",
     "guidebook": [
@@ -222,7 +222,7 @@ export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   },
   "kuliner": {
     "title": "Signature Culinary Heritage",
-    "cta": "Explore Culinary Arts ↗",
+    "cta": "Explore Culinary Arts",
     "tagline": "A symphonic blend of fresh river fish, pungent fermented spices, and royal confectionery.",
     "intro": "Sumatera Selatan's cuisine is defined by the bounty of Musi River fish, tangy sour-savory broths, fermented durian sambal, and indulgent Sultanate egg pastries perfected over centuries.",
     "guidebook": [
@@ -274,7 +274,7 @@ export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   },
   "pertunjukan-lisan": {
     "title": "Performing Arts & Oral Traditions",
-    "cta": "Explore Oral Traditions ↗",
+    "cta": "Explore Oral Traditions",
     "tagline": "Living narratives and theatrical wit preserved through the spoken word.",
     "intro": "Oral poetry, rhymed comedic theater, and sung musical dialogues provide timeless social commentary and moral guidance across villages along the nine river tributaries of South Sumatra.",
     "guidebook": [
@@ -301,7 +301,7 @@ export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   },
   "upacara-adat": {
     "title": "Traditional Ceremonies & Social Rituals",
-    "cta": "Explore Ceremonies ↗",
+    "cta": "Explore Ceremonies",
     "tagline": "Sacred communal bonds, river festivals, and agricultural thanksgiving rites.",
     "intro": "Sumatera Selatan's rituals celebrate unity (gotong royong), gratitude for nature's bounty, and the sacred transitions of life through communal banquets, boat regattas, and harvest blessings.",
     "guidebook": [
@@ -338,7 +338,7 @@ export const themeTranslationsEn: Record<string, ThemeTranslation> = {
   },
   "sejarah": {
     "title": "History & Heritage",
-    "cta": "Explore History ↗",
+    "cta": "Explore History",
     "tagline": "The monumental footprint of Sriwijaya and the Sultanate of Palembang Darussalam.",
     "intro": "From 7th-century Stone Inscriptions marking the maritime Buddhist thalassocracy to 18th-century riverside fortresses and the iconic Ampera Bridge, South Sumatra's history stands tall through the ages.",
     "guidebook": [

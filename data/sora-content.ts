@@ -47,7 +47,7 @@ export const themes: Theme[] = [
   {
     slug: "rumah-adat",
     title: "Rumah Adat",
-    cta: "Lihat Arsitektur ↗",
+    cta: "Lihat Arsitektur",
     tagline: "Rumah panggung yang berbicara tentang sungai, status, dan alam.",
     intro:
       "Rumah tradisional Sumatera Selatan nyaris selalu berbentuk panggung, menyesuaikan diri dengan sungai, rawa, dan pegunungan. Bentuk, bahan, dan ukirannya menandai status sosial serta cara hidup pemiliknya.",
@@ -103,7 +103,7 @@ export const themes: Theme[] = [
   {
     slug: "kain-pakaian",
     title: "Pakaian Adat & Kain Tenun",
-    cta: "Lihat Busana ↗",
+    cta: "Lihat Busana",
     tagline: "Kemilau benang emas di atas sutra, dari istana hingga pelaminan.",
     intro:
       "Busana dan kain Palembang dikenal lewat warna merah, emas, dan teknik tenun yang rumit. Songket, jumputan, dan batik menyimpan makna kemakmuran, kehormatan, dan keselarasan dengan alam.",
@@ -152,7 +152,7 @@ export const themes: Theme[] = [
   {
     slug: "bahasa-aksara",
     title: "Bahasa & Aksara Daerah",
-    cta: "Lihat Bahasa ↗",
+    cta: "Lihat Bahasa",
     tagline: "Satu provinsi, banyak sungai, banyak cara bertutur.",
     intro:
       "Bahasa daerah di Sumsel tumbuh mengikuti aliran sungai sehingga setiap wilayah punya intonasi dan kosakata khas. Aksara Ulu menjadi bukti tradisi tulis kuno masyarakat pedalaman.",
@@ -222,7 +222,7 @@ export const themes: Theme[] = [
   {
     slug: "tari-musik",
     title: "Tari & Musik Tradisional",
-    cta: "Lihat Tari & Musik ↗",
+    cta: "Lihat Tari & Musik",
     tagline: "Gerak penyambutan dan petikan gitar yang menutup bait petuah.",
     intro:
       "Tari di Sumsel banyak berfungsi sebagai penyambutan tamu, sementara musiknya mengiringi doa, syair, dan perayaan. Dari tari kolosal Gending Sriwijaya hingga gitar tunggal Batanghari Sembilan.",
@@ -320,7 +320,7 @@ export const themes: Theme[] = [
   {
     slug: "kuliner",
     title: "Kuliner Khas",
-    cta: "Lihat Kuliner ↗",
+    cta: "Lihat Kuliner",
     tagline: "Dari pempek hingga tempoyak: rasa yang lahir dari sungai.",
     intro:
       "Kuliner Sumsel berpusat pada ikan sungai, tepung sagu atau tapioka, dan bumbu pedas asam. Hidangannya hadir dari meja sehari-hari sampai jamuan pernikahan.",
@@ -390,7 +390,7 @@ export const themes: Theme[] = [
   {
     slug: "pertunjukan-lisan",
     title: "Seni Pertunjukan & Tradisi Lisan",
-    cta: "Lihat Pertunjukan ↗",
+    cta: "Lihat Pertunjukan",
     tagline: "Cerita, pantun, dan tawa yang diwariskan dari mulut ke mulut.",
     intro:
       "Tradisi tutur Sumsel memadukan hiburan dan nasihat. Teater, senjang, dan tembang bersyair panjang menjadi cara masyarakat menyampaikan kisah, kritik, dan petuah.",
@@ -425,7 +425,7 @@ export const themes: Theme[] = [
   {
     slug: "upacara-adat",
     title: "Upacara Adat & Tradisi Sosial",
-    cta: "Lihat Tradisi ↗",
+    cta: "Lihat Tradisi",
     tagline: "Kebersamaan yang dirayakan di sungai, lahan, dan meja pernikahan.",
     intro:
       "Upacara dan tradisi Sumsel memperlihatkan nilai gotong royong, rasa syukur, dan penghormatan pada tamu. Banyak di antaranya terkait erat dengan sungai dan musim.",
@@ -474,7 +474,7 @@ export const themes: Theme[] = [
   {
     slug: "sejarah",
     title: "Sejarah & Peninggalan",
-    cta: "Lihat Sejarah ↗",
+    cta: "Lihat Sejarah",
     tagline: "Dari pusat maritim Sriwijaya hingga Kesultanan Palembang Darussalam.",
     intro:
       "Palembang menyimpan jejak Sriwijaya, kerajaan maritim yang berpengaruh di Asia Tenggara, lalu Kesultanan Palembang Darussalam. Prasasti, benteng, dan museum menjadi arsip yang masih bisa dikunjungi.",
