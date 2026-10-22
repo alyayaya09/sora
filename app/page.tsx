@@ -11,7 +11,7 @@ export default function HomePage() {
   const { lang, t } = useLanguage();
   const themes = getThemes(lang);
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [scrollY, setScrollY] = useState(0);
+  const heroBgRef = React.useRef<HTMLDivElement>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -62,8 +62,18 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (heroBgRef.current && window.scrollY <= window.innerHeight) {
+            const y = window.scrollY;
+            heroBgRef.current.style.transform = `scale(${1 + y * 0.0004}) translateY(${y * 0.25}px)`;
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -93,15 +103,19 @@ export default function HomePage() {
         if (!video) return;
         if (!entry.isIntersecting) {
           // Hero tidak terlihat → mute (tapi jangan ubah sessionStorage)
-          video.muted = true;
-          setIsMuted(true);
+          if (!video.muted) {
+            video.muted = true;
+            setIsMuted(true);
+          }
         } else {
           // Hero terlihat kembali → kembalikan preferensi user
           const saved = sessionStorage.getItem("sora-hero-muted");
           const shouldMute = saved === null ? true : saved === "true";
-          video.muted = shouldMute;
-          setIsMuted(shouldMute);
-          if (!shouldMute) {
+          if (video.muted !== shouldMute) {
+            video.muted = shouldMute;
+            setIsMuted(shouldMute);
+          }
+          if (video.paused) {
             video.play().catch(() => {});
           }
         }
@@ -240,7 +254,10 @@ export default function HomePage() {
         id="hero-ampera"
       >
         {/* Full Background Video: HERO.mp4 */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
+        <div
+          ref={heroBgRef}
+          className="absolute inset-0 z-0 overflow-hidden pointer-events-none will-change-transform"
+        >
           <video
             ref={videoRef}
             autoPlay
@@ -248,12 +265,9 @@ export default function HomePage() {
             muted
             playsInline
             preload="auto"
-            className="w-full h-full object-cover object-center transform transition-transform duration-700 ease-out"
+            className="w-full h-full object-cover object-center"
             id="ampera-bg"
             src="/images/HERO.mp4"
-            style={{
-              transform: `scale(${1 + scrollY * 0.0004}) translateY(${scrollY * 0.25}px)`,
-            }}
           />
         </div>
 
@@ -349,15 +363,25 @@ export default function HomePage() {
             onClick={() => {
               const nextMuted = !isMuted;
               setIsMuted(nextMuted);
-              // Simpan preferensi user ke sessionStorage
-              sessionStorage.setItem("sora-hero-muted", String(nextMuted));
+
               if (videoRef.current) {
                 videoRef.current.muted = nextMuted;
                 if (!nextMuted) {
+                  videoRef.current.volume = 1.0;
+                }
+                if (videoRef.current.paused) {
                   videoRef.current.play().catch(() => {});
                 }
               }
-              triggerToast(nextMuted ? t("Audio dibisukan", "Audio muted") : t("Audio video diaktifkan", "Video audio enabled"));
+
+              requestAnimationFrame(() => {
+                sessionStorage.setItem("sora-hero-muted", String(nextMuted));
+                triggerToast(
+                  nextMuted
+                    ? t("Audio dibisukan", "Audio muted")
+                    : t("Audio video diaktifkan", "Video audio enabled")
+                );
+              });
             }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,6 +409,13 @@ export default function HomePage() {
             </svg>
           </button>
         </div>
+
+        {/* Video Credit at bottom right */}
+        <div className="absolute bottom-6 right-6 md:right-10 z-20 select-none pointer-events-none">
+          <span className="font-sans text-[11px] sm:text-xs text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)] tracking-wide">
+            Credit : South Sumatera Tourism
+          </span>
+        </div>
       </section>
 
       {/* ==========================================
@@ -403,12 +434,6 @@ export default function HomePage() {
               <span className="font-normal font-sans not-italic text-white/95">{t("Jelajahi", "Explore")}</span>{" "}
               {t("Seluruh Budaya Sumsel", "All South Sumatra Cultures")}
             </p>
-            <div className="flex items-center justify-center gap-2 mt-4 text-xs tracking-wider text-white/60">
-              <svg className="w-3.5 h-3.5 text-[#fbc270]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-              </svg>
-              <span>{t("Gerakan otomatis ke kanan • Arahkan kursor atau drag untuk menggeser", "Auto-scroll rightward • Hover or drag to navigate")}</span>
-            </div>
           </div>
         </div>
 

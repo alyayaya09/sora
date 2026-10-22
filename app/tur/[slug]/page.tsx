@@ -180,6 +180,34 @@ export default function TourDetailPage({ params }: TourPageProps) {
     }
   };
 
+  const handleShare = async () => {
+    const shareTitle = tour?.title ? `${tour.title} — SORA Arts & Culture` : "SORA Arts & Culture";
+    const shareText = tour?.subtitle || t(
+      "Jelajahi warisan seni dan budaya Sumatera Selatan di SORA!",
+      "Explore the arts and cultural heritage of South Sumatra on SORA!"
+    );
+    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err: any) {
+        if (err?.name !== "AbortError") {
+          handleCopyLink();
+        }
+      }
+    } else {
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
+        `${shareTitle} - ${shareText}\n${shareUrl}`
+      )}`;
+      window.open(waUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <div className="bg-[#0d0d0f] font-sans text-neutral-200 antialiased min-h-screen w-full selection:bg-rose-950 selection:text-rose-200 relative overflow-x-hidden pt-16">
       <style jsx global>{`
@@ -314,7 +342,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
                 <button
                   aria-label={t("Bagikan", "Share")}
                   className="group inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#af8d11]/20 hover:bg-[#af8d11]/15 border border-amber-400/30 text-amber-300 backdrop-blur-md transition-all duration-300 shadow-sm focus:outline-none hover:-translate-y-0.5 hover:shadow-lg active:scale-95 cursor-pointer"
-                  onClick={() => triggerToast(t("Tautan siap dibagikan", "Link ready to share"))}
+                  onClick={handleShare}
                   type="button"
                 >
                   <span className="material-symbols-outlined text-[20px] text-amber-300 transition-transform group-hover:scale-110">

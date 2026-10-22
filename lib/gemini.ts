@@ -1,5 +1,5 @@
 import { themes, dedicatedTours, Theme, ThemeItem, DedicatedTour } from "../data/sora-content";
-import { sumselSongs, findSumselSong, SumselSong } from "../data/sumsel-songs";
+import { sumselSongs, findSumselSong, isLyricQuery, SumselSong } from "../data/sumsel-songs";
 import fs from "fs";
 import path from "path";
 
@@ -198,8 +198,69 @@ export function isClearlyOffTopic(query: string): boolean {
 }
 
 // ─── Builder for authentic Sumsel Song result (Zero Hallucination) ───────────
-export function buildSongSearchResult(song: SumselSong, query: string): SearchResult {
+export function buildSongSearchResult(
+  song: SumselSong,
+  query: string,
+  mode: "lyrics" | "explanation" = "lyrics"
+): SearchResult {
   const theme = themes.find((t) => t.slug === song.themeSlug) || themes[2]; // fallback to tari-musik
+
+  if (mode === "explanation") {
+    const explanation = song.explanation;
+    return {
+      status: "ok",
+      query,
+      card1: {
+        isDedicatedTour: false,
+        title: `Lagu Daerah: ${song.title}`,
+        subtitle: `Khazanah Seni Tradisional ${song.region} — Warisan Budaya`,
+        image: song.image,
+        badge: "Penjelasan Lagu Tradisional",
+        href: `/tema/${song.themeSlug}`,
+      },
+      card2: {
+        title: explanation?.title || `Penjelasan & Makna Lagu ${song.title}`,
+        highlight: explanation?.highlight || song.meaning,
+        paragraphs: explanation?.paragraphs || [
+          `Latar Belakang & Sejarah:\nLagu '${song.title}' merupakan salah satu tembang daerah kebanggaan masyarakat ${song.region} yang sarat akan nilai budaya dan kearifan lokal.`,
+          `Makna Filosofis:\n${song.meaning}`,
+          `Karakteristik Musikal & Pelestarian:\nTembang ini mencerminkan identitas seni vokal tradisional Sumatera Selatan dan terus dilestarikan sebagai Warisan Budaya Takbenda kebanggaan Nusantara.`,
+        ],
+        bulletPoints: explanation?.bulletPoints || [
+          { label: "Asal Wilayah", text: song.region },
+          { label: "Pencipta", text: song.creator || "Tradisional" },
+          { label: "Fungsi Budaya", text: "Tembang tradisi, sastra tutur, dan kidung rakyat" },
+        ],
+        sources: song.sources.map((s, i) => ({
+          ...s,
+          icon: ["W", "🏛", "📚"][i] || "🔗",
+          iconStyle: [
+            "bg-white text-slate-900",
+            "bg-[#6b1d2f] text-white",
+            "bg-amber-700 text-white",
+          ][i] || "bg-slate-700 text-white",
+          img: "",
+        })),
+      },
+      card3: {
+        themeSlug: theme.slug,
+        themeTitle: theme.title,
+        themeLabel: theme.tagline,
+        themeDesc: theme.intro,
+        themeImg: theme.heroImage,
+        themeHref: `/tema/${theme.slug}`,
+        relatedItems: theme.items.slice(0, 4).map((it) => ({
+          name: it.name,
+          desc: it.desc,
+          image: it.image || theme.image,
+          slug: it.slug,
+          link: it.slug ? `/tur/${it.slug}` : `/tema/${theme.slug}`,
+        })),
+      },
+    };
+  }
+
+  // mode === "lyrics" (Pertanyaan Lirik Lagu)
   return {
     status: "ok",
     query,
@@ -208,7 +269,7 @@ export function buildSongSearchResult(song: SumselSong, query: string): SearchRe
       title: song.title,
       subtitle: `Lagu Daerah ${song.region} — Warisan Budaya Takbenda`,
       image: song.image,
-      badge: "Lagu Daerah Sumsel",
+      badge: "Lirik Lagu Daerah Sumsel",
       href: `/tema/${song.themeSlug}`,
     },
     card2: {
@@ -216,9 +277,9 @@ export function buildSongSearchResult(song: SumselSong, query: string): SearchRe
       highlight: song.highlight,
       paragraphs: song.lyrics,
       bulletPoints: [
-        { label: "Asal Daerah", text: song.region },
-        { label: "Pencipta", text: song.creator || "Tradisional" },
-        { label: "Makna Filosofis", text: song.meaning },
+        { label: "Kategori", text: `Teks Lirik Autentik Lagu Daerah ${song.region}` },
+        { label: "Pencipta / Sumber", text: song.creator || "Tradisional" },
+        { label: "Makna Singkat", text: song.meaning },
       ],
       sources: song.sources.map((s, i) => ({
         ...s,
@@ -256,11 +317,123 @@ export function resolveContextualImage(
   themeSlug?: string,
   externalImage?: string | null
 ): string {
-  if (externalImage && isValidImageUrl(externalImage)) {
+  const q = `${query} ${title || ""}`.toLowerCase();
+
+  // ── PRIORITAS 1: Gambar dari Wikimedia/Wikipedia (URL http nyata) ─────────────
+  // Hanya URL http yang benar-benar dari Wikimedia yang dipercaya sebagai gambar relevan.
+  // Path lokal seperti /images/pempek.jpg yang dikirim Gemini TIDAK diterima di sini.
+  if (externalImage && externalImage.startsWith("http") && isValidImageUrl(externalImage)) {
     return externalImage;
   }
 
-  const q = `${query} ${title || ""}`.toLowerCase();
+  // ── PRIORITAS 2: Pemetaan topik lokal yang akurat ────────────────────────────
+  // Wilayah & Geografi spesifik Sumatera Selatan
+
+  // Semendo / Semende / Kopi Semendo
+  if (q.includes("semendo") || q.includes("semende")) {
+    return "/images/sungai_lematang.jpg"; // lanskap pegunungan Sumsel terdekat
+  }
+
+  // Kopi (di luar konteks kopi Palembang)
+  if (q.includes("kopi") && !q.includes("pempek") && !q.includes("palembang")) {
+    return "/images/sungai_lematang.jpg"; // visual alami/hijau
+  }
+
+  // Pagaralam / Besemah / Gunung Dempo / Megalitik
+  if (
+    q.includes("pagaralam") || q.includes("pagar alam") ||
+    q.includes("besemah") || q.includes("dempo") ||
+    q.includes("megalitik") || q.includes("megalit")
+  ) {
+    return "/images/megalitik_pasemah.jpg";
+  }
+
+  // Pasemah (umum, tanpa kata tari)
+  if (q.includes("pasemah") && !q.includes("tari") && !q.includes("kebagh")) {
+    return "/images/megalitik_pasemah.jpg";
+  }
+
+  // Lahat / Lematang
+  if (q.includes("lahat") || q.includes("lematang")) {
+    return "/images/sungai_lematang.jpg";
+  }
+
+  // Danau Ranau / OKU Selatan / Seminung
+  if (q.includes("ranau") || q.includes("oku selatan") || q.includes("seminung") || q.includes("muaradua")) {
+    return "/images/musi_landscape.jpg";
+  }
+
+  // Pedamaran / Anyaman Purun / OKI
+  if (q.includes("pedamaran") || q.includes("purun") || q.includes("anyaman")) {
+    return "/images/purun_pedamaran.jpg";
+  }
+
+  // Musi Rawas / Lubuklinggau
+  if (q.includes("musi rawas") || q.includes("lubuklinggau") || q.includes("linggau")) {
+    return "/images/sungai_musi_sekayu.jpg";
+  }
+
+  // Musi Banyuasin / Sekayu
+  if (q.includes("musi banyuasin") || q.includes("sekayu")) {
+    return "/images/sungai_musi_sekayu.jpg";
+  }
+
+  // Sungai Musi Sekayu (beda dari Sungai Musi Palembang)
+  if (q.includes("muba") && !q.includes("senjang")) {
+    return "/images/sungai_musi_sekayu.jpg";
+  }
+
+  // Banyuasin / Tanjung Api-Api / Upang
+  if (q.includes("banyuasin") || q.includes("tanjung api") || q.includes("upang")) {
+    return "/images/musi_landscape.jpg";
+  }
+
+  // Empat Lawang
+  if (q.includes("empat lawang") || q.includes("tebing tinggi")) {
+    return "/images/sungai_lematang.jpg";
+  }
+
+  // Komering / Kayuagung
+  if (q.includes("komering") || q.includes("kayuagung")) {
+    return "/images/rumah_kayuagung.jpg";
+  }
+
+  // Kenong Basemah / musik Pasemah
+  if (q.includes("kenong") || q.includes("basemah")) {
+    return "/images/kenong_basemah.jpg";
+  }
+
+  // Tradisi Ngobeng / Sedekah Rame
+  if (q.includes("ngobeng") || q.includes("sedekah rame")) {
+    return "/images/sedekah_rame.jpg";
+  }
+
+  // Bekarang / Iwak / Mancing Tradisional
+  if (q.includes("bekarang") || q.includes("mancing") || q.includes("iwak")) {
+    return "/images/bekarang_iwak.jpg";
+  }
+
+  // Randai
+  if (q.includes("randai")) {
+    return "/images/randai_panggung.jpg";
+  }
+
+  // Nindai / Upacara Adat
+  if (q.includes("nindai") || q.includes("upacara")) {
+    return "/images/adat_nindai.jpg";
+  }
+
+  // Gandus / Kawasan Palembang
+  if (q.includes("gandus")) {
+    return "/images/gandus_palembang.jpg";
+  }
+
+  // Kesultanan Palembang / Darussalam
+  if (q.includes("kesultanan") || q.includes("darussalam") || q.includes("sultan")) {
+    return "/images/kesultanan_palembang.jpg";
+  }
+
+  // ── PRIORITAS 3: Pemetaan topik lainnya (fallback lokal) ────────────────────
 
   // 1. Lagu Daerah & Musik Tradisional
   if (
@@ -297,7 +470,8 @@ export function resolveContextualImage(
     if (q.includes("tanggai")) return "/images/tari_tanggai.jpg";
     if (q.includes("setabik")) return "/images/tari_setabik.jpg";
     if (q.includes("pagar pengantin")) return "/images/tari_pagar_pengantin.jpg";
-    if (q.includes("pasemah") || q.includes("kebagh")) return "/images/tari_pasemah.jpg";
+    if (q.includes("pasemah") || q.includes("kebagh")) return "/images/tari_kebagh.jpg";
+    if (q.includes("begambo")) return "/images/tari_begambo.jpg";
     return "/images/tari_gending.jpg";
   }
 
@@ -346,7 +520,6 @@ export function resolveContextualImage(
   if (q.includes("prasasti") || q.includes("kedukan bukit") || q.includes("sriwijaya")) return "/images/prasasti_kedukan_bukit.jpg";
   if (q.includes("buddha") || q.includes("siguntang")) return "/images/buddha_seguntang.jpg";
   if (q.includes("teater") || q.includes("dulmuluk")) return "/images/teater_dulmuluk.jpg";
-  if (q.includes("purun") || q.includes("anyaman")) return "/images/purun_pedamaran.jpg";
 
   // 8. Theme slug matching fallback
   if (themeSlug === "tari-musik") return "/images/tari_gending.jpg";
@@ -374,6 +547,319 @@ export function isValidImageUrl(url?: string | null): boolean {
   if (lower.includes("disambig")) return false;
   if (lower.includes("question_book")) return false;
   return true;
+}
+
+// ─── Smart keyword expander: maps raw query to precise Wikipedia search terms ──
+// Menghindari generalisasi ke "Palembang" untuk topik yang berlokasi di luar kota
+export function expandQueryKeywords(rawQuery: string): {
+  primaryTerms: string[];    // Istilah Wikipedia paling tepat (dicoba duluan via REST)
+  searchTerms: string[];     // Kata kunci pencarian (generator=search)
+  commonsTerms: string[];    // Kata kunci untuk Wikimedia Commons
+  regionalContext: string;   // Konteks regional yang tepat (bukan selalu "Palembang")
+} {
+  const q = rawQuery.toLowerCase().trim();
+
+  // ── Wilayah & Geografi Spesifik Sumatera Selatan ────────────────────────────
+
+  // Semendo / Semende
+  if (q.includes("semendo") || q.includes("semende")) {
+    return {
+      primaryTerms: ["Semende", "Dataran Tinggi Semende", "Kopi Semendo", "Suku Semende"],
+      searchTerms: ["Semende Muara Enim", "Semende culture South Sumatra", "Semende highland coffee"],
+      commonsTerms: ["Semende", "Semendo coffee plantation Sumatra"],
+      regionalContext: "Semende Muara Enim",
+    };
+  }
+
+  // Pagaralam / Besemah / Pasemah / Dempo
+  if (q.includes("pagaralam") || q.includes("pagar alam") || q.includes("besemah") || q.includes("pasemah") || q.includes("dempo") || q.includes("megalitik")) {
+    return {
+      primaryTerms: ["Pagaralam", "Suku Pasemah", "Gunung Dempo", "Megalitik Pasemah", "Besemah"],
+      searchTerms: ["Pagaralam city South Sumatra", "Pasemah megalithic culture", "Gunung Dempo Pagaralam"],
+      commonsTerms: ["Pagaralam", "Gunung Dempo", "Pasemah megalith"],
+      regionalContext: "Pagaralam Sumatera Selatan",
+    };
+  }
+
+  // Lahat / Lematang
+  if (q.includes("lahat") || q.includes("lematang")) {
+    return {
+      primaryTerms: ["Kabupaten Lahat", "Sungai Lematang", "Suku Pasemah Lahat"],
+      searchTerms: ["Lahat Regency South Sumatra", "Lematang River cultural heritage"],
+      commonsTerms: ["Lahat South Sumatra", "Lematang Sumatera Selatan"],
+      regionalContext: "Lahat Sumatera Selatan",
+    };
+  }
+
+  // Danau Ranau / OKU Selatan
+  if (q.includes("ranau") || q.includes("oku selatan") || q.includes("muaradua")) {
+    return {
+      primaryTerms: ["Danau Ranau", "Ogan Komering Ulu Selatan", "Seminung"],
+      searchTerms: ["Danau Ranau South Sumatra", "Ranau lake Indonesia", "OKU Selatan"],
+      commonsTerms: ["Danau Ranau", "Lake Ranau South Sumatra"],
+      regionalContext: "Danau Ranau OKU Selatan",
+    };
+  }
+
+  // Pedamaran / Rawa / Purun / OKI
+  if (q.includes("pedamaran") || q.includes("purun") || q.includes("anyaman") || (q.includes("oki") && !q.includes("oki sunda"))) {
+    return {
+      primaryTerms: ["Pedamaran", "Rawa Pedamaran", "Anyaman Purun", "Ogan Komering Ilir"],
+      searchTerms: ["Pedamaran wetland South Sumatra", "Purun weaving Pedamaran", "Rawa Pedamaran"],
+      commonsTerms: ["Pedamaran", "Purun weaving Sumatra"],
+      regionalContext: "Pedamaran Ogan Komering Ilir",
+    };
+  }
+
+  // Musi Rawas / MURA
+  if (q.includes("musi rawas") || q.includes("lubuklinggau") || q.includes("linggau")) {
+    return {
+      primaryTerms: ["Musi Rawas", "Lubuklinggau", "Kabupaten Musi Rawas"],
+      searchTerms: ["Musi Rawas Sumatera Selatan", "Lubuklinggau city South Sumatra"],
+      commonsTerms: ["Musi Rawas", "Lubuklinggau"],
+      regionalContext: "Musi Rawas Sumatera Selatan",
+    };
+  }
+
+  // Musi Banyuasin / Senjang
+  if (q.includes("musi banyuasin") || q.includes("muba") || q.includes("senjang") || q.includes("sekayu")) {
+    return {
+      primaryTerms: ["Musi Banyuasin", "Senjang", "Sekayu"],
+      searchTerms: ["Musi Banyuasin Senjang oral tradition", "Sekayu Musi Banyuasin South Sumatra"],
+      commonsTerms: ["Senjang oral poetry Muba", "Musi Banyuasin"],
+      regionalContext: "Musi Banyuasin Sumatera Selatan",
+    };
+  }
+
+  // Banyuasin / Tanjung Api-Api
+  if (q.includes("banyuasin") || q.includes("tanjung api") || q.includes("upang")) {
+    return {
+      primaryTerms: ["Banyuasin", "Kabupaten Banyuasin", "Tanjung Api-Api"],
+      searchTerms: ["Banyuasin regency South Sumatra", "Tanjung Api-Api port"],
+      commonsTerms: ["Banyuasin South Sumatra"],
+      regionalContext: "Banyuasin Sumatera Selatan",
+    };
+  }
+
+  // Empat Lawang / Tebing Tinggi
+  if (q.includes("empat lawang") || q.includes("tebing tinggi")) {
+    return {
+      primaryTerms: ["Empat Lawang", "Tebing Tinggi Empat Lawang"],
+      searchTerms: ["Empat Lawang regency South Sumatra"],
+      commonsTerms: ["Empat Lawang Sumatera Selatan"],
+      regionalContext: "Empat Lawang Sumatera Selatan",
+    };
+  }
+
+  // ── Seni & Tradisi Lokal Non-Palembang ──────────────────────────────────────
+
+  // Kebile-bile / Besemah / lagu daerah Lahat & Pagaralam
+  if (q.includes("kebile") || (q.includes("lagu") && (q.includes("lahat") || q.includes("besemah")))) {
+    return {
+      primaryTerms: ["Lagu Daerah Besemah", "Kabupaten Lahat"],
+      searchTerms: ["Kebile-bile lagu daerah Besemah Pagaralam"],
+      commonsTerms: ["Besemah traditional music Sumatra"],
+      regionalContext: "Besemah Lahat Pagaralam",
+    };
+  }
+
+  // Tari Kebagh / Tari Pasemah
+  if (q.includes("kebagh") || (q.includes("tari") && q.includes("pasemah"))) {
+    return {
+      primaryTerms: ["Tari Kebagh", "Suku Pasemah", "Tari Besemah"],
+      searchTerms: ["Tari Kebagh Pasemah South Sumatra dance"],
+      commonsTerms: ["Tari Kebagh Sumatra", "Pasemah dance"],
+      regionalContext: "Pasemah Pagaralam",
+    };
+  }
+
+  // Aksara Ulu / Surat Ulu / Ka-Ga-Nga / Komering
+  if (q.includes("aksara ulu") || q.includes("surat ulu") || q.includes("kaganga") || q.includes("ka-ga-nga")) {
+    return {
+      primaryTerms: ["Aksara Ulu", "Surat Ulu", "Ka-Ga-Nga script"],
+      searchTerms: ["Aksara Ulu South Sumatra script inscription"],
+      commonsTerms: ["Aksara Ulu manuscript Sumatra", "Surat Ulu"],
+      regionalContext: "Sumatera Selatan aksara tradisional",
+    };
+  }
+
+  // Perahu Bidar / Bidar Musi
+  if (q.includes("bidar") || (q.includes("perahu") && q.includes("musi"))) {
+    return {
+      primaryTerms: ["Perahu Bidar", "Bidar boat Palembang", "Sungai Musi"],
+      searchTerms: ["Perahu Bidar Musi River traditional boat race Palembang"],
+      commonsTerms: ["Bidar boat South Sumatra", "Perahu Bidar Palembang"],
+      regionalContext: "Sungai Musi Palembang",
+    };
+  }
+
+  // Batanghari Sembilan / musik gambang
+  if (q.includes("batanghari sembilan") || (q.includes("gambang") && q.includes("sumsel"))) {
+    return {
+      primaryTerms: ["Batanghari Sembilan", "Musik Batanghari Sembilan"],
+      searchTerms: ["Batanghari Sembilan traditional music South Sumatra"],
+      commonsTerms: ["Batanghari Sembilan music", "Gambus Palembang"],
+      regionalContext: "Sumatera Selatan musik tradisional",
+    };
+  }
+
+  // Songket / Tenun Palembang
+  if (q.includes("songket") || q.includes("tenun") || q.includes("lepus")) {
+    return {
+      primaryTerms: ["Songket Palembang", "Kain Songket", "Songket"],
+      searchTerms: ["Songket Palembang weaving traditional textile"],
+      commonsTerms: ["Songket Palembang", "Indonesian songket weaving"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Jumputan / Kain Pelangi
+  if (q.includes("jumputan") || q.includes("pelangi") || q.includes("tritik")) {
+    return {
+      primaryTerms: ["Kain Jumputan", "Jumputan Palembang", "Tie-dye Indonesia"],
+      searchTerms: ["Kain Jumputan Palembang tie-dye batik"],
+      commonsTerms: ["Jumputan cloth Palembang", "Indonesian tie-dye fabric"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Rumah Limas / Rumah Adat Palembang
+  if (q.includes("limas") || (q.includes("rumah") && q.includes("adat") && q.includes("palembang"))) {
+    return {
+      primaryTerms: ["Rumah Limas", "Rumah adat Palembang"],
+      searchTerms: ["Rumah Limas traditional house Palembang South Sumatra"],
+      commonsTerms: ["Rumah Limas Palembang", "Limas house architecture"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Rumah Rakit / Sungai Musi
+  if (q.includes("rakit") || (q.includes("rumah") && q.includes("terapung"))) {
+    return {
+      primaryTerms: ["Rumah Rakit", "Rumah terapung Musi"],
+      searchTerms: ["Rumah Rakit floating house Musi River Palembang"],
+      commonsTerms: ["Rumah Rakit Palembang", "floating house Musi River"],
+      regionalContext: "Sungai Musi Palembang",
+    };
+  }
+
+  // Rumah Ulu / Musi Rawas
+  if (q.includes("rumah ulu") || (q.includes("ulu") && q.includes("rumah"))) {
+    return {
+      primaryTerms: ["Rumah Ulu", "Rumah tradisional Musi Rawas"],
+      searchTerms: ["Rumah Ulu traditional house Musi Rawas South Sumatra"],
+      commonsTerms: ["Rumah Ulu Sumatra", "Ulu house architecture"],
+      regionalContext: "Musi Rawas Sumatera Selatan",
+    };
+  }
+
+  // Ghumah Baghi / Pasemah
+  if (q.includes("baghi") || q.includes("ghumah")) {
+    return {
+      primaryTerms: ["Ghumah Baghi", "Rumah adat Pasemah"],
+      searchTerms: ["Ghumah Baghi Pasemah traditional house Pagaralam"],
+      commonsTerms: ["Ghumah Baghi Pasemah", "traditional house Pagaralam"],
+      regionalContext: "Pagaralam Besemah",
+    };
+  }
+
+  // Dulmuluk / Teater tradisional
+  if (q.includes("dulmuluk") || (q.includes("teater") && q.includes("sumsel"))) {
+    return {
+      primaryTerms: ["Dulmuluk", "Teater Dulmuluk", "Syair Abdul Muluk"],
+      searchTerms: ["Dulmuluk traditional theater Palembang South Sumatra"],
+      commonsTerms: ["Dulmuluk theater Palembang"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Tari Tanggai / Gending Sriwijaya
+  if (q.includes("tanggai") || q.includes("gending sriwijaya")) {
+    return {
+      primaryTerms: ["Tari Tanggai", "Gending Sriwijaya", "Tari Gending Sriwijaya"],
+      searchTerms: ["Tari Tanggai traditional dance Palembang Sriwijaya"],
+      commonsTerms: ["Tari Tanggai Palembang", "Gending Sriwijaya dance"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Sriwijaya / Prasasti
+  if (q.includes("sriwijaya") || q.includes("prasasti") || q.includes("kedukan bukit")) {
+    return {
+      primaryTerms: ["Sriwijaya", "Kerajaan Sriwijaya", "Prasasti Kedukan Bukit"],
+      searchTerms: ["Sriwijaya empire South Sumatra historical kingdom"],
+      commonsTerms: ["Sriwijaya kingdom", "Prasasti Kedukan Bukit"],
+      regionalContext: "Palembang kuno Sriwijaya",
+    };
+  }
+
+  // Pempek / Kuliner Palembang
+  if (q.includes("pempek") || q.includes("cuko")) {
+    return {
+      primaryTerms: ["Pempek", "Pempek Palembang"],
+      searchTerms: ["Pempek Palembang traditional food South Sumatra"],
+      commonsTerms: ["Pempek Palembang food", "Pempek fish cake Indonesia"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Tempoyak / Fermentasi Durian
+  if (q.includes("tempoyak") || q.includes("fermentasi durian")) {
+    return {
+      primaryTerms: ["Tempoyak", "Sambal Tempoyak"],
+      searchTerms: ["Tempoyak fermented durian South Sumatra Palembang"],
+      commonsTerms: ["Tempoyak Indonesian fermented durian food"],
+      regionalContext: "Sumatera Selatan",
+    };
+  }
+
+  // Mie Celor / Tekwan / Model / Kuliner Sumsel
+  if (q.includes("celor") || q.includes("tekwan") || q.includes("pindang") || q.includes("burgo") || q.includes("lakso")) {
+    return {
+      primaryTerms: ["Mie Celor", "Tekwan", "Pindang Palembang", "Burgo Palembang"],
+      searchTerms: [`${rawQuery} South Sumatra traditional food`],
+      commonsTerms: [`${rawQuery} Palembang traditional cuisine`],
+      regionalContext: "Palembang kuliner",
+    };
+  }
+
+  // Jembatan Ampera / Landmark Palembang
+  if (q.includes("ampera") || q.includes("jembatan")) {
+    return {
+      primaryTerms: ["Jembatan Ampera", "Ampera Bridge"],
+      searchTerms: ["Jembatan Ampera Palembang landmark bridge"],
+      commonsTerms: ["Ampera Bridge Palembang", "Jembatan Ampera"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Benteng Kuto Besak / Museum Balaputradewa
+  if (q.includes("kuto besak") || q.includes("bkb") || q.includes("benteng")) {
+    return {
+      primaryTerms: ["Benteng Kuto Besak", "Museum Balaputradewa"],
+      searchTerms: ["Benteng Kuto Besak Palembang fort historical"],
+      commonsTerms: ["Benteng Kuto Besak", "Kuto Besak fort Palembang"],
+      regionalContext: "Palembang",
+    };
+  }
+
+  // Sungai Musi / kehidupan sungai
+  if (q.includes("musi") || (q.includes("sungai") && !q.includes("komering") && !q.includes("lematang"))) {
+    return {
+      primaryTerms: ["Sungai Musi", "Musi River"],
+      searchTerms: ["Sungai Musi Palembang River South Sumatra"],
+      commonsTerms: ["Musi River Palembang", "Sungai Musi"],
+      regionalContext: "Sungai Musi Palembang",
+    };
+  }
+
+  // ── Default: Sumatera Selatan umum ─────────────────────────────────────────
+  return {
+    primaryTerms: [rawQuery, `${rawQuery} Sumatera Selatan`],
+    searchTerms: [rawQuery, `${rawQuery} Sumatera Selatan budaya tradisional`],
+    commonsTerms: [`${rawQuery} South Sumatra`, `${rawQuery} Indonesia`],
+    regionalContext: "Sumatera Selatan",
+  };
 }
 
 // ─── Fetch real image: Direct from references first, then Wikipedia & Commons ───
@@ -434,16 +920,21 @@ export async function fetchSmartImage(
     }
   }
 
-  // 2. Jika di referensi tidak ada foto, cari di sumber lain (Wikipedia ID/EN + Commons)
-  const directImg = await fetchWikipediaImage(titleId, titleEn, searchQuery || query);
+  // 2. Expand keyword untuk pencarian yang tepat sasaran
+  const rawQ = query || searchQuery || titleId;
+  const expanded = expandQueryKeywords(rawQ);
+
+  // 2a. Gabungkan dengan titleId dan searchQuery jika berbeda dari rawQ
+  const extendedPrimary = [...new Set([...expanded.primaryTerms, titleId, searchQuery].filter(Boolean) as string[])];
+
+  const directImg = await fetchWikipediaImage(extendedPrimary, titleEn, expanded);
   if (directImg) return directImg;
 
-  // 3. Coba cari di Wikimedia Commons dengan kata kunci regional spesifik
-  const qTopic = searchQuery || query || titleId;
-  if (qTopic) {
+  // 3. Coba cari di Wikimedia Commons dengan kata kunci kontekstual yang tepat
+  for (const commonsQ of expanded.commonsTerms) {
     try {
       const res = await fetch(
-        `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(qTopic + " Palembang")}&gsrnamespace=6&gsrlimit=6&prop=imageinfo&iiprop=url|mime&iiurlwidth=800&format=json&origin=*`,
+        `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(commonsQ)}&gsrnamespace=6&gsrlimit=6&prop=imageinfo&iiprop=url|mime&iiurlwidth=800&format=json&origin=*`,
         { signal: AbortSignal.timeout(4000) }
       );
       if (res.ok) {
@@ -466,10 +957,14 @@ export async function fetchSmartImage(
 
 // ─── Fetch real image: Wikipedia REST + search + Wikimedia Commons ──────────
 export async function fetchWikipediaImage(
-  titleId: string,
+  primaryTerms: string | string[],
   titleEn?: string,
-  searchQuery?: string
+  expanded?: ReturnType<typeof expandQueryKeywords>
 ): Promise<string | null> {
+  // Normalise: accept both old single-string and new array form
+  const terms: string[] = Array.isArray(primaryTerms) ? primaryTerms : [primaryTerms];
+  const titleId = terms[0] || "";
+
   // Helper: Wikipedia REST API (exact title)
   const tryRest = async (lang: string, title: string): Promise<string | null> => {
     if (!title) return null;
@@ -530,29 +1025,28 @@ export async function fetchWikipediaImage(
     } catch { return null; }
   };
 
-  // Phase 1: Fast direct REST summaries
-  const restLookups: Promise<string | null>[] = [
-    tryRest("id", titleId),
-  ];
-  if (searchQuery) restLookups.push(tryRest("id", searchQuery));
+  // Phase 1: Fast direct REST — try all primary terms in parallel
+  const restLookups = terms.map((t) => tryRest("id", t));
   if (titleEn) restLookups.push(tryRest("en", titleEn));
-
   const restResults = await Promise.all(restLookups);
   for (const img of restResults) {
     if (img) return img;
   }
 
-  // Phase 2: Search-based queries across Wikipedia & Commons
-  const qMain = searchQuery || titleId;
-  const qRegional = `${qMain} Palembang`;
-  const [s1, s2, s3, s4] = await Promise.all([
-    trySearch("id", qMain),
-    trySearch("id", qRegional),
-    tryCommons(qMain),
-    tryCommons(qRegional),
-  ]);
+  // Phase 2: Search-based queries — use expanded contextual terms if available
+  const searchTerms = expanded?.searchTerms || [`${titleId} Sumatera Selatan`];
+  const commonsTerms = expanded?.commonsTerms || [titleId];
 
-  return s1 || s2 || s3 || s4 || null;
+  const searchLookups = [
+    ...searchTerms.map((st) => trySearch("id", st)),
+    ...commonsTerms.map((ct) => tryCommons(ct)),
+  ];
+  const searchResults = await Promise.all(searchLookups);
+  for (const img of searchResults) {
+    if (img) return img;
+  }
+
+  return null;
 }
 
 // Helper to securely get GEMINI_API_KEY even if Next dev server has not reloaded .env.local
@@ -588,34 +1082,56 @@ Query pengguna: "${query}"
 REFERENSI RESMI LIRIK LAGU DAERAH SUMATERA SELATAN (ANTI-HALUSINASI MUTLAK):
 Jika menanyakan lagu daerah Sumatera Selatan, Anda WAJIB menggunakan bait kanonikal otentik berikut sesuai judul yang ditanyakan:
 - Palembang Darussalam (Cipt. R.H. Syahril Erwin / Yayak):
-  "Palembang Darussalam...\\nPalembang kota kito\\nTekenal sungi Musinyo...\\nTekenal dengan pempeknyo\\nJembatan Ampera yang anggun\\nMasjid Agungnyo yang cindo\\nMenambah tekenalnyo\\nKota kesayangan kito\\n\\nPalembang Darussalam...\\nPalembang kota kito\\nTekenal rumah limasnyo\\nTekenal dengan songketnyo\\nPulou Kemaro yang tenang\\nBenteng Kuto Besak yang cindo\\nMenambah semaraknyo\\nKota kebanggaan kito\\n\\nBujang gadesnyo... Oi... belagak nian\\nAdat budayonyo tetep dijago\\nHasil buminyo... Oi... banyak nian\\nPembangunannyo rato dimano-mano\\n\\nOi... Palembang Darussalam\\nOi... Palembang Darussalam\\nPalembang kota kito\\nPalembang Darussalam"
+  "Palembang Darussalam...\nPalembang kota kito\nTekenal sungi Musinyo...\nTekenal dengan pempeknyo\nJembatan Ampera yang anggun\nMasjid Agungnyo yang cindo\nMenambah tekenalnyo\nKota kesayangan kito\n\nPalembang Darussalam...\nPalembang kota kito\nTekenal rumah limasnyo\nTekenal dengan songketnyo\nPulou Kemaro yang tenang\nBenteng Kuto Besak yang cindo\nMenambah semaraknyo\nKota kebanggaan kito\n\nBujang gadesnyo... Oi... belagak nian\nAdat budayonyo tetep dijago\nHasil buminyo... Oi... banyak nian\nPembangunannyo rato dimano-mano\n\nOi... Palembang Darussalam\nOi... Palembang Darussalam\nPalembang kota kito\nPalembang Darussalam"
 - Pempek Lenjer (Cipt. S. Tarno):
-  "Bulet besak panjang mak lengen\\nKejel-kejel rasonyo marem\\nMasuk ke mulut matonyo mejem\\nMertuo lewat masih ditelen\\n\\nKejel keras sudah biaso\\nAsak bae iwaknyo teraso\\nDigoreng pake minyak kelapo\\nJadi nambah lemak rasonyo\\n\\nReff:\\nPempek lenjer oy pempek lenjer\\nSiapo nyingok pastilah ngiler\\nPempek lenjer oy pempek lenjer\\nMakan sikok pacak kelenger\\n\\nMangcek bicek janganlah lupo\\nNgawak balek oleh-olehnyo\\nPempek lenjer samo cukonyo\\nKito makan bersamo-samo"
+  "Bulet besak panjang mak lengen\nKejel-kejel rasonyo marem\nMasuk ke mulut matonyo mejem\nMertuo lewat masih ditelen\n\nKejel keras sudah biaso\nAsak bae iwaknyo teraso\nDigoreng pake minyak kelapo\nJadi nambah lemak rasonyo\n\nReff:\nPempek lenjer oy pempek lenjer\nSiapo nyingok pastilah ngiler\nPempek lenjer oy pempek lenjer\nMakan sikok pacak kelenger\n\nMangcek bicek janganlah lupo\nNgawak balek oleh-olehnyo\nPempek lenjer samo cukonyo\nKito makan bersamo-samo"
 - Kebile-bile / Kabile-bile (Besemah - Lahat & Pagaralam):
-  "Kabile-bile mangke ku lege\\nKabile-bile ku ade kance\\nKabile-bile mangke ku lege\\nKabile-bile ku ade kance\\n\\nKabile nian jagunglah putih\\nPutih dik putih kukendam kina\\nKebile nian ibung kah nulih\\nNulih dik nulih kudendam kina\\n\\nKabile nian mampat begune\\nMangke dik payah ku nandan lagi\\nKebile nian sifat begune\\nMangke dik payah ku midang lagi\\n\\nOh, malang nian nasib ‘mbak ini\\nBilangan jeme lah laut gale\\nAlahkah sedih ai tumbak ini\\nAku ‘mbak ini dide bekance"
+  Refrein:
+  "Kebile-bile mangke ku lege\nKebile-bile ku ade kance\nKebile-bile mangke ku lege\nKebile-bile ku ade kance"
+  Bait 1:
+  "Kebile nian jagunglah putih\nPutih dik putih kukendam kina\nKebile nian ibung kah nulih\nNulih dik nulih kudendam kina"
+  Bait 2:
+  "Kebile nian mampat begune\nMangke dik payah ku nandan lagi\nKebile nian sifat begune\nMangke dik payah ku midang lagi"
+  Bait Penutup:
+  "Oh, malang nian nasib ‘mbak ini\nBilangan jeme lah laut gale\nAlahkah sedih ai tumbak ini\nAku ‘mbak ini dide bekance"
 - Ya Saman (Cipt. Kamsul A. Harla):
-  "Nyelek gelumbang perahu bidar di Sungi Musi\\nJanganlah lupo meli telok abang\\nCantik rupo penyabar dan baek hati\\nAdek manis berambut panjang dikuncit kepang\\n\\nLika-liku banyu Batanghari Sembilan\\nMengalir bemuaro ke Sungi Musi jugo\\nElok laku ngaesi rupo cindo menawan\\nMuat kakak siang tekenang malem tejago\\n\\nPulo Kemaro melah Sungi Musi ke Sungsang\\nNak ke Pusri laju kesasar ke Kalidoni\\nBadan saro pikiran resah hati teguncang\\nNgarapke adek kalu be galak jadi bini\\n\\nAy... ya... ya... ya... Ya Saman\\nPecaknyo mudah tapi saro nian\\nAy... ya... ya... ya... Ya Saman\\nNyari bini yang bener-bener setolok an\\n\\nAy... ya... ya... ya... Ya Saman\\nPecaknyo mudah tapi saro nian\\nAy... ya... ya... ya... Ya Saman\\nYa Saman... Ya Saman... Ya Saman..."
+  "Nyelek gelumbang perahu bidar di Sungi Musi\nJanganlah lupo meli telok abang\nCantik rupo penyabar dan baek hati\nAdek manis berambut panjang dikuncit kepang\n\nLika-liku banyu Batanghari Sembilan\nMengalir bemuaro ke Sungi Musi jugo\nElok laku ngaesi rupo cindo menawan\nMuat kakak siang tekenang malem tejago\n\nPulo Kemaro melah Sungi Musi ke Sungsang\nNak ke Pusri laju kesasar ke Kalidoni\nBadan saro pikiran resah hati teguncang\nNgarapke adek kalu be galak jadi bini\n\nAy... ya... ya... ya... Ya Saman\nPecaknyo mudah tapi saro nian\nAy... ya... ya... ya... Ya Saman\nNyari bini yang bener-bener setolok an\n\nAy... ya... ya... ya... Ya Saman\nPecaknyo mudah tapi saro nian\nAy... ya... ya... ya... Ya Saman\nYa Saman... Ya Saman... Ya Saman..."
 - Cuk Mak Ilang (Palembang):
-  Refrein: "Cuk mak ilang mak ilang cagak batu\\nDimane kucing belang di situ rumah aku"
-  Bait: "Kapal api maso' Palembang\\nBanyu tenang jadi begelombang\\nTengok adek bepayong kembang\\nHati di dalam jadi bimbang"
-  Refrein: "Cuk mak ilang mak ilang cagak batu\\nDimane kucing belang di situ rumah aku"
-  Bait: "Ngaso dulu di bawah pohon\\nAngin sepoi sepoi nyentuh badan\\nAdek manis janganlah mohon\\nKando setia sepanjang zaman"
+  Refrein:
+  "Cuk mak ilang mak ilang cagak batu\nDimano koceng belang disitu rumah aku\nCuk mak ilang mak ilang cagak batu\nDimano koceng belang disitu rumah aku"
+  Bait 1:
+  "Kapal api masok Pelembang\nBanyunyo tenang jadi gelumbang\nOi mak mano ati dak bimbang\nGades doson bujang Pelembang"
+  Bait 2:
+  "Alangke lemak rumah di lebak\nSiput dan gondang memanjat cagak\nAlangke lemak rumah nan parak\nBukak jendelo lah saling agak"
+  Bait 3:
+  "Sempayo digulai lemak\nBatang padi dibelah duo\nJangan takot dimarah umak\nAsak jadi kito beduo"
+  Bait 4:
+  "Anak ikan dimakan ikan\nIkan dilaut beduri duri\nSanaklah bukan saudaro bukan\nSangkot paotnyo kareno budi"
 - Dek Sangke (Sumsel):
-  "Dek sangke aku dek sangke\\nAwak uke la jadi duwo\\nNemba' bunga putik kelapo\\nBuah jambu la jadi mudo\\nDek sangke aku dek sangke\\nKando batinggal ku de sangke..."
+  "Dek sangke aku dek sangke\nAwak uke la jadi duwo\nNemba' bunga putik kelapo\nBuah jambu la jadi mudo\nDek sangke aku dek sangke\nKando batinggal ku de sangke\nSiang malam ku de nyangke\nHati tebakar rindu mambang\nBiarlah luluh tulang belulang\nAsal kando selamat pulang"
 - Gending Sriwijaya (Palembang):
-  "Di kala ku merindukan keluhuran dahulu kala\\nKutembangkan nyanyi lagu Gending Sriwijaya\\nDalam seni kunikmati lagi zaman bahagia\\nKuciptakan kembali dari kandungan Maha Kala\\nSriwijaya dengan Asrama Agung Sang Maha Guru..."
+  "Di kala ku merindukan keluhuran dahulu kala\nKutembangkan nyanyi lagu Gending Sriwijaya\nDalam seni kunikmati lagi zaman bahagia\nKuciptakan kembali dari kandungan Maha Kala\nSriwijaya dengan Asrama Agung Sang Maha Guru..."
 
 PANDUAN UTAMA PENJAWABAN (WAJIB TEPAT PADA INTI PERTANYAAN):
 1. JAWABLAH SECARA LANGSUNG, TEPAT, DAN LENGKAP SESUAI DENGAN INTENSI PERTANYAAN:
-   - JIKA MENANYAKAN TENTANG LAGU DAERAH ATAU LIRIK LAGU (contoh: "lagu cuk mak ilang", "lagu pempek lenjer", "lirik ya saman", "cuk mak ilang", dll):
-     * JANGAN PERNAH mengalihkan atau menjawab tentang makanan/objek fisik (contoh: jika ditanya "lagu pempek lenjer", ini adalah LAGU DAERAH ciptaan S. Tarno, BUKAN resep atau makanan pempek lenjer!).
-     * Pada "title": Berikan judul lagu daerah yang jelas (contoh: "Lagu Daerah Palembang: Pempek Lenjer", "Lagu Daerah Sumsel: Cuk Mak Ilang").
-     * Pada "badge": "Lagu & Musik Tradisional".
-     * Pada "highlight": Berikan pengantar 1-2 kalimat tentang lagu tersebut (asal daerah, pencipta, nuansa lagu, dan tema lagunya).
+   - JIKA MENANYAKAN LIRIK LAGU SECARA SPESIFIK (pertanyaan lirik, contoh: "lirik cuk mak ilang", "lirik lagu kebile bile", "lirik ya saman", "syair cuk mak ilang", dll):
+     * Pada "title": Berikan judul lirik yang jelas (contoh: "Lirik Lagu Cuk Mak Ilang", "Lirik Lagu Kebile-bile").
+     * Pada "badge": "Lirik Lagu Daerah Sumsel".
+     * Pada "highlight": Pengantar lirik resmi/autentik 1 kalimat (contoh: "Berikut adalah teks lirik autentik dan lengkap lagu daerah...").
      * Pada "paragraphs":
-       - Uraikan latar belakang lagu, makna budaya, dan konteks sosialnya.
-       - TULISKAN SELURUH TEKS LIRIK LAGU SECARA LENGKAP BAIT DEMI BAIT (dengan baris-baris lirik rapi menggunakan \\n)! Gunakan teks kanonikal resmi di atas.
-     * Di bagian bulletPoints, cantumkan Pencipta, Asal Daerah, dan Makna Singkat.
+       - SAJIKAN SELURUH TEKS LIRIK ASLI BAIT DEMI BAIT SECARA LENGKAP DAN PRESISI (dengan baris-baris lirik rapi menggunakan \n)! Gunakan teks kanonikal resmi di atas, DILARANG MENGARANG ATAU MENGUBAH LIRIK.
+     * Di bagian bulletPoints: Kategori Lirik, Asal Daerah, Pencipta / Sumber Tradisi.
+
+   - JIKA MENANYAKAN PENJELASAN / MAKNA / ASAL-USUL / SEJARAH LAGU (pertanyaan penjelasan, contoh: "lagu cuk mak ilang", "penjelasan lagu cuk mak ilang", "makna lagu kebile bile", "cerita lagu...", "apa arti lagu...", dll):
+     * JANGAN HANYA MENYALIN TEKS LIRIK! Pengguna meminta PENJELASAN DAN MAKNA LAGU, BUKAN HANYA LIRIK!
+     * Pada "title": Berikan judul penjelasan yang jelas (contoh: "Penjelasan & Makna Lagu Cuk Mak Ilang", "Penjelasan & Makna Lagu Kebile-bile").
+     * Pada "badge": "Penjelasan Lagu Tradisional".
+     * Pada "highlight": Uraikan esensi, filosofi, dan latar belakang lagu secara padat dalam 1-2 kalimat.
+     * Pada "paragraphs":
+       - Paragraf 1: Asal-usul, sejarah, dan konteks sosial budaya masyarakat penciptanya (misalnya Palembang tepian Sungai Musi atau Suku Besemah Lahat & Pagar Alam).
+       - Paragraf 2: Makna filosofis mendalam di balik syair dan bait-baitnya (misal: tradisi pantun bersahut asmara bujang-gadis, atau kepasrahan batin menghadapi kesendirian).
+       - Paragraf 3: Karakteristik musikal (tempo, irama, instrumen khas seperti rebana, gendang, gitar tunggal Batanghari Sembilan) dan pelestariannya sebagai Warisan Budaya Takbenda.
+     * Di bagian bulletPoints: Asal Daerah, Karakter Musik & Instrumen, Nilai Budaya & Pesan Moral.
    - JIKA MENANYAKAN RESEP / CARA MEMBUAT / CARA MASAK (contoh: "resep pempek", "resep pempek kapal selam", "resep pempek keriting", "resep tekwan", "cara membuat cuko pempek", "cara masak pindang patin"):
      * DILARANG HANYA MEMBERIKAN PENJELASAN SEJARAH! Pengguna meminta RESEP DAN PANDUAN CARA MEMASAK!
      * Pada "title": "Resep & Cara Membuat [Nama Masakan]" (contoh: "Resep Pempek Kapal Selam Asli Palembang", "Resep Pempek Keriting Gurih").
@@ -901,7 +1417,8 @@ export function generateLocalFallback(query: string): SearchResult {
   // Cek lagu daerah Sumsel secara langsung
   const matchedSong = findSumselSong(query);
   if (matchedSong) {
-    return buildSongSearchResult(matchedSong, query);
+    const isLyric = isLyricQuery(query);
+    return buildSongSearchResult(matchedSong, query, isLyric ? "lyrics" : "explanation");
   }
 
   if (isClearlyOffTopic(query)) {

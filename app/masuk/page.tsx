@@ -37,15 +37,17 @@ export default function MasukPage() {
       </div>
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-sm mx-4">
+      <div className="relative z-10 w-full max-w-sm mx-auto px-4 -translate-x-2.5 sm:-translate-x-3.5">
         {/* Logo */}
         <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center gap-2 group">
-            <span className="text-2xl font-serif tracking-widest font-bold bg-gradient-to-r from-[#d4af37] via-[#f3d38c] to-[#d4af37] bg-clip-text text-transparent">
-              SORA
-            </span>
-            <span className="text-xs text-white/40 font-sans tracking-[0.2em] uppercase mt-0.5">
-              Arts & Culture
+          <Link href="/" className="inline-flex items-center gap-1.5 group">
+            <img
+              src="/logo.png"
+              alt="SORA Logo"
+              className="w-12 h-12 md:w-14 md:h-14 object-contain transform group-hover:scale-105 transition-transform drop-shadow"
+            />
+            <span className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#FDE047] via-[#E9C176] to-[#DC2626] bg-clip-text text-transparent select-none drop-shadow-md">
+              SORA.<span className="italic font-extrabold">Culture</span>
             </span>
           </Link>
           <p className="text-white/40 text-sm mt-2 font-sans">
@@ -114,8 +116,8 @@ export default function MasukPage() {
 
           <p className="text-white/30 text-xs font-sans mt-6 leading-relaxed">
             {t(
-              "Dengan masuk, Anda menyetujui syarat penggunaan SORA Arts & Culture. Data Anda aman dan tidak dibagikan.",
-              "By signing in, you agree to the terms of SORA Arts & Culture. Your data is safe and never shared."
+              "Dengan masuk, Anda menyetujui syarat penggunaan SORA.Culture. Data Anda aman dan tidak dibagikan.",
+              "By signing in, you agree to the terms of SORA.Culture. Your data is safe and never shared."
             )}
           </p>
         </div>

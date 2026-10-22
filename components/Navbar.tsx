@@ -114,8 +114,8 @@ export default function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-[1000] py-4 px-6 md:px-12 w-full transition-all duration-500 ${
         scrolled
-          ? "bg-white/8 backdrop-blur-md border-b border-white/10 shadow-sm"
-          : "bg-white/5 backdrop-blur-sm"
+          ? "bg-[#0d0d0f]/85 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+          : "bg-[#0d0d0f]/45 backdrop-blur-md border-b border-white/[0.06]"
       } ${
         navVisible
           ? "opacity-100 translate-y-0"
@@ -125,18 +125,15 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <svg
-            className="w-6 h-6 text-cyan-400 transform group-hover:scale-110 transition-transform"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
-          </svg>
-          <div className="flex items-center gap-1.5 font-bold tracking-tight text-lg text-white drop-shadow-md">
-            <span>SORA.</span>
-            <span className="italic font-extrabold text-cyan-400">Culture</span>
-          </div>
+        <Link href="/" className="flex items-center gap-1.5 group">
+          <img
+            src="/logo.png"
+            alt="SORA Logo"
+            className="w-10 h-10 md:w-11 md:h-11 object-contain transform group-hover:scale-105 transition-transform drop-shadow"
+          />
+          <span className="font-bold tracking-tight text-lg bg-gradient-to-r from-[#FDE047] via-[#E9C176] to-[#DC2626] bg-clip-text text-transparent drop-shadow-md select-none">
+            SORA.<span className="italic font-extrabold">Culture</span>
+          </span>
         </Link>
 
         {/* Center & Right Navigation Items */}

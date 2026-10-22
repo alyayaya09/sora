@@ -52,6 +52,7 @@ function JelajahiContent() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const { data: session } = useSession();
@@ -198,6 +199,7 @@ function JelajahiContent() {
     }
 
     setLoading(true);
+    setDescExpanded(false); // reset ke collapsed setiap pencarian baru
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
@@ -716,7 +718,7 @@ function JelajahiContent() {
                                     : result.card2.paragraphs[0])
                                 : `Dokumentasi visual pesona budaya ${result.card1.title || query || "Sumatera Selatan"}`)
                         }
-                        sourceUrl={result.card2.sources?.[0]?.url || `/jelajahi?q=${encodeURIComponent(query)}`}
+                        sourceUrl={`/jelajahi?q=${encodeURIComponent(result.card1.title || query)}`}
                         size="sm"
                       />
                     </div>
@@ -803,7 +805,7 @@ function JelajahiContent() {
                       </svg>
                     </div>
 
-                    <div className="relative z-10 flex flex-col gap-5 w-full">
+                    <div className="relative z-10 flex flex-col gap-5 w-full flex-1">
                       {/* Audio Button */}
                       <button
                         type="button"
@@ -829,7 +831,7 @@ function JelajahiContent() {
                         )}
                       </button>
 
-                      {/* Highlighted text */}
+                      {/* Highlighted text — selalu tampil */}
                       {result.card2.highlight && (
                         <p className="text-base leading-[1.85] text-white/90">
                           <span
@@ -841,32 +843,26 @@ function JelajahiContent() {
                         </p>
                       )}
 
-                      {/* Paragraphs */}
-                      <div className="flex flex-col gap-3 text-white/70 text-base leading-relaxed">
-                        {result.card2.paragraphs[0] && (
-                          <p className="whitespace-pre-line">{result.card2.paragraphs[0]}</p>
-                        )}
-
-                        {result.card2.paragraphs[1] && (
-                          <p
-                            className="whitespace-pre-line"
-                            style={
-                              !expanded
-                                ? { WebkitMaskImage: "linear-gradient(black 30%, transparent 100%)", maskImage: "linear-gradient(black 30%, transparent 100%)" }
-                                : {}
-                            }
-                          >
-                            {result.card2.paragraphs[1]}
-                          </p>
-                        )}
-
-                        {/* Expanded details & bullets */}
-                        <div
-                          className="expanded-body"
-                          style={{ maxHeight: expanded ? "2000px" : "0px", opacity: expanded ? 1 : 0 }}
-                        >
-                          <div className="flex flex-col gap-3 pt-2">
-                            {result.card2.paragraphs.slice(2).map((p, idx) => (
+                      {/* Paragraphs — collapsed: preview alami tanpa gradient, expanded: semua tampil */}
+                      <div className="relative flex flex-col gap-3 text-white/70 text-base leading-relaxed">
+                        {!descExpanded ? (
+                          /* ── MODE COLLAPSED: tampilkan paragraf 0 + 1 dengan line-clamp alami ── */
+                          <>
+                            {result.card2.paragraphs[0] && (
+                              <p className="whitespace-pre-line">
+                                {result.card2.paragraphs[0]}
+                              </p>
+                            )}
+                            {result.card2.paragraphs[1] && (
+                              <p className="whitespace-pre-line line-clamp-3">
+                                {result.card2.paragraphs[1]}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          /* ── MODE EXPANDED: tampilkan semua paragraf & bullets ── */
+                          <div className="flex flex-col gap-3">
+                            {result.card2.paragraphs.map((p, idx) => (
                               <p key={idx} className="whitespace-pre-line">{p}</p>
                             ))}
 
@@ -880,20 +876,20 @@ function JelajahiContent() {
                               </div>
                             )}
                           </div>
-                        </div>
+                        )}
                       </div>
 
-                      {/* Expand / Collapse Button */}
+                      {/* Expand / Collapse Button untuk deskripsi — mt-auto menempel ke bawah card */}
                       <button
                         type="button"
-                        onClick={() => setExpanded((v) => !v)}
-                        aria-expanded={expanded}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-amber-400/40 text-white text-sm font-medium tracking-wide transition-all backdrop-blur-md focus:outline-none shadow-sm cursor-pointer"
+                        onClick={() => setDescExpanded((v) => !v)}
+                        aria-expanded={descExpanded}
+                        className="mt-auto w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-amber-400/40 text-white text-sm font-medium tracking-wide transition-all backdrop-blur-md focus:outline-none shadow-sm cursor-pointer"
                       >
-                        <span>{expanded ? t("Tampilkan lebih sedikit", "Show less") : t("Tampilkan lebih banyak", "Show more")}</span>
+                        <span>{descExpanded ? t("Tampilkan lebih sedikit", "Show less") : t("Tampilkan lebih banyak", "Show more")}</span>
                         <span
                           className="material-symbols-outlined text-base transition-transform duration-300"
-                          style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                          style={{ transform: descExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
                         >
                           expand_more
                         </span>

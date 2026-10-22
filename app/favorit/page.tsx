@@ -124,7 +124,28 @@ export default function FavoritPage() {
     const ref = item.item_ref || item.itemRef;
     if (type === "card") return `/tur/${ref}`;
     if (type === "theme") return `/tema/${ref}`;
-    if (item.source_url || item.sourceUrl) return (item.source_url || item.sourceUrl)!;
+
+    // Untuk item tipe gambar, arahkan selalu ke penjelasan di halaman Jelajahi
+    if (type === "image") {
+      const source = item.source_url || item.sourceUrl;
+      if (source && source.startsWith("/jelajahi")) {
+        return source;
+      }
+      const targetQuery = item.title || ref || "";
+      if (targetQuery) {
+        return `/jelajahi?q=${encodeURIComponent(targetQuery)}`;
+      }
+      return "/jelajahi";
+    }
+
+    const source = item.source_url || item.sourceUrl;
+    if (source && !source.startsWith("http://") && !source.startsWith("https://")) {
+      return source;
+    }
+    const fallbackQuery = item.title || ref || "";
+    if (fallbackQuery) {
+      return `/jelajahi?q=${encodeURIComponent(fallbackQuery)}`;
+    }
     return "/jelajahi";
   };
 

@@ -7,9 +7,11 @@ import {
   generateLocalFallback,
   findLocalMatch,
   resolveContextualImage,
+  buildSongSearchResult,
   SearchResult,
   geminiDebugLogs,
 } from "@/lib/gemini";
+import { findSumselSong, isLyricQuery } from "@/data/sumsel-songs";
 
 export const dynamic = "force-dynamic";
 
@@ -53,35 +55,65 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const localMatch = findLocalMatch(query);
+    // ── Cek Lagu Daerah Sumsel (Anti-Halusinasi & Pemisahan Lirik vs Penjelasan) ───
+    const matchedSong = findSumselSong(query);
+    let songResult: (SearchResult & {
+      _wikiTitleId?: string;
+      _wikiTitleEn?: string;
+      _imageSearchQuery?: string;
+    }) | null = null;
 
-    // ── Attempt 1: Gemini summary ─────────────────────────────────────────────
-    let geminiResult = (await generateGeminiSummary(query, localMatch)) as
-      | (SearchResult & {
-          _wikiTitleId?: string;
-          _wikiTitleEn?: string;
-          _imageSearchQuery?: string;
-        })
-      | null;
+    if (matchedSong) {
+      const isLyric = isLyricQuery(query);
+      songResult = buildSongSearchResult(
+        matchedSong,
+        query,
+        isLyric ? "lyrics" : "explanation"
+      ) as SearchResult & {
+        _wikiTitleId?: string;
+        _wikiTitleEn?: string;
+        _imageSearchQuery?: string;
+      };
+      // Set helper fields for image resolution
+      songResult._wikiTitleId = matchedSong.title;
+      songResult._imageSearchQuery = `Lagu ${matchedSong.title} ${matchedSong.region}`;
+    }
 
-    // ── Attempt 2: Retry once after short delay if overloaded ─────────────────
-    if (!geminiResult) {
-      await new Promise((r) => setTimeout(r, 1500));
-      geminiResult = (await generateGeminiSummary(query, localMatch)) as
+    let result: SearchResult & {
+      _wikiTitleId?: string;
+      _wikiTitleEn?: string;
+      _imageSearchQuery?: string;
+    };
+
+    if (songResult) {
+      result = songResult;
+    } else {
+      const localMatch = findLocalMatch(query);
+
+      // ── Attempt 1: Gemini summary ─────────────────────────────────────────────
+      let geminiResult = (await generateGeminiSummary(query, localMatch)) as
         | (SearchResult & {
             _wikiTitleId?: string;
             _wikiTitleEn?: string;
             _imageSearchQuery?: string;
           })
         | null;
-    }
 
-    // ── Fallback: local content only ─────────────────────────────────────────
-    const result: SearchResult & {
-      _wikiTitleId?: string;
-      _wikiTitleEn?: string;
-      _imageSearchQuery?: string;
-    } = geminiResult || generateLocalFallback(query);
+      // ── Attempt 2: Retry once after short delay if overloaded ─────────────────
+      if (!geminiResult) {
+        await new Promise((r) => setTimeout(r, 1500));
+        geminiResult = (await generateGeminiSummary(query, localMatch)) as
+          | (SearchResult & {
+              _wikiTitleId?: string;
+              _wikiTitleEn?: string;
+              _imageSearchQuery?: string;
+            })
+          | null;
+      }
+
+      // ── Fallback: local content only ─────────────────────────────────────────
+      result = geminiResult || generateLocalFallback(query);
+    }
 
     // ── Fetch real image from References first, then other sources ───────────
     if (result.status !== "no_result") {
@@ -90,17 +122,16 @@ export async function GET(request: NextRequest) {
       const wikiTitleEn = result._wikiTitleEn;
       const imageSearchQuery = result._imageSearchQuery || result.card1.title;
 
-      let smartImg: string | null = null;
-      // Ambil foto dari web/Wikipedia jika belum ada foto spesifik lokal
-      if (!result.card1.image || result.card1.image === "/images/ampera_hero.jpg") {
-        smartImg = await fetchSmartImage(
-          result.card2?.sources || [],
-          wikiTitleId,
-          wikiTitleEn,
-          imageSearchQuery,
-          query
-        );
-      }
+      // Selalu cari foto dari Wikimedia/Wikipedia — tidak bergantung pada apakah
+      // Gemini sudah mengembalikan gambar lokal. resolveContextualImage akan
+      // memprioritaskan URL http dari Wikimedia di atas gambar lokal.
+      const smartImg = await fetchSmartImage(
+        result.card2?.sources || [],
+        wikiTitleId,
+        wikiTitleEn,
+        imageSearchQuery,
+        query
+      );
 
       // Pastikan SELALU ada foto yang sesuai konteks pertanyaan (tidak pernah kosong)
       const finalImage = resolveContextualImage(

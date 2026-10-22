@@ -63,7 +63,7 @@ export default function TentangPage() {
           {/* Center Hero Slogan Text (#SORACulture replacing #144ontour) */}
           <div className="relative z-20 my-auto text-center px-4 pt-28 pb-16 max-w-5xl mx-auto">
             <h1 className="text-white text-5xl md:text-7xl lg:text-8xl drop-shadow-2xl font-bold tracking-tight">
-              #SORACulture
+              #SORA.Culture
             </h1>
             <p className="mt-4 text-sm sm:text-base md:text-lg text-white/85 max-w-2xl mx-auto font-light leading-relaxed drop-shadow">
               {t(
@@ -323,111 +323,7 @@ export default function TentangPage() {
           </div>
         </section>
 
-        {/* ========================================================
-            PETA PERSEBARAN BUDAYA SUMATERA SELATAN
-            ======================================================== */}
-        <section className="w-full max-w-7xl mx-auto px-6 py-16 md:py-24 bg-transparent">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            
-            {/* Left: Peta Budaya Sumatera Selatan (SVG dengan Pin Titik Budaya) */}
-            <div className="lg:col-span-7 relative flex items-center justify-center scroll-anim scroll-anim-left-lg">
-              <div className="relative w-full max-w-2xl bg-black/40 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-md shadow-2xl">
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
-                  <span className="text-xs font-semibold text-amber-300 uppercase tracking-widest">
-                    Peta Persebaran Budaya Batanghari Sembilan
-                  </span>
-                  <span className="text-[11px] text-white/50">Sumatera Selatan</span>
-                </div>
-                
-                <svg
-                  className="w-full h-auto drop-shadow-md"
-                  fill="none"
-                  viewBox="0 0 1000 520"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Siluet Geografis Sumatera Selatan & Pesisir Selat Bangka */}
-                  <g fill="#2d1720" stroke="#dda758" strokeWidth="1" strokeOpacity="0.4">
-                    {/* Wilayah Utama Daratan Sumsel */}
-                    <path d="M180 80 C 260 70, 360 85, 430 110 C 510 140, 590 130, 670 160 C 720 180, 770 210, 810 260 C 830 290, 800 340, 770 380 C 730 430, 660 470, 580 480 C 490 490, 410 470, 340 440 C 270 410, 210 360, 170 300 C 140 250, 130 190, 150 140 C 160 110, 170 90, 180 80 Z" />
-                    {/* Aliran Jalur Sungai Musi & Muara */}
-                    <path
-                      d="M200 320 Q 350 290, 480 260 T 720 220 T 800 180"
-                      fill="none"
-                      stroke="#00f2fe"
-                      strokeWidth="3"
-                      strokeOpacity="0.6"
-                      strokeDasharray="4 4"
-                    />
-                  </g>
-
-                  {/* Pin Budaya Emas Bercahaya */}
-                  <g>
-                    {/* Pin 1: Palembang (Ampera, Songket, Pempek) */}
-                    <g className="cursor-pointer group">
-                      <circle cx="680" cy="230" r="10" fill="#fbc270" fillOpacity="0.3" className="animate-ping" />
-                      <circle cx="680" cy="230" r="6" fill="#fbc270" stroke="#ffffff" strokeWidth="2" />
-                      <text x="696" y="234" fill="#ffffff" fontSize="13" fontWeight="bold">Palembang (Pusat Kesultanan)</text>
-                    </g>
-
-                    {/* Pin 2: Ogan Komering Ilir & Hilir Musi (Perahu Bidar) */}
-                    <g className="cursor-pointer">
-                      <circle cx="760" cy="290" r="5.5" fill="#dda758" stroke="#ffffff" strokeWidth="1.5" />
-                      <text x="775" y="294" fill="#f5eedc" fontSize="11">Hilir Musi &amp; Bidar</text>
-                    </g>
-
-                    {/* Pin 3: Pasemah & Pagaralam (Ghumah Baghi & Megalit) */}
-                    <g className="cursor-pointer">
-                      <circle cx="280" cy="380" r="6" fill="#fbc270" stroke="#ffffff" strokeWidth="2" />
-                      <text x="295" y="384" fill="#f5eedc" fontSize="12" fontWeight="bold">Pasemah / Besemah</text>
-                    </g>
-
-                    {/* Pin 4: Lahat & Muara Enim (Tari Erai-Erai & Rumah Rakit) */}
-                    <g className="cursor-pointer">
-                      <circle cx="390" cy="340" r="5" fill="#dda758" stroke="#ffffff" strokeWidth="1.5" />
-                      <text x="405" y="344" fill="#f5eedc" fontSize="11">Lahat &amp; Lematang</text>
-                    </g>
-
-                    {/* Pin 5: Musi Rawas & Komering (Aksara Ulu Kuno) */}
-                    <g className="cursor-pointer">
-                      <circle cx="490" cy="190" r="5.5" fill="#dda758" stroke="#ffffff" strokeWidth="1.5" />
-                      <text x="505" y="194" fill="#f5eedc" fontSize="11">Lembah Aksara Ulu</text>
-                    </g>
-                  </g>
-                </svg>
-
-                <p className="text-[11px] text-white/50 text-center mt-3 italic">
-                  Garis putus-putus biru merepresentasikan denyut aliran Sungai Musi dan sebaran 8 tema budaya utama.
-                </p>
-              </div>
-            </div>
-
-            {/* Right: Deskripsi Sejarah & Tombol Eksplorasi */}
-            <div className="lg:col-span-5 flex flex-col items-start lg:pl-6 scroll-anim scroll-anim-right delay-150">
-              <div className="w-12 h-1 bg-[#dda758] mb-4 rounded-full" />
-              <span className="text-xs uppercase tracking-widest text-amber-300 font-semibold mb-2">
-                {t("Pusaka Maritim Nusantara", "Maritime Heritage of the Archipelago")}
-              </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-wider uppercase mb-5">
-                {t("JEJAK BATANGHARI SEMBILAN", "FOOTPRINTS OF BATANGHARI SEMBILAN")}
-              </h2>
-              <p className="text-sm text-gray-200/90 font-normal leading-relaxed text-justify mb-8">
-                {t(
-                  "Sungai Musi dengan sembilan anak sungainya (Batanghari Sembilan) membentuk urat nadi peradaban maritim yang melahirkan beragam dialek, kuliner fermentasi tempoyak, ukiran limas, hingga syair pantun Senjang. SORA hadir sebagai ruang temu digital bagi siapa saja yang ingin mengenal dan mewariskan kekayaan budaya ini kepada dunia.",
-                  "The Musi River and its nine tributaries (Batanghari Sembilan) form the lifeline of a maritime civilization that gave birth to diverse dialects, fermented tempoyak cuisine, limas woodcarvings, and Senjang pantun verses. SORA serves as a digital meeting space to learn and share this cultural wealth with the world."
-                )}
-              </p>
-              <Link
-                href="/jelajahi"
-                className="inline-flex items-center gap-2 bg-[#dda758] text-[#1c1013] text-xs font-bold uppercase tracking-wider px-8 py-3.5 shadow-xl hover:bg-[#fbc270] transition duration-300 rounded-full"
-              >
-                <span>{t("JELAJAHI SEKARANG", "EXPLORE NOW")}</span>
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </Link>
-            </div>
-
-          </div>
-        </section>
-
       </div>
   );
 }
+
