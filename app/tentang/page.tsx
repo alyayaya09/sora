@@ -192,7 +192,7 @@ export default function TentangPage() {
               </h2>
               <div className="space-y-4 text-sm text-gray-200/90 font-normal leading-relaxed text-justify">
                 <p>
-                  <strong>SORA (South Sumatra) Arts &amp; Culture</strong>{" "}
+                  <strong>SORA (South Sumatra) Culture</strong>{" "}
                   {t(
                     "lahir sebagai inisiatif karya pada kompetisi vibecoding tingkat kampus dengan tema kebangsaan: \"Empowering Culture Through AI-Driven Innovation\".",
                     "was born as an innovative project for a campus vibecoding competition under the national theme: \"Empowering Culture Through AI-Driven Innovation\"."
