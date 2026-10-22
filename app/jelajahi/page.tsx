@@ -455,18 +455,8 @@ function JelajahiContent() {
                     e.preventDefault();
                     handleSearch(inputValue);
                   }}
-                  className="flex items-center w-full px-4 py-2.5 gap-3"
+                  className="flex items-center w-full px-5 py-2.5 gap-3"
                 >
-                  <button
-                    type="button"
-                    onClick={() => router.push("/")}
-                    aria-label="Kembali ke Beranda"
-                    className="flex items-center justify-center p-1.5 -ml-1 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
-                    </svg>
-                  </button>
                   <button
                     type="submit"
                     aria-label="Cari"

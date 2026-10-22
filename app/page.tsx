@@ -273,12 +273,64 @@ export default function HomePage() {
 
         {/* Bottom Hero Content: Prompt Bar & Scroll Guide */}
         <div className="relative z-10 max-w-4xl mx-auto w-full flex flex-col items-center gap-4 mb-2">
-          {/* AI Search Prompt Bar — Clean Transparent Glass Style (matching Jelajahi) */}
+          {/* AI Search Prompt Bar — Clean Transparent Glass Style with Jelajahi Water Wave Effect */}
           <form
             onSubmit={handleSearchSubmit}
-            className="w-full flex items-center justify-between gap-3 px-5 py-3 rounded-full bg-white/[0.05] border border-white/15 shadow-xl backdrop-blur-2xl hover:border-white/30 transition-all duration-300 group"
+            className="relative w-full flex items-center justify-between gap-3 px-5 py-3 rounded-full bg-white/[0.05] border border-white/15 shadow-xl backdrop-blur-2xl hover:border-white/30 transition-all duration-300 group overflow-hidden"
           >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* ── Random Alternating Circular Glow Orbs (Jelajahi Palette, Transparent) ── */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
+              {/* Random Spot 1 (Left-Center) */}
+              <div
+                className="absolute left-[33%] top-[48%] -translate-x-1/2 -translate-y-1/2 w-44 h-44 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.5)_0%,rgba(253,224,71,0.25)_45%,transparent_70%)] blur-[4px]"
+                style={{
+                  animation: "orbSpreadPulse 8s cubic-bezier(0.25, 1, 0.4, 1) infinite",
+                  animationDelay: "0s",
+                }}
+              />
+              {/* Random Spot 2 (Right-Center) */}
+              <div
+                className="absolute left-[74%] top-[52%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-[radial-gradient(circle,rgba(244,63,94,0.48)_0%,rgba(245,158,11,0.25)_45%,transparent_70%)] blur-[4px]"
+                style={{
+                  animation: "orbSpreadPulse 8.6s cubic-bezier(0.25, 1, 0.4, 1) infinite",
+                  animationDelay: "1.4s",
+                }}
+              />
+              {/* Random Spot 3 (Far Left) */}
+              <div
+                className="absolute left-[14%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-[radial-gradient(circle,rgba(253,224,71,0.5)_0%,rgba(251,113,133,0.25)_45%,transparent_70%)] blur-[4px]"
+                style={{
+                  animation: "orbSpreadPulse 7.8s cubic-bezier(0.25, 1, 0.4, 1) infinite",
+                  animationDelay: "2.8s",
+                }}
+              />
+              {/* Random Spot 4 (Center-Right) */}
+              <div
+                className="absolute left-[56%] top-[45%] -translate-x-1/2 -translate-y-1/2 w-46 h-46 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.48)_0%,rgba(244,63,94,0.25)_45%,transparent_70%)] blur-[4px]"
+                style={{
+                  animation: "orbSpreadPulse 8.2s cubic-bezier(0.25, 1, 0.4, 1) infinite",
+                  animationDelay: "4.2s",
+                }}
+              />
+              {/* Random Spot 5 (Far Right) */}
+              <div
+                className="absolute left-[88%] top-[52%] -translate-x-1/2 -translate-y-1/2 w-42 h-42 rounded-full bg-[radial-gradient(circle,rgba(253,224,71,0.5)_0%,rgba(245,158,11,0.22)_45%,transparent_70%)] blur-[4px]"
+                style={{
+                  animation: "orbSpreadPulse 9s cubic-bezier(0.25, 1, 0.4, 1) infinite",
+                  animationDelay: "5.6s",
+                }}
+              />
+              {/* Random Spot 6 (Center) */}
+              <div
+                className="absolute left-[46%] top-[53%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-[radial-gradient(circle,rgba(244,63,94,0.45)_0%,rgba(253,224,71,0.28)_45%,transparent_70%)] blur-[4px]"
+                style={{
+                  animation: "orbSpreadPulse 8.4s cubic-bezier(0.25, 1, 0.4, 1) infinite",
+                  animationDelay: "7s",
+                }}
+              />
+            </div>
+
+            <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10">
               <span className="p-1.5 rounded-full bg-white/[0.08] text-white/60 group-hover:text-white transition-colors">
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
@@ -304,7 +356,7 @@ export default function HomePage() {
                 </button>
               )}
             </div>
-            <div className="flex items-center gap-2 sm:gap-2.5 text-white/70">
+            <div className="flex items-center gap-2 sm:gap-2.5 text-white/70 relative z-10">
               <button
                 className={`hover:text-white p-1.5 hover:bg-white/10 rounded-full transition-colors cursor-pointer ${
                   isListening ? "bg-red-500/80 text-white animate-pulse" : ""
@@ -347,8 +399,8 @@ export default function HomePage() {
             <span className="text-[11px] font-semibold tracking-widest text-[#fbc270]/90">
               SCROLL DOWN TO EXPLORE
             </span>
-            <div className="w-5 h-8 rounded-full border border-white/30 flex items-start justify-center p-1 group-hover:border-blue-400 transition-colors">
-              <div className="w-1.5 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+            <div className="w-5 h-8 rounded-full border border-white/30 flex items-start justify-center p-1 group-hover:border-[#fbc270] transition-colors">
+              <div className="w-1.5 h-2 bg-[#fbc270] rounded-full animate-bounce"></div>
             </div>
           </a>
         </div>
