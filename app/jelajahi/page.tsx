@@ -8,24 +8,8 @@ import { getThemes } from "@/data/sora-content";
 import LoveButton from "@/components/LoveButton";
 import { useSession } from "@/lib/auth-client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import AmbientBackground from "@/components/AmbientBackground";
 
-// ─── Orb / Ambient Background ───
-function AmbientBackground() {
-  return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden scale-110" id="dynamicBgWrapper">
-      <div className="absolute inset-0 bg-gradient-to-tr from-[#140e13] via-[#0d0d0f] to-[#1c1410] opacity-90" />
-      <div className="absolute -top-[10%] -left-[10%] w-[68vw] h-[68vw] max-w-[980px] max-h-[980px] rounded-full bg-gradient-to-br from-[#9f1239]/60 via-[#6b1d2f]/50 to-transparent blur-[105px] animate-orb-1 will-change-transform" />
-      <div className="absolute top-[12%] -right-[10%] w-[64vw] h-[64vw] max-w-[920px] max-h-[920px] rounded-full bg-gradient-to-bl from-[#f59e0b]/55 via-[#d4af37]/45 to-transparent blur-[115px] animate-orb-2 will-change-transform" />
-      <div className="absolute top-[38%] -left-[8%] w-[58vw] h-[58vw] max-w-[850px] max-h-[850px] rounded-full bg-gradient-to-r from-[#6b1d2f]/55 via-[#881337]/45 to-transparent blur-[100px] animate-orb-3 will-change-transform" />
-      <div className="absolute -bottom-[12%] right-[5%] w-[62vw] h-[62vw] max-w-[900px] max-h-[900px] rounded-full bg-gradient-to-tl from-[#af8d11]/55 via-[#d4af37]/45 to-transparent blur-[110px] animate-orb-4 will-change-transform" />
-      <div className="absolute top-[52%] left-[28%] w-[48vw] h-[48vw] max-w-[720px] max-h-[720px] rounded-full bg-gradient-to-tr from-[#d4af37]/35 via-[#9f1239]/40 to-transparent blur-[100px] animate-orb-5 will-change-transform" />
-      <div className="absolute top-[25%] left-[20%] w-2.5 h-2.5 rounded-full bg-[#fde047] blur-[1px] shadow-[0_0_12px_#fde047] animate-ember-1" />
-      <div className="absolute top-[60%] right-[25%] w-3 h-3 rounded-full bg-[#f59e0b] blur-[1px] shadow-[0_0_15px_#f59e0b] animate-ember-2" />
-      <div className="absolute top-[75%] left-[40%] w-2 h-2 rounded-full bg-[#ffb2bc] blur-[1px] shadow-[0_0_10px_#ffb2bc] animate-ember-1" style={{ animationDelay: "4s" }} />
-      <div className="absolute top-[40%] right-[38%] w-2.5 h-2.5 rounded-full bg-[#e9c176] blur-[1px] shadow-[0_0_12px_#e9c176] animate-ember-2" style={{ animationDelay: "5s" }} />
-    </div>
-  );
-}
 
 const SUGGESTIONS = [
   "Filosofi dan Sejarah Songket Lepus Emas Palembang",
@@ -417,21 +401,7 @@ function JelajahiContent() {
   return (
     <>
       <style>{`
-        @keyframes floatOrb1{0%{transform:translate(0,0) scale(1) rotate(0deg);opacity:.75}30%{transform:translate(18vw,12vh) scale(1.3) rotate(25deg);opacity:.95}65%{transform:translate(-10vw,22vh) scale(.9) rotate(-18deg);opacity:.7}85%{transform:translate(8vw,-10vh) scale(1.22) rotate(12deg);opacity:.9}100%{transform:translate(0,0) scale(1) rotate(0deg);opacity:.75}}
-        @keyframes floatOrb2{0%{transform:translate(0,0) scale(1) rotate(0deg);opacity:.8}35%{transform:translate(-22vw,16vh) scale(1.35) rotate(-30deg);opacity:.95}70%{transform:translate(16vw,-14vh) scale(.85) rotate(20deg);opacity:.65}100%{transform:translate(0,0) scale(1) rotate(0deg);opacity:.8}}
-        @keyframes floatOrb3{0%{transform:translate(0,0) scale(.9) rotate(0deg);opacity:.7}40%{transform:translate(24vw,-18vh) scale(1.32) rotate(35deg);opacity:.92}75%{transform:translate(-18vw,15vh) scale(.88) rotate(-25deg);opacity:.68}100%{transform:translate(0,0) scale(.9) rotate(0deg);opacity:.7}}
-        @keyframes floatOrb4{0%{transform:translate(0,0) scale(1.05) rotate(0deg);opacity:.75}45%{transform:translate(-20vw,-18vh) scale(1.28) rotate(-22deg);opacity:.95}80%{transform:translate(15vw,16vh) scale(.92) rotate(28deg);opacity:.7}100%{transform:translate(0,0) scale(1.05) rotate(0deg);opacity:.75}}
-        @keyframes floatOrb5{0%{transform:translate(0,0) scale(1);opacity:.6}50%{transform:translate(16vw,20vh) scale(1.3);opacity:.85}100%{transform:translate(0,0) scale(1);opacity:.6}}
-        @keyframes floatEmber1{0%{transform:translate(0,0) scale(.8);opacity:.3}50%{transform:translate(6vw,-15vh) scale(1.4);opacity:.85}100%{transform:translate(-4vw,-30vh) scale(.6);opacity:.1}}
-        @keyframes floatEmber2{0%{transform:translate(0,0) scale(1);opacity:.25}50%{transform:translate(-8vw,-20vh) scale(1.5);opacity:.9}100%{transform:translate(5vw,-40vh) scale(.7);opacity:.1}}
         @keyframes eqBar{0%,100%{height:5px}50%{height:14px}}
-        .animate-orb-1{animation:floatOrb1 7.5s ease-in-out infinite}
-        .animate-orb-2{animation:floatOrb2 8.5s ease-in-out infinite}
-        .animate-orb-3{animation:floatOrb3 6.8s ease-in-out infinite}
-        .animate-orb-4{animation:floatOrb4 9s ease-in-out infinite}
-        .animate-orb-5{animation:floatOrb5 8s ease-in-out infinite}
-        .animate-ember-1{animation:floatEmber1 9s ease-in-out infinite}
-        .animate-ember-2{animation:floatEmber2 8s ease-in-out infinite 2s}
         .eq-bar{display:inline-block;width:2px;border-radius:2px;animation:eqBar 0.7s ease-in-out infinite}
         .eq-bar:nth-child(2){animation-delay:.1s}
         .eq-bar:nth-child(3){animation-delay:.22s}
@@ -690,28 +660,6 @@ function JelajahiContent() {
                     className="relative overflow-hidden border border-amber-400/20 bg-[#0d0d0f] shadow-[0_0_35px_rgba(212,175,55,0.12)] rounded-3xl select-none"
                     style={{ height: 480 }}
                   >
-                    {/* Love Button on Image Card */}
-                    <div className="absolute top-4 right-4 z-20">
-                      <LoveButton
-                        itemType="image"
-                        itemRef={result.card1.title || query}
-                        title={result.card1.title}
-                        imageUrl={result.card1.image}
-                        creator={
-                          result.card2?.highlight
-                            ? (result.card2.highlight.length > 95
-                                ? result.card2.highlight.slice(0, 92) + "..."
-                                : result.card2.highlight)
-                            : (result.card2?.paragraphs?.[0]
-                                ? (result.card2.paragraphs[0].length > 95
-                                    ? result.card2.paragraphs[0].slice(0, 92) + "..."
-                                    : result.card2.paragraphs[0])
-                                : `Dokumentasi visual pesona budaya ${result.card1.title || query || "Sumatera Selatan"}`)
-                        }
-                        sourceUrl={`/jelajahi?q=${encodeURIComponent(result.card1.title || query)}`}
-                        size="sm"
-                      />
-                    </div>
                     {result.card1.image ? (
                       <img
                         src={result.card1.image}
@@ -744,11 +692,15 @@ function JelajahiContent() {
                   </div>
 
 
-                  {/* Sources Section — clickable links */}
+                  {/* Sources Section — clickable links (muncul saat klik button 'Tampilkan lebih banyak') */}
                   {result.card2.sources && result.card2.sources.length > 0 && (
                     <div
-                      className="expanded-body"
-                      style={{ maxHeight: expanded ? "500px" : "0px", opacity: expanded ? 1 : 0 }}
+                      className="w-full overflow-hidden transition-all duration-500 ease-in-out"
+                      style={{
+                        maxHeight: descExpanded ? "600px" : "0px",
+                        opacity: descExpanded ? 1 : 0,
+                        pointerEvents: descExpanded ? "auto" : "none",
+                      }}
                     >
                       <div className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl p-4 flex flex-col gap-3 shadow-xl">
                         <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.15em] px-1">{t("Sumber Referensi", "Reference Sources")}</p>
@@ -796,30 +748,56 @@ function JelajahiContent() {
                     </div>
 
                     <div className="relative z-10 flex flex-col gap-5 w-full flex-1">
-                      {/* Audio Button */}
-                      <button
-                        type="button"
-                        onClick={handleToggleAudio}
-                        className="inline-flex items-center gap-2.5 px-0 py-0 bg-transparent hover:opacity-90 text-left focus:outline-none group cursor-pointer transition-all w-fit"
-                      >
-                        <span className="material-symbols-outlined text-[26px] text-amber-400 select-none transition-transform group-hover:scale-105 shrink-0">
-                          {isPlaying ? "pause" : "volume_up"}
-                        </span>
-                        <span className="text-2xl md:text-3xl text-white font-normal select-none leading-none">
-                          {isPlaying ? t("Memutar SORA...", "Playing SORA...") : t("Dengarkan SORA", "Listen to SORA")}
-                        </span>
-                        {isPlaying && (
-                          <span className="flex items-end gap-0.5 h-4 px-1">
-                            {[0, 1, 2, 3].map((i) => (
-                              <span
-                                key={i}
-                                className={`eq-bar ${i % 2 === 0 ? "bg-amber-300" : "bg-rose-400"}`}
-                                style={{ height: 8, animationDelay: `${i * 120}ms` }}
-                              />
-                            ))}
+                      {/* Top Header: Audio Button & Favorite Explanation Button */}
+                      <div className="flex items-center justify-between w-full gap-3">
+                        {/* Audio Button */}
+                        <button
+                          type="button"
+                          onClick={handleToggleAudio}
+                          className="inline-flex items-center gap-2.5 px-0 py-0 bg-transparent hover:opacity-90 text-left focus:outline-none group cursor-pointer transition-all w-fit"
+                        >
+                          <span className="material-symbols-outlined text-[26px] text-amber-400 select-none transition-transform group-hover:scale-105 shrink-0">
+                            {isPlaying ? "pause" : "volume_up"}
                           </span>
-                        )}
-                      </button>
+                          <span className="text-2xl md:text-3xl text-white font-normal select-none leading-none">
+                            {isPlaying ? t("Memutar SORA...", "Playing SORA...") : t("Dengarkan SORA", "Listen to SORA")}
+                          </span>
+                          {isPlaying && (
+                            <span className="flex items-end gap-0.5 h-4 px-1">
+                              {[0, 1, 2, 3].map((i) => (
+                                <span
+                                  key={i}
+                                  className={`eq-bar ${i % 2 === 0 ? "bg-amber-300" : "bg-rose-400"}`}
+                                  style={{ height: 8, animationDelay: `${i * 120}ms` }}
+                                />
+                              ))}
+                            </span>
+                          )}
+                        </button>
+
+                        {/* Love Button for Explanation */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <LoveButton
+                            itemType="image"
+                            itemRef={(result.card2?.title || result.card1?.title || query).trim()}
+                            title={(result.card2?.title || result.card1?.title || query).trim()}
+                            imageUrl={result.card1.image}
+                            creator={
+                              result.card2?.highlight
+                                ? (result.card2.highlight.length > 95
+                                    ? result.card2.highlight.slice(0, 92) + "..."
+                                    : result.card2.highlight)
+                                : (result.card2?.paragraphs?.[0]
+                                    ? (result.card2.paragraphs[0].length > 95
+                                        ? result.card2.paragraphs[0].slice(0, 92) + "..."
+                                        : result.card2.paragraphs[0])
+                                    : `Hasil rangkuman penjelasan kebudayaan ${result.card2?.title || query}`)
+                            }
+                            sourceUrl={`/jelajahi?q=${encodeURIComponent(query.trim() || result.card2?.title?.trim() || result.card1?.title?.trim() || "")}`}
+                            size="md"
+                          />
+                        </div>
+                      </div>
 
                       {/* Highlighted text — selalu tampil */}
                       {result.card2.highlight && (

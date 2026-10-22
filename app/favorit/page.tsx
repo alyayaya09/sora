@@ -81,28 +81,80 @@ export default function FavoritPage() {
     fetchFavorites();
   }, [user, isPending, fetchFavorites, router]);
 
+  const dedupeFavs = (list: FavoriteItem[]) => {
+    const seen = new Set<string>();
+    return list.filter((f) => {
+      const type = f.item_type || f.itemType || "";
+      const ref = (f.item_ref || f.itemRef || "").trim().toLowerCase();
+      const title = (f.title || "").trim().toLowerCase();
+      const img = (f.image_url || f.imageUrl || "").trim();
+
+      const key =
+        type === "image"
+          ? `${type}::${ref || title || f.id}`
+          : `${type}::${ref || f.id}`;
+
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   const handleRemoveFavorite = async (e: React.MouseEvent, item: FavoriteItem) => {
     e.stopPropagation();
     const type = item.item_type || item.itemType;
     const ref = item.item_ref || item.itemRef;
+    const itemTitle = item.title;
+    const itemImg = item.image_url || item.imageUrl;
+
     try {
       await fetch("/api/favorite", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemType: type, itemRef: ref }),
+        body: JSON.stringify({
+          itemType: type,
+          itemRef: ref,
+          title: itemTitle,
+          imageUrl: itemImg,
+        }),
       });
-      setFavorites((prev) => prev.filter((f) => f.id !== item.id));
+
+      const normRef = (ref || "").trim().toLowerCase();
+      const normTitle = (itemTitle || "").trim().toLowerCase();
+
+      setFavorites((prev) =>
+        prev.filter((f) => {
+          if (f.id === item.id) return false;
+          const fType = f.item_type || f.itemType;
+          if (fType !== type) return true;
+
+          const fRef = (f.item_ref || f.itemRef || "").trim().toLowerCase();
+          const fTitle = (f.title || "").trim().toLowerCase();
+
+          if (normRef && fRef === normRef) return false;
+          if (type === "image") {
+            if (normTitle && fTitle === normTitle) return false;
+            if (normRef && fTitle === normRef) return false;
+            if (normTitle && fRef === normTitle) return false;
+          }
+          return true;
+        })
+      );
       showToast(t("Dihapus dari Favorit", "Removed from Favorites"), getItemTitle(item), true);
     } catch {
       showToast(t("Gagal menghapus", "Failed to remove"), t("Coba lagi nanti", "Please try again later"), true);
     }
   };
 
-  const storiesFavs = favorites.filter((f) => {
-    const type = f.item_type || f.itemType;
-    return type === "card" || type === "theme";
-  });
-  const imageFavs = favorites.filter((f) => (f.item_type || f.itemType) === "image");
+  const storiesFavs = dedupeFavs(
+    favorites.filter((f) => {
+      const type = f.item_type || f.itemType;
+      return type === "card" || type === "theme";
+    })
+  );
+  const imageFavs = dedupeFavs(
+    favorites.filter((f) => (f.item_type || f.itemType) === "image")
+  );
   const displayedFavs = activeTab === "stories" ? storiesFavs : imageFavs;
 
   const getItemImage = (item: FavoriteItem) => {
@@ -125,15 +177,15 @@ export default function FavoritPage() {
     if (type === "card") return `/tur/${ref}`;
     if (type === "theme") return `/tema/${ref}`;
 
-    // Untuk item tipe gambar, arahkan selalu ke penjelasan di halaman Jelajahi
+    // Untuk item tipe gambar / pencarian, arahkan selalu ke penjelasan di halaman Jelajahi
     if (type === "image") {
       const source = item.source_url || item.sourceUrl;
-      if (source && source.startsWith("/jelajahi")) {
+      if (source && source.startsWith("/jelajahi?q=")) {
         return source;
       }
       const targetQuery = item.title || ref || "";
       if (targetQuery) {
-        return `/jelajahi?q=${encodeURIComponent(targetQuery)}`;
+        return `/jelajahi?q=${encodeURIComponent(targetQuery.trim())}`;
       }
       return "/jelajahi";
     }
@@ -260,7 +312,7 @@ export default function FavoritPage() {
                     : "text-white/50 hover:text-white/80"
                 }`}
               >
-                {t("Gambar", "Images")}
+                {t("Pencarian", "Searches")}
                 {activeTab === "gambar" && (
                   <div className="absolute -bottom-px left-0 w-full h-[2.5px] rounded-full bg-gradient-to-r from-[#e9c176] via-[#c2410c] to-[#6b1d2f]" />
                 )}
@@ -274,7 +326,7 @@ export default function FavoritPage() {
           <div className="flex items-center justify-between mb-5 pb-1">
             <div className="flex items-baseline gap-3">
               <h2 className="font-sans text-2xl sm:text-3xl font-semibold tracking-wide text-[#F9F8F6] drop-shadow-sm">
-                {activeTab === "stories" ? t("Tur Digital", "Digital Tours") : t("Gambar", "Images")}
+                {activeTab === "stories" ? t("Tur Digital", "Digital Tours") : t("Pencarian", "Searches")}
               </h2>
               <span className="font-sans text-xs text-[#e2be74] font-medium px-2.5 py-0.5 rounded-full bg-[#6b1d2f]/40 border border-amber-400/30">
                 {displayedFavs.length}
@@ -300,7 +352,7 @@ export default function FavoritPage() {
                 <h3 className="font-sans text-xl font-semibold text-white mb-1">
                   {activeTab === "stories"
                     ? t("Belum Ada Tur Digital Favorit", "No Favorite Digital Tours Yet")
-                    : t("Belum Ada Gambar Favorit", "No Favorite Images Yet")}
+                    : t("Belum Ada Pencarian Favorit", "No Favorite Searches Yet")}
                 </h3>
                 <p className="text-sm text-white/60 leading-relaxed">
                   {t(

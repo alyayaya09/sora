@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
       }
 
       // ── Fallback: local content only ─────────────────────────────────────────
-      result = geminiResult || generateLocalFallback(query);
+      result = geminiResult || (await generateLocalFallback(query));
     }
 
     // ── Fetch real image from References first, then other sources ───────────

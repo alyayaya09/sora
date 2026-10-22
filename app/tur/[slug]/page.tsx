@@ -64,6 +64,10 @@ export default function TourDetailPage({ params }: TourPageProps) {
         setCurrentSection(0);
         return;
       }
+      if (totalScroll > 0 && scrollPos >= totalScroll - 80) {
+        setCurrentSection(sectionIds.length - 1);
+        return;
+      }
       let activeIndex = 0;
       for (let i = 0; i < sectionIds.length; i++) {
         const el = document.getElementById(sectionIds[i]);
@@ -130,8 +134,13 @@ export default function TourDetailPage({ params }: TourPageProps) {
 
   const getCurrentSectionIndex = () => {
     const scrollPos = window.scrollY;
-    const effectivePos = scrollPos + window.innerHeight * 0.3;
+    const totalScroll =
+      document.documentElement.scrollHeight - window.innerHeight;
     if (scrollPos <= 60) return 0;
+    if (totalScroll > 0 && scrollPos >= totalScroll - 80) {
+      return sectionIds.length - 1;
+    }
+    const effectivePos = scrollPos + window.innerHeight * 0.3;
     let activeIndex = 0;
     for (let i = 0; i < sectionIds.length; i++) {
       const el = document.getElementById(sectionIds[i]);
@@ -499,7 +508,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
              ========================================== */}
         <aside
           className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-700 ease-in-out ${
-            currentSection >= 1 && isPointerActive
+            currentSection >= 1 && currentSection < sectionIds.length - 1 && isPointerActive
               ? "opacity-100 translate-y-0 pointer-events-auto"
               : "opacity-0 translate-y-4 pointer-events-none"
           }`}

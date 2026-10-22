@@ -55,16 +55,35 @@ export default function LoveButton({
       .then((r) => r.json())
       .then(({ favorites }) => {
         if (Array.isArray(favorites)) {
-          const exists = favorites.some(
-            (f: { item_type?: string; itemType?: string; item_ref?: string; itemRef?: string }) =>
-              (f.item_type === itemType || f.itemType === itemType) &&
-              (f.item_ref === itemRef || f.itemRef === itemRef)
-          );
+          const normRef = (itemRef || "").trim().toLowerCase();
+          const normTitle = (title || "").trim().toLowerCase();
+          const normImg = (imageUrl || "").trim();
+
+          const exists = favorites.some((f: any) => {
+            const fType = f.item_type || f.itemType;
+            if (fType !== itemType) return false;
+
+            const fRef = (f.item_ref || f.itemRef || "").trim().toLowerCase();
+            const fTitle = (f.title || "").trim().toLowerCase();
+            const fImg = (f.image_url || f.imageUrl || "").trim();
+
+            // 1. Direct match on itemRef
+            if (fRef && normRef && fRef === normRef) return true;
+
+            // 2. Matching for search/explanation items (based on explanation topic / title, never image)
+            if (itemType === "image") {
+              if (fTitle && normTitle && fTitle === normTitle) return true;
+              if (fTitle && normRef && fTitle === normRef) return true;
+              if (fRef && normTitle && fRef === normTitle) return true;
+            }
+
+            return false;
+          });
           setIsFav(exists);
         }
       })
       .catch(() => {});
-  }, [session, itemType, itemRef]);
+  }, [session, itemType, itemRef, title, imageUrl]);
 
   const showToastNotification = (msg: string, isSaved: boolean) => {
     if (typeof document === "undefined") return;
@@ -108,7 +127,7 @@ export default function LoveButton({
         await fetch("/api/favorite", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itemType, itemRef }),
+          body: JSON.stringify({ itemType, itemRef, title, imageUrl }),
         });
         setIsFav(false);
         onToggle?.(false);

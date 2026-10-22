@@ -79,19 +79,80 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Baca preferensi mute user dari sessionStorage saat mount
+  // Baca preferensi mute user & pastikan video berputar lancar tanpa macet di HP
   useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
     const saved = sessionStorage.getItem("sora-hero-muted");
-    // Default muted = true (browser policy); hanya unmute jika user pernah pilih unmute
     const shouldMute = saved === null ? true : saved === "true";
     setIsMuted(shouldMute);
-    if (videoRef.current) {
-      videoRef.current.muted = shouldMute;
-      videoRef.current.play().catch(() => {});
-    }
+
+    video.defaultMuted = true;
+    video.muted = shouldMute;
+    video.setAttribute("playsinline", "true");
+    video.setAttribute("webkit-playsinline", "true");
+    video.setAttribute("x5-playsinline", "true");
+
+    const playVideo = () => {
+      if (video && video.paused && window.scrollY < window.innerHeight * 0.9) {
+        const promise = video.play();
+        if (promise !== undefined) {
+          promise.catch(() => {});
+        }
+      }
+    };
+
+    playVideo();
+
+    // Event listener agar video tidak macet/freeze di HP saat tidak ada interaksi/idle
+    const handleStall = () => {
+      playVideo();
+    };
+
+    const handlePause = () => {
+      // Jika browser mobile mem-pause otomatis saat layar diam, jalankan kembali jika hero masih di layar
+      if (window.scrollY < window.innerHeight * 0.75) {
+        setTimeout(playVideo, 120);
+      }
+    };
+
+    const handleEnded = () => {
+      video.currentTime = 0;
+      playVideo();
+    };
+
+    // Sentuhan pertama di layar HP langsung memastikan video berputar
+    const onUserInteraction = () => {
+      playVideo();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && window.scrollY < window.innerHeight * 0.8) {
+        playVideo();
+      }
+    };
+
+    video.addEventListener("waiting", handleStall);
+    video.addEventListener("stalled", handleStall);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("ended", handleEnded);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("touchstart", onUserInteraction, { passive: true, once: true });
+    window.addEventListener("click", onUserInteraction, { passive: true, once: true });
+
+    return () => {
+      video.removeEventListener("waiting", handleStall);
+      video.removeEventListener("stalled", handleStall);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("ended", handleEnded);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("touchstart", onUserInteraction);
+      window.removeEventListener("click", onUserInteraction);
+    };
   }, []);
 
-  // Auto-mute video saat hero keluar dari viewport, restore saat kembali terlihat
+  // IntersectionObserver: Pause video saat keluar dari layar (hemat RAM/baterai HP) & putar lagi saat terlihat
   useEffect(() => {
     const heroEl = document.getElementById("hero-ampera");
     if (!heroEl || !videoRef.current) return;
@@ -102,13 +163,14 @@ export default function HomePage() {
         const video = videoRef.current;
         if (!video) return;
         if (!entry.isIntersecting) {
-          // Hero tidak terlihat → mute (tapi jangan ubah sessionStorage)
+          if (!video.paused) {
+            video.pause();
+          }
           if (!video.muted) {
             video.muted = true;
             setIsMuted(true);
           }
         } else {
-          // Hero terlihat kembali → kembalikan preferensi user
           const saved = sessionStorage.getItem("sora-hero-muted");
           const shouldMute = saved === null ? true : saved === "true";
           if (video.muted !== shouldMute) {
@@ -125,17 +187,6 @@ export default function HomePage() {
 
     observer.observe(heroEl);
     return () => observer.disconnect();
-  }, []);
-
-  // Cleanup: hanya mute audio, biarkan autoPlay menangani restart saat kembali ke halaman
-  useEffect(() => {
-    return () => {
-      if (videoRef.current) {
-        try {
-          videoRef.current.muted = true;
-        } catch {}
-      }
-    };
   }, []);
 
   useEffect(() => {
@@ -265,6 +316,8 @@ export default function HomePage() {
             muted
             playsInline
             preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
             className="w-full h-full object-cover object-center"
             id="ampera-bg"
             src="/images/HERO.mp4"
@@ -272,62 +325,37 @@ export default function HomePage() {
         </div>
 
         {/* Bottom Hero Content: Prompt Bar & Scroll Guide */}
-        <div className="relative z-10 max-w-4xl mx-auto w-full flex flex-col items-center gap-4 mb-2">
-          {/* AI Search Prompt Bar — Clean Transparent Glass Style with Jelajahi Water Wave Effect */}
+        <div className="relative z-10 max-w-2xl mx-auto w-full flex flex-col items-center gap-4 mb-2 px-4 sm:px-0">
+          {/* AI Search Prompt Bar — Clean Transparent Glass Style */}
           <form
             onSubmit={handleSearchSubmit}
             className="relative w-full flex items-center justify-between gap-3 px-5 py-3 rounded-full bg-white/[0.05] border border-white/15 shadow-xl backdrop-blur-2xl hover:border-white/30 transition-all duration-300 group overflow-hidden"
           >
-            {/* ── Random Alternating Circular Glow Orbs (Jelajahi Palette, Transparent) ── */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-              {/* Random Spot 1 (Left-Center) */}
-              <div
-                className="absolute left-[33%] top-[48%] -translate-x-1/2 -translate-y-1/2 w-44 h-44 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.5)_0%,rgba(253,224,71,0.25)_45%,transparent_70%)] blur-[4px]"
-                style={{
-                  animation: "orbSpreadPulse 8s cubic-bezier(0.25, 1, 0.4, 1) infinite",
-                  animationDelay: "0s",
-                }}
-              />
-              {/* Random Spot 2 (Right-Center) */}
-              <div
-                className="absolute left-[74%] top-[52%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-[radial-gradient(circle,rgba(244,63,94,0.48)_0%,rgba(245,158,11,0.25)_45%,transparent_70%)] blur-[4px]"
-                style={{
-                  animation: "orbSpreadPulse 8.6s cubic-bezier(0.25, 1, 0.4, 1) infinite",
-                  animationDelay: "1.4s",
-                }}
-              />
-              {/* Random Spot 3 (Far Left) */}
-              <div
-                className="absolute left-[14%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full bg-[radial-gradient(circle,rgba(253,224,71,0.5)_0%,rgba(251,113,133,0.25)_45%,transparent_70%)] blur-[4px]"
-                style={{
-                  animation: "orbSpreadPulse 7.8s cubic-bezier(0.25, 1, 0.4, 1) infinite",
-                  animationDelay: "2.8s",
-                }}
-              />
-              {/* Random Spot 4 (Center-Right) */}
-              <div
-                className="absolute left-[56%] top-[45%] -translate-x-1/2 -translate-y-1/2 w-46 h-46 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.48)_0%,rgba(244,63,94,0.25)_45%,transparent_70%)] blur-[4px]"
-                style={{
-                  animation: "orbSpreadPulse 8.2s cubic-bezier(0.25, 1, 0.4, 1) infinite",
-                  animationDelay: "4.2s",
-                }}
-              />
-              {/* Random Spot 5 (Far Right) */}
-              <div
-                className="absolute left-[88%] top-[52%] -translate-x-1/2 -translate-y-1/2 w-42 h-42 rounded-full bg-[radial-gradient(circle,rgba(253,224,71,0.5)_0%,rgba(245,158,11,0.22)_45%,transparent_70%)] blur-[4px]"
-                style={{
-                  animation: "orbSpreadPulse 9s cubic-bezier(0.25, 1, 0.4, 1) infinite",
-                  animationDelay: "5.6s",
-                }}
-              />
-              {/* Random Spot 6 (Center) */}
-              <div
-                className="absolute left-[46%] top-[53%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-[radial-gradient(circle,rgba(244,63,94,0.45)_0%,rgba(253,224,71,0.28)_45%,transparent_70%)] blur-[4px]"
-                style={{
-                  animation: "orbSpreadPulse 8.4s cubic-bezier(0.25, 1, 0.4, 1) infinite",
-                  animationDelay: "7s",
-                }}
-              />
+            {/* ── Jelajahi-Styled Organic Ambient Aurora & Flowing Orbs (Transparent Glass) ── */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 rounded-full">
+              {/* Base Fluid Aurora Canvas Mesh */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#9f1239]/25 via-transparent to-[#f59e0b]/25 animate-sb-mesh" />
+
+              {/* Orb 1: Deep Crimson Heritage Radiance (#9f1239 / #6b1d2f) Top-Left */}
+              <div className="absolute -top-[60%] -left-[5%] w-36 h-36 rounded-full bg-gradient-to-br from-[#9f1239]/50 via-[#6b1d2f]/35 to-transparent blur-xl animate-sb-orb-1 will-change-transform" />
+
+              {/* Orb 2: Warm Amber & Luminous Gold (#f59e0b / #d4af37) Top-Right */}
+              <div className="absolute -top-[50%] -right-[5%] w-40 h-40 rounded-full bg-gradient-to-bl from-[#f59e0b]/45 via-[#d4af37]/35 to-transparent blur-xl animate-sb-orb-2 will-change-transform" />
+
+              {/* Orb 3: Royal Crimson & Ruby Glow (#6b1d2f / #881337) Center-Left */}
+              <div className="absolute top-[10%] left-[22%] w-32 h-32 rounded-full bg-gradient-to-r from-[#6b1d2f]/45 via-[#881337]/35 to-transparent blur-lg animate-sb-orb-3 will-change-transform" />
+
+              {/* Orb 4: Rich Sunlit Honey Amber (#af8d11 / #d4af37) Bottom-Right */}
+              <div className="absolute -bottom-[50%] right-[18%] w-36 h-36 rounded-full bg-gradient-to-tl from-[#af8d11]/45 via-[#d4af37]/35 to-transparent blur-xl animate-sb-orb-4 will-change-transform" />
+
+              {/* Orb 5: Center Dynamic Accent Sunset Glow (#d4af37 / #9f1239) */}
+              <div className="absolute top-[5%] left-[52%] -translate-x-1/2 w-32 h-32 rounded-full bg-gradient-to-tr from-[#d4af37]/35 via-[#9f1239]/35 to-transparent blur-lg animate-sb-orb-5 will-change-transform" />
+
+              {/* Floating Shimmering Embers (Jelajahi Palette) */}
+              <div className="absolute top-[35%] left-[16%] w-1.5 h-1.5 rounded-full bg-[#fde047] blur-[0.5px] shadow-[0_0_8px_#fde047] animate-sb-ember-1" />
+              <div className="absolute top-[55%] right-[22%] w-2 h-2 rounded-full bg-[#f59e0b] blur-[0.5px] shadow-[0_0_10px_#f59e0b] animate-sb-ember-2" />
+              <div className="absolute top-[65%] left-[42%] w-1.5 h-1.5 rounded-full bg-[#ffb2bc] blur-[0.5px] shadow-[0_0_8px_#ffb2bc] animate-sb-ember-1" style={{ animationDelay: "3.5s" }} />
+              <div className="absolute top-[25%] right-[42%] w-1.5 h-1.5 rounded-full bg-[#e9c176] blur-[0.5px] shadow-[0_0_8px_#e9c176] animate-sb-ember-2" style={{ animationDelay: "4.5s" }} />
             </div>
 
             <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10">
@@ -524,8 +552,7 @@ export default function HomePage() {
                   href={`/tema/${theme.slug}`}
                   className="w-[230px] sm:w-[260px] md:w-[280px] shrink-0 group relative rounded-2xl overflow-hidden aspect-[9/16] glass-card shadow-2xl transition-all duration-500 transform hover:-translate-y-2 p-5 cursor-pointer flex flex-col justify-between block"
                 >
-                  <img
-                    alt={theme.title}
+                  <img loading="lazy" decoding="async" alt={theme.title}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100 pointer-events-none"
                     src={theme.image}
                   />
@@ -551,8 +578,7 @@ export default function HomePage() {
                   aria-hidden="true"
                   className="w-[230px] sm:w-[260px] md:w-[280px] shrink-0 group relative rounded-2xl overflow-hidden aspect-[9/16] glass-card shadow-2xl transition-all duration-500 transform hover:-translate-y-2 p-5 cursor-pointer flex flex-col justify-between block"
                 >
-                  <img
-                    alt={theme.title}
+                  <img loading="lazy" decoding="async" alt={theme.title}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100 pointer-events-none"
                     src={theme.image}
                   />
@@ -595,8 +621,7 @@ export default function HomePage() {
               aria-label="Pagi di Tepian Musi"
               className="anim-left gallery-card md:col-span-3 h-[420px] md:h-full group anim-out-bottom block"
             >
-              <img
-                alt="Pagi di Tepian Musi"
+              <img loading="lazy" decoding="async" alt="Pagi di Tepian Musi"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 src="/images/pagi_tepian_musi.jpg"
               />
@@ -618,8 +643,7 @@ export default function HomePage() {
                 aria-label="Senja di Jembatan Ampera"
                 className="anim-left delay-100 gallery-card flex-1 min-h-[220px] group anim-out-bottom block"
               >
-                <img
-                  alt="Senja di Jembatan Ampera"
+                <img loading="lazy" decoding="async" alt="Senja di Jembatan Ampera"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   src="/images/ampera_hero.jpg"
                 />
@@ -639,8 +663,7 @@ export default function HomePage() {
                 aria-label="Malam di Benteng Kuto Besak"
                 className="anim-right delay-150 gallery-card flex-1 min-h-[220px] group anim-out-bottom block"
               >
-                <img
-                  alt="Malam di Benteng Kuto Besak"
+                <img loading="lazy" decoding="async" alt="Malam di Benteng Kuto Besak"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   src="/images/benteng_kuto_besak_malam.jpg"
                 />
@@ -661,8 +684,7 @@ export default function HomePage() {
               aria-label="Fajar di Sungai Musi"
               className="anim-right delay-200 gallery-card md:col-span-5 h-[420px] md:h-full group anim-out-bottom block"
             >
-              <img
-                alt="Fajar di Sungai Musi"
+              <img loading="lazy" decoding="async" alt="Fajar di Sungai Musi"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 src="/images/fajar_sungai_musi.jpg"
               />
@@ -686,8 +708,7 @@ export default function HomePage() {
         className="relative w-full min-h-screen h-screen overflow-hidden select-none flex flex-col justify-end"
         id="banner-adat-palembang"
       >
-        <img
-          alt="Pakaian Adat Palembang Aesan Gede"
+        <img loading="lazy" decoding="async" alt="Pakaian Adat Palembang Aesan Gede"
           className="absolute inset-0 w-full h-full object-cover object-center transform scale-100 transition-transform duration-700 ease-out"
           src="/images/aesan_gede_banner.jpg"
         />
@@ -743,8 +764,7 @@ export default function HomePage() {
                 href="/tur/songket-palembang"
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
-                <img
-                  alt={t("Songket Lepus Emas", "Gold Lepus Songket")}
+                <img loading="lazy" decoding="async" alt={t("Songket Lepus Emas", "Gold Lepus Songket")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/songket_lepus.jpg"
                 />
@@ -764,8 +784,7 @@ export default function HomePage() {
                 href="/tur/penenun-songket"
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
-                <img
-                  alt={t("Sehari bersama Penenun Songket", "A Day with Songket Weavers")}
+                <img loading="lazy" decoding="async" alt={t("Sehari bersama Penenun Songket", "A Day with Songket Weavers")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/menenun_songket.jpg"
                 />
@@ -788,8 +807,7 @@ export default function HomePage() {
                 href="/tur/kain-jumputan"
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
-                <img
-                  alt={t("Kain Jumputan Pelangi", "Rainbow Jumputan Textile")}
+                <img loading="lazy" decoding="async" alt={t("Kain Jumputan Pelangi", "Rainbow Jumputan Textile")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/kain_jumputan.jpg"
                 />
@@ -809,8 +827,7 @@ export default function HomePage() {
                 href="/tur/motif-bunga-mawar-rebung"
                 className="relative flex-1 rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
-                <img
-                  alt={t("Motif Bunga Mawar & Rebung", "Rose & Bamboo Shoot Motifs")}
+                <img loading="lazy" decoding="async" alt={t("Motif Bunga Mawar & Rebung", "Rose & Bamboo Shoot Motifs")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/batik_palembang.jpg"
                 />
@@ -832,8 +849,7 @@ export default function HomePage() {
                 href="/tur/aesan-gede"
                 className="relative h-full rounded-2xl overflow-hidden shadow-sm group cursor-pointer bg-neutral-900 border border-white/10 hover:border-[#fbc270]/50 transition-all duration-300 block"
               >
-                <img
-                  alt={t("Aesan Gede Busana Kebesaran", "Aesan Gede: Imperial Ceremonial Attire")}
+                <img loading="lazy" decoding="async" alt={t("Aesan Gede Busana Kebesaran", "Aesan Gede: Imperial Ceremonial Attire")}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   src="/images/aesan_gede_banner.jpg"
                 />
@@ -876,8 +892,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Card 1: Tari Gending Sriwijaya (Meluncur dari KIRI) */}
             <article className="anim-left gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
-              <img
-                alt={t("Tari Gending Sriwijaya", "Gending Sriwijaya Dance")}
+              <img loading="lazy" decoding="async" alt={t("Tari Gending Sriwijaya", "Gending Sriwijaya Dance")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/tari_gending.jpg"
               />
@@ -903,8 +918,7 @@ export default function HomePage() {
 
             {/* Card 2: Rumah Limas (Meluncur dari KANAN) */}
             <article className="anim-right delay-100 gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
-              <img
-                alt={t("Rumah Limas Palembang", "Palembang Limas House")}
+              <img loading="lazy" decoding="async" alt={t("Rumah Limas Palembang", "Palembang Limas House")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/rumah_limas.jpg"
               />
@@ -930,8 +944,7 @@ export default function HomePage() {
 
             {/* Card 3: Kerajaan Sriwijaya (Meluncur dari KIRI) */}
             <article className="anim-left delay-200 gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
-              <img
-                alt={t("Kerajaan Sriwijaya", "Sriwijaya Empire")}
+              <img loading="lazy" decoding="async" alt={t("Kerajaan Sriwijaya", "Sriwijaya Empire")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/aksara_ulu.jpg"
               />
@@ -957,8 +970,7 @@ export default function HomePage() {
 
             {/* Card 4: Festival Perahu Bidar (Meluncur dari KANAN) */}
             <article className="anim-right delay-300 gallery-card group h-[480px] rounded-[24px] overflow-hidden relative cursor-pointer border border-white/10 hover:border-[#fbc270]/60 transition-all duration-300 shadow-2xl bg-neutral-900 flex flex-col justify-end anim-out-bottom">
-              <img
-                alt={t("Festival Perahu Bidar", "Bidar Boat Race Festival")}
+              <img loading="lazy" decoding="async" alt={t("Festival Perahu Bidar", "Bidar Boat Race Festival")}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 src="/images/perahu_bidar.jpg"
               />
@@ -998,28 +1010,28 @@ export default function HomePage() {
               {/* LEFT REGION (Cols 1-5) */}
               <div className="anim-left col-span-1 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[48%]">
-                  <img alt="Songket Lepus Emas" className="object-[25%_60%]" src="/images/songket_lepus.jpg" />
+                  <img loading="lazy" decoding="async" alt="Songket Lepus Emas" className="object-[25%_60%]" src="/images/songket_lepus.jpg" />
                 </div>
                 <div className="mosaic-tile h-[52%]">
-                  <img alt="Motif Pucuk Rebung" className="object-center" src="/images/aesan_paksangko.jpg" />
+                  <img loading="lazy" decoding="async" alt="Motif Pucuk Rebung" className="object-center" src="/images/aesan_paksangko.jpg" />
                 </div>
               </div>
 
               <div className="anim-left delay-100 col-span-2 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[60%]">
-                  <img alt="Aesan Gede Pengantin" className="object-[45%_22%]" src="/images/aesan_gede_banner.jpg" />
+                  <img loading="lazy" decoding="async" alt="Aesan Gede Pengantin" className="object-[45%_22%]" src="/images/aesan_gede_banner.jpg" />
                 </div>
                 <div className="mosaic-tile h-[40%]">
-                  <img alt="Pending Emas" className="object-bottom" src="/images/aesan_gede_banner_1792383363369.jpg" />
+                  <img loading="lazy" decoding="async" alt="Pending Emas" className="object-bottom" src="/images/aesan_gede_banner_1792383363369.jpg" />
                 </div>
               </div>
 
               <div className="anim-left delay-150 col-span-2 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[60%]">
-                  <img alt="Tari Tanggai Kuku Emas" className="object-[42%_50%]" src="/images/tari_gending.jpg" />
+                  <img loading="lazy" decoding="async" alt="Tari Tanggai Kuku Emas" className="object-[42%_50%]" src="/images/tari_gending.jpg" />
                 </div>
                 <div className="mosaic-tile h-[40%]">
-                  <img alt="Tepak Sekapur Sirih" className="object-center" src="/images/tari_tanggai.jpg" />
+                  <img loading="lazy" decoding="async" alt="Tepak Sekapur Sirih" className="object-center" src="/images/tari_tanggai.jpg" />
                 </div>
               </div>
 
@@ -1042,38 +1054,38 @@ export default function HomePage() {
                 </section>
 
                 <div className="mosaic-tile h-[40%]">
-                  <img alt="Lantai Ukir Kayu Unglen" className="object-[50%_65%]" src="/images/rumah_limas.jpg" />
+                  <img loading="lazy" decoding="async" alt="Lantai Ukir Kayu Unglen" className="object-[50%_65%]" src="/images/rumah_limas.jpg" />
                 </div>
               </div>
 
               {/* RIGHT REGION (Cols 9-12) */}
               <div className="anim-right delay-150 col-span-2 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[60%]">
-                  <img alt="Pempek Cuko Pekat" className="object-[58%_35%]" src="/images/pempek_palembang.jpg" />
+                  <img loading="lazy" decoding="async" alt="Pempek Cuko Pekat" className="object-[58%_35%]" src="/images/pempek_palembang.jpg" />
                 </div>
                 <div className="mosaic-tile h-[40%]">
-                  <img alt="Aksara Ulu Kuno" className="object-center" src="/images/aksara_ulu.jpg" />
+                  <img loading="lazy" decoding="async" alt="Aksara Ulu Kuno" className="object-center" src="/images/aksara_ulu.jpg" />
                 </div>
               </div>
 
               <div className="anim-right delay-200 col-span-1 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[35%]">
-                  <img alt="Batu Prasasti" className="object-center" src="/images/prasasti_kedukan_bukit.jpg" />
+                  <img loading="lazy" decoding="async" alt="Batu Prasasti" className="object-center" src="/images/prasasti_kedukan_bukit.jpg" />
                 </div>
                 <div className="mosaic-tile h-[30%]">
-                  <img alt="Bilah Bambu Ulu" className="object-center" src="/images/aksara_ulu_1792383445918.jpg" />
+                  <img loading="lazy" decoding="async" alt="Bilah Bambu Ulu" className="object-center" src="/images/aksara_ulu_1792383445918.jpg" />
                 </div>
                 <div className="mosaic-tile h-[35%]">
-                  <img alt="Jembatan Ampera" className="object-center" src="/images/ampera_hero.jpg" />
+                  <img loading="lazy" decoding="async" alt="Jembatan Ampera" className="object-center" src="/images/ampera_hero.jpg" />
                 </div>
               </div>
 
               <div className="anim-right delay-250 col-span-1 flex flex-col gap-[2px] h-full anim-out-bottom">
                 <div className="mosaic-tile h-[50%]">
-                  <img alt="Kelim Songket Lepus" className="object-[80%_40%]" src="/images/songket_lepus_1792383379080.jpg" />
+                  <img loading="lazy" decoding="async" alt="Kelim Songket Lepus" className="object-[80%_40%]" src="/images/songket_lepus_1792383379080.jpg" />
                 </div>
                 <div className="mosaic-tile h-[50%]">
-                  <img alt="Simbar Atap Limas" className="object-center" src="/images/rumah_limas.jpg" />
+                  <img loading="lazy" decoding="async" alt="Simbar Atap Limas" className="object-center" src="/images/rumah_limas.jpg" />
                 </div>
               </div>
             </div>

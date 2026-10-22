@@ -17,10 +17,10 @@ export default function Footer() {
           : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 text-center sm:text-left">
-        {/* Brand & Creators */}
-        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-white/35">
-          <span className="font-bold bg-gradient-to-r from-[#FDE047] via-[#E9C176] to-[#DC2626] bg-clip-text text-transparent select-none text-sm sm:text-base tracking-tight">
+      <div className="w-full px-5 sm:px-8 md:px-12 xl:px-16 flex flex-col sm:flex-row justify-between items-center gap-2.5 sm:gap-4 text-center sm:text-left">
+        {/* Brand & Creators — aligned to far left on wide screen */}
+        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2.5 text-white/40">
+          <span className="font-bold bg-gradient-to-r from-[#FDE047] via-[#E9C176] to-[#DC2626] bg-clip-text text-transparent select-none text-sm sm:text-base tracking-tight shrink-0">
             SORA.<span className="italic font-extrabold">Culture</span>
           </span>
           <span className="hidden sm:inline text-white/20">•</span>
@@ -29,8 +29,8 @@ export default function Footer() {
           </span>
         </div>
 
-        {/* Tagline */}
-        <span className="text-[10px] sm:text-xs text-white/25 tracking-wide">
+        {/* Tagline — aligned to far right on wide screen */}
+        <span className="text-[10px] sm:text-xs text-white/30 tracking-wide sm:text-right shrink-0">
           {t(
             "Platform AI Warisan Budaya Sumatera Selatan",
             "South Sumatra AI Cultural Heritage Platform"

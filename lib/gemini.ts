@@ -110,25 +110,1164 @@ export function checkRateLimit(identifier: string, limit = 20, windowMs = 60_000
   return checkRateLimitWithInfo(identifier, limit, windowMs).allowed;
 }
 
-// ─── Local match helper ─────────────────────────────────────────────────────
+// ─── Trigger keywords for dedicated tours (prevents city name queries like 'palembang' or 'lahat' from triggering food/dialect tours) ─────
+const tourTriggerKeywords: Record<string, string[]> = {
+  "pempek-palembang": ["pempek", "mpek-mpek", "empek-empek", "empek", "mpek", "cuko", "kapal selam", "tekwan"],
+  "songket-palembang": ["songket", "tenun songket", "kain songket", "lepus"],
+  "rumah-limas": ["rumah limas", "arsitektur limas", "limas palembang"],
+  "tari-gending-sriwijaya": ["gending sriwijaya", "tari gending"],
+  "tari-tanggai": ["tari tanggai", "tanggai"],
+  "kesultanan-palembang-darussalam": ["kesultanan palembang", "sultan mahmud badaruddin", "palembang darussalam"],
+  "dulmuluk": ["dulmuluk", "teater dulmuluk", "syair abdul muluk"],
+  "aksara-ulu": ["aksara ulu", "surat ulu", "kaganga", "aksara kaganga", "surat incung"],
+  "perahu-bidar": ["perahu bidar", "bidar", "lomba bidar"],
+  "gitar-tunggal": ["gitar tunggal", "batanghari sembilan"],
+  "pindang-patin": ["pindang", "pindang patin", "pindang meranjat"],
+  "kue-maksuba": ["maksuba", "kue maksuba"],
+  "tari-kebagh": ["tari kebagh", "kebagh"],
+  "megalitik-pasemah": ["megalitik", "megalit", "batu megalit", "menhir pasemah"],
+  "candi-bumi-ayu": ["candi bumi ayu", "bumi ayu"],
+  "bahasa-lematang": ["bahasa lematang", "dialek lematang", "tutur lematang"],
+  "bahasa-komering": ["bahasa komering", "suku komering"],
+  "bahasa-ogan": ["bahasa ogan", "dialek ogan"],
+  "bahasa-rawas": ["bahasa rawas", "dialek rawas"],
+};
+
+// ─── Database 17 Kabupaten/Kota di Sumatera Selatan ──────────────────────────
+export interface SumselRegionInfo {
+  id: string;
+  name: string;
+  aliases: string[];
+  title: string;
+  subtitle: string;
+  highlight: string;
+  paragraphs: string[];
+  bulletPoints: { label: string; text: string }[];
+  sources: SearchSource[];
+  image: string;
+  themeSlug: string;
+  imageSearchQuery: string;
+  titleWikipediaId: string;
+}
+
+export const sumselRegionsData: SumselRegionInfo[] = [
+  {
+    id: "palembang",
+    name: "Kota Palembang",
+    aliases: ["palembang", "kota palembang", "kota sriwijaya", "bumi sriwijaya", "palembang city"],
+    title: "Kota Palembang",
+    subtitle: "Ibu kota Provinsi Sumatera Selatan, kota tertua di Indonesia, dan pusat peradaban Kedatuan Sriwijaya di tepian Sungai Musi.",
+    highlight: "Kota Palembang adalah ibu kota Provinsi Sumatera Selatan sekaligus kota tertua di Indonesia (berdiri sejak 17 Juni 683 M berdasarkan Prasasti Kedukan Bukit). Kota ini tersohor dengan julukan 'Bumi Sriwijaya' dan 'Venesia dari Timur' berkat peradaban bahari Sungai Musi serta megahnya Jembatan Ampera.",
+    paragraphs: [
+      "Sejarah & Peradaban Luhur:\nPalembang merupakan pusat kemaharajaan maritim terbesar di Nusantara pada masa Kedatuan Sriwijaya yang menguasai jalur pelayaran niaga Selat Malaka. Memasuki era Islam, kota ini menjelma menjadi pusat Kesultanan Palembang Darussalam yang makmur dan berdaulat di bawah pimpinan para sultan terkemuka, termasuk Pahlawan Nasional Sultan Mahmud Badaruddin II.",
+      "Ikonografi Budaya & Arsitektur:\nIdentitas visual Palembang terwakili oleh kemegahan Jembatan Ampera yang membentang gagah di atas Sungai Musi, Benteng Kuto Besak (BKB) sebagai benteng pertahanan bata kokoh warisan kesultanan, kemegahan Masjid Agung Sultan Mahmud Badaruddin I, Pulau Kemaro yang sarat legenda toleransi budaya, serta arsitektur vernakular Rumah Limas dan Rumah Rakit.",
+      "Khazanah Adat & Kuliner Dunia:\nPalembang dikenal luas lewat mahakarya adibusana Songket Lepus berbahan benang emas murni yang dijuluki 'Ratu Segala Kain'. Di sektor kuliner, kelezatan Pempek berbahan ikan segar berpadu kuah cuko pedas-manis-gurih telah diakui secara global, berdampingan dengan sajian khas tekwan, laksan, celimpungan, burgo, hingga kue basah legit maksuba."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Ibu Kota Provinsi Sumatera Selatan" },
+      { label: "Hari Jadi", text: "17 Juni 683 M (Kota Tertua di Indonesia, Prasasti Kedukan Bukit)" },
+      { label: "Ikon Utama", text: "Jembatan Ampera, Sungai Musi, Benteng Kuto Besak, Songket, & Pempek" },
+      { label: "Julukan", text: "Bumi Sriwijaya, Kota Pempek, Venice of the East" }
+    ],
+    sources: [
+      {
+        title: "Kota Palembang — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kota_Palembang",
+        domain: "id.wikipedia.org",
+        excerpt: "Ibu kota Provinsi Sumatera Selatan dan salah satu kota tertua di Indonesia.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      },
+      {
+        title: "Portal Resmi Pemerintah Kota Palembang",
+        url: "https://palembang.go.id",
+        domain: "palembang.go.id",
+        excerpt: "Layanan informasi dan dokumentasi resmi Pemerintah Kota Palembang.",
+        icon: "🏛",
+        iconStyle: "bg-[#6b1d2f] text-white",
+        img: ""
+      }
+    ],
+    image: "/images/ampera_hero.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kota Palembang Jembatan Ampera",
+    titleWikipediaId: "Kota_Palembang"
+  },
+  {
+    id: "prabumulih",
+    name: "Kota Prabumulih",
+    aliases: ["prabumulih", "kota prabumulih", "prabu", "kota nanas"],
+    title: "Kota Prabumulih",
+    subtitle: "Kota otonom strategis di Sumatera Selatan yang tersohor dengan julukan 'Kota Nanas' dan lumbung energi migas.",
+    highlight: "Kota Prabumulih adalah salah satu kota otonom di Sumatera Selatan yang menempati lokasi persimpangan strategis perlintasan Sumatera. Kota ini sangat terkenal dengan produksi buah nanas manis berkualitas tinggi hingga dijuluki 'Kota Nanas', sekaligus menjadi sentra pertambangan minyak bumi dan gas alam bersejarah di Sumsel.",
+    paragraphs: [
+      "Geografi & Peran Strategis:\nSecara geografis, Prabumulih terletak di bagian tengah Provinsi Sumatera Selatan dan berbatasan langsung dengan Kabupaten Muara Enim serta Penukal Abab Lematang Ilir (PALI). Posisi perlintasan rel kereta api pengangkut logistik dan jalan raya lintas Sumatera menjadikan Prabumulih simpul perdagangan, jasa, dan mobilitas masyarakat yang sangat dinamis.",
+      "Pertanian Unggulan & Industri Nanas:\nPrabumulih dikenal menghasilkan nanas dengan kadar kemanisan tinggi dan cita rasa segar yang khas. Olahan nanas Prabumulih telah berkembang menjadi aneka produk bernilai tambah tinggi seperti selai nanas, sirup, dodol, keripik nanas, hingga inovasi serat daun nanas yang dipintal menjadi benang dan kain tenun bernilai ekonomi ekspor.",
+      "Energi, Budaya, & Pariwisata:\nSebagai salah satu kota pertambangan migas tertua di Sumatera Selatan sejak masa Hindia Belanda, Prabumulih memiliki fasilitas pengolahan migas Pertamina yang bersejarah. Masyarakat Prabumulih menjunjung tinggi adat Melayu Enim dan Lematang yang guyub dengan semboyan 'Seinggok Sepemunyian', serta memiliki destinasi favorit seperti Danau Buji, Islamic Center Prabumulih, dan Desa Wisata Nanas."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kota Otonom di Provinsi Sumatera Selatan" },
+      { label: "Julukan", text: "Kota Nanas & Kota Minyak" },
+      { label: "Komoditas Khas", text: "Nanas Manis Prabumulih, Benang Serat Nanas, Minyak Bumi & Gas Alam" },
+      { label: "Semboyan", text: "Seinggok Sepemunyian (Satu Hati Sepakat Menuju Kesejahteraan Bersama)" }
+    ],
+    sources: [
+      {
+        title: "Kota Prabumulih — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kota_Prabumulih",
+        domain: "id.wikipedia.org",
+        excerpt: "Kota otonom di Sumatera Selatan yang terkenal sebagai sentra penghasil nanas dan minyak bumi.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      },
+      {
+        title: "Portal Resmi Pemerintah Kota Prabumulih",
+        url: "https://kotaprabumulih.go.id",
+        domain: "kotaprabumulih.go.id",
+        excerpt: "Layanan informasi publik resmi Pemerintah Kota Prabumulih.",
+        icon: "🏛",
+        iconStyle: "bg-[#6b1d2f] text-white",
+        img: ""
+      }
+    ],
+    image: "/images/musi_landscape.jpg",
+    themeSlug: "kuliner",
+    imageSearchQuery: "Kota Prabumulih Nanas",
+    titleWikipediaId: "Kota_Prabumulih"
+  },
+  {
+    id: "lahat",
+    name: "Kabupaten Lahat",
+    aliases: ["lahat", "kabupaten lahat", "kab lahat", "bumi seganti setungguan"],
+    title: "Kabupaten Lahat",
+    subtitle: "Bumi Seganti Setungguan, pusat peradaban megalitikum Pasemah terbesar di Indonesia di bawah naungan Bukit Serelo.",
+    highlight: "Kabupaten Lahat adalah salah satu kabupaten tertua di Sumatera Selatan yang berjuluk 'Bumi Seganti Setungguan'. Lahat merupakan pusat peradaban megalitikum terkaya di Nusantara dengan ribuan artefak batu megalit Pasemah, serta berhiaskan ikon bentang alam spektakuler Bukit Serelo (Gunung Jempol) dan Sungai Lematang.",
+    paragraphs: [
+      "Peradaban Megalitikum Tertua di Indonesia:\nKabupaten Lahat menyimpan kekayaan arkeologi megalitikum Pasemah yang membentang dari ribuan tahun silam. Di dataran tinggi Lahat dan lembah Lematang, terdapat ribuan menhir, dolmen, arca batu manusia menunggang gajah, dan bilik batu megalit yang telah diakui oleh MURI serta menjadi salah satu warisan arkeologi prasejarah terpenting di Asia Tenggara.",
+      "Panorama Alam Spektakuler & Bukit Serelo:\nBentang geografis Lahat yang berbukit menyajikan panorama alam memukau. Ikon paling tersohor adalah Bukit Serelo atau sering disebut Gunung Jempol karena bentuk puncaknya yang unik menyerupai ibu jari mengacung ke langit. Lahat juga dialiri Sungai Lematang yang jernih di bagian hulu serta memiliki puluhan air terjun (curup) alami yang mempesona, seperti Curup Maung dan Curup Panjang.",
+      "Tradisi Luhur Suku Besemah & Kopi Lahat:\nLahat dihuni oleh rumpun masyarakat Melayu Besemah, Lematang, Gumay, dan Kikim yang memiliki kearifan luhur. Budaya tutur tadut, sastra rejung, tari kebagh, tradisi rumah adat Ghumah Baghi, serta perkebunan kopi robusta Lahat yang harum pekat menjadikan Lahat destinasi budaya dan sejarah yang tiada duanya."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Julukan & Semboyan", text: "Bumi Seganti Setungguan (Satu Persepsi dan Saling Menopang)" },
+      { label: "Ikon Utama", text: "Bukit Serelo (Gunung Jempol), Sungai Lematang, & Situs Megalitik Pasemah" },
+      { label: "Kekayaan Khusus", text: "Pusat situs megalitikum terbanyak di Indonesia & Kopi Robusta Lahat" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Lahat — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Lahat",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan yang kaya akan peninggalan megalitikum Pasemah dan panorama Bukit Serelo.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      },
+      {
+        title: "Portal Resmi Pemerintah Kabupaten Lahat",
+        url: "https://lahatkab.go.id",
+        domain: "lahatkab.go.id",
+        excerpt: "Layanan informasi publik resmi Pemerintah Kabupaten Lahat.",
+        icon: "🏛",
+        iconStyle: "bg-[#6b1d2f] text-white",
+        img: ""
+      }
+    ],
+    image: "/images/sungai_lematang.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kabupaten Lahat Bukit Serelo Megalitik",
+    titleWikipediaId: "Kabupaten_Lahat"
+  },
+  {
+    id: "pagaralam",
+    name: "Kota Pagar Alam",
+    aliases: ["pagar alam", "kota pagar alam", "pagaralam", "kota pagaralam", "besemah", "gunung dempo"],
+    title: "Kota Pagar Alam",
+    subtitle: "Kota pegunungan sejuk di lereng Gunung Dempo, pusat kebudayaan suku Besemah dan hamparan kebun teh tertua di Sumsel.",
+    highlight: "Kota Pagar Alam adalah kota pegunungan di Sumatera Selatan yang terletak di kaki Gunung Dempo (3.159 mdpl). Kota ini terkenal dengan keindahan perkebunan teh Gunung Dempo yang menghampar hijau, hawa sejuk berkabut, puluhan air terjun (curup) alami, serta situs arca megalitik Pasemah.",
+    paragraphs: [
+      "Pesona Alam Gunung Dempo & Perkebunan Teh:\nGunung Dempo merupakan atap tertinggi Sumatera Selatan yang menjadi magnet bagi para pendaki dan wisatawan pencinta alam. Di lerengnya terbentang perkebunan teh peninggalan kolonial Belanda yang menghasilkan teh hitam berkualitas ekspor dengan udara pegunungan yang sangat menyegarkan.",
+      "Pusat Peradaban & Suku Besemah:\nPagar Alam adalah jantung kebudayaan suku Besemah. Di sini berkembang kesenian sakral Tari Kebagh yang dahulu hanya ditarikan untuk menyambut pangeran dan tamu kehormatan, sastra tutur Rejung, serta arsitektur vernakular Ghumah Baghi yang tahan gempa.",
+      "Destinasi Wisata Alam Berlimpah:\nKota ini kaya akan air terjun alami berair jernih seperti Curup Embun, Curup Mangkok, dan Curup Tujuh Kenangan, serta memiliki situs batu megalit bersejarah Tegur Wangi yang sarat misteri peradaban kuno Nusantara."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kota Otonom di Provinsi Sumatera Selatan" },
+      { label: "Puncak Tertinggi", text: "Gunung Dempo (3.159 meter di atas permukaan laut)" },
+      { label: "Ikon Wisata", text: "Kebun Teh Gunung Dempo, Curup Embun, & Megalitik Tegur Wangi" },
+      { label: "Semboyan", text: "Besemah (Bersih, Sejuk, Ramah)" }
+    ],
+    sources: [
+      {
+        title: "Kota Pagar Alam — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kota_Pagar_Alam",
+        domain: "id.wikipedia.org",
+        excerpt: "Kota wisata pegunungan di Sumatera Selatan di lereng Gunung Dempo.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/megalitik_pasemah.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kota Pagar Alam Gunung Dempo",
+    titleWikipediaId: "Kota_Pagar_Alam"
+  },
+  {
+    id: "muara-enim",
+    name: "Kabupaten Muara Enim",
+    aliases: ["muara enim", "kabupaten muara enim", "kab muara enim", "tanjung enim"],
+    title: "Kabupaten Muara Enim",
+    subtitle: "Bumi Serasan Sekundang, lumbung energi Sumatera Selatan dengan pesona alam spektakuler Air Terjun Curup Tenang Bedegung.",
+    highlight: "Kabupaten Muara Enim adalah salah satu kabupaten terkemuka di Sumatera Selatan yang berjuluk 'Bumi Serasan Sekundang'. Daerah ini terkenal sebagai salah satu lumbung energi nasional penghasil batubara, minyak, dan gas bumi terbesar, serta memiliki panorama wisata alam mempesona seperti Air Terjun Curup Tenang Bedegung.",
+    paragraphs: [
+      "Lumbung Energi Sumatera Selatan:\nMuara Enim memiliki cadangan batubara terbesar di Indonesia yang ditambang di Tanjung Enim oleh PT Bukit Asam. Pertambangan ini menggerakkan sektor energi nasional dan listrik interkoneksi Sumatera-Jawa.",
+      "Keindahan Wisata Alam Bedegung:\nSalah satu destinasi kebanggaan Muara Enim adalah Air Terjun Bedegung (Curup Tenang) yang memiliki ketinggian sekitar 99 meter dan bersumber dari mata air alami Celah Bukit Barisan, menyajikan pemandangan alam asri yang memukau.",
+      "Kekayaan Adat Semendo & Perkebunan Kopi:\nDi bagian selatan, terdapat Dataran Tinggi Semende yang dihuni masyarakat suku Semendo. Wilayah ini terkenal dengan perkebunan Kopi Robusta Semendo yang beraroma harum pekat dan memiliki tradisi adat Tunggu Tubang yang menjaga warisan keluarga secara turun-temurun."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Julukan & Semboyan", text: "Bumi Serasan Sekundang (Seia Sekata, Sehati Menuju Keberkahan)" },
+      { label: "Destinasi Ikonik", text: "Air Terjun Curup Tenang Bedegung & Dataran Tinggi Semendo" },
+      { label: "Komoditas Unggulan", text: "Kopi Semendo, Batubara, Minyak Bumi, & Karet" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Muara Enim — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Muara_Enim",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan yang kaya sumber daya mineral dan pariwisata alam.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/sungai_lematang.jpg",
+    themeSlug: "rumah-adat",
+    imageSearchQuery: "Kabupaten Muara Enim Curup Bedegung",
+    titleWikipediaId: "Kabupaten_Muara_Enim"
+  },
+  {
+    id: "lubuklinggau",
+    name: "Kota Lubuklinggau",
+    aliases: ["lubuklinggau", "kota lubuklinggau", "lubuk linggau", "linggau"],
+    title: "Kota Lubuklinggau",
+    subtitle: "Kota Sebiduk Semare di barat Sumatera Selatan dengan pesona Bukit Sulap dan Air Terjun Temam yang dijuluki Niagara mini.",
+    highlight: "Kota Lubuklinggau adalah kota otonom strategis di perbatasan barat Sumatera Selatan dengan Provinsi Bengkulu. Kota ini berjuluk 'Kota Sebiduk Semare' dan terkenal dengan pesona bentang alam Bukit Sulap serta Air Terjun Temam yang anggun melebar menyerupai tirai air terjun Niagara versi mini.",
+    paragraphs: [
+      "Posisi Geografis & Simpul Transportasi:\nLubuklinggau merupakan kota persinggahan penting di jalur lintas barat dan tengah Sumatera. Stasiun Kereta Api Lubuklinggau menjadi terminus paling barat jalur rel kereta api di Sumatera Selatan yang menghubungkannya langsung dengan Kota Palembang.",
+      "Wisata Alam Air Terjun Temam & Bukit Sulap:\nAir Terjun Temam merupakan ikon wisata alam paling terkenal di Lubuklinggau dengan ketinggian 12 meter dan bentangan tirai air selebar 25 meter. Sementara Bukit Sulap yang berada di kawasan Taman Nasional Kerinci Seblat menyajikan pemandangan lanskap kota dari ketinggian dengan fasilitas inclinator kereta gantung.",
+      "Religi & Kebudayaan:\nKota ini memiliki Masjid Agung As-Salam yang megah dengan menara kembar modern dan prasasti adat. Masyarakat Lubuklinggau merupakan perpaduan harmonis suku Melayu Rawas, Musi, Rejang, dan pendatang dari berbagai penjuru Nusantara."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kota Otonom di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Sebiduk Semare (Satu Perahu Mengayuh Menuju Tujuan yang Sama)" },
+      { label: "Ikon Wisata", text: "Air Terjun Temam (Niagara Mini Sumsel) & Bukit Sulap" },
+      { label: "Infrastruktur Utama", text: "Stasiun Terminus Lubuklinggau & Bandara Silampari" }
+    ],
+    sources: [
+      {
+        title: "Kota Lubuklinggau — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kota_Lubuklinggau",
+        domain: "id.wikipedia.org",
+        excerpt: "Kota transit strategis di Sumatera Selatan di kaki Bukit Sulap.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/sungai_musi_sekayu.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kota Lubuklinggau Air Terjun Temam",
+    titleWikipediaId: "Kota_Lubuklinggau"
+  },
+  {
+    id: "banyuasin",
+    name: "Kabupaten Banyuasin",
+    aliases: ["banyuasin", "kabupaten banyuasin", "pangkalan balai", "sembilang", "tanjung api api"],
+    title: "Kabupaten Banyuasin",
+    subtitle: "Bumi Sedulang Setudung, habitat migrasi burung dunia di Taman Nasional Sembilang dan lumbung pangan pesisir Sumsel.",
+    highlight: "Kabupaten Banyuasin membentang di pesisir timur Sumatera Selatan dengan ibu kota Pangkalan Balai. Kabupaten ini berjuluk 'Bumi Sedulang Setudung' dan tersohor dengan ekosistem mangrove Taman Nasional Sembilang tempat persinggahan migrasi burung antarbenua dari Siberia, serta lumbung padi pasang surut utama Sumsel.",
+    paragraphs: [
+      "Ekosistem Mangrove & Taman Nasional Sembilang:\nTaman Nasional Sembilang merupakan salah satu bentang hutan mangrove terluas di Indonesia barat. Setiap akhir tahun, kawasan berlumpur ini menjadi tempat mampir ratusan ribu burung migran dunia seperti burung Bluwok (Mycteria cinerea) dalam rute migrasi Asia Timur-Australasia.",
+      "Lumbung Beras Pasang Surut:\nMemanfaatkan teknologi pertanian lahan rawa pasang surut, Banyuasin menjelma menjadi salah satu sentra penghasil beras terbesar di Indonesia yang menopang ketahanan pangan nasional.",
+      "Kawasan Strategis Tanjung Api-Api:\nBanyuasin memiliki kawasan pelabuhan laut internasional Tanjung Api-Api (TAA) yang menjadi pintu gerbang ekspor-impor maritim Sumatera Selatan menuju Selat Bangka dan Laut Natuna."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Sedulang Setudung (Bersatu Padu dalam Kebersamaan)" },
+      { label: "Cagar Alam Dunia", text: "Taman Nasional Sembilang (Surganya Burung Migran Dunia)" },
+      { label: "Potensi Utama", text: "Lumbung Padi Pasang Surut, Kelapa Pasang Surut, & Perikanan Pesisir" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Banyuasin — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Banyuasin",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di pesisir timur Sumatera Selatan dengan Taman Nasional Sembilang.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/musi_landscape.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kabupaten Banyuasin Taman Nasional Sembilang",
+    titleWikipediaId: "Kabupaten_Banyuasin"
+  },
+  {
+    id: "musi-banyuasin",
+    name: "Kabupaten Musi Banyuasin",
+    aliases: ["musi banyuasin", "muba", "sekayu", "kabupaten musi banyuasin"],
+    title: "Kabupaten Musi Banyuasin",
+    subtitle: "Bumi Serasan Sekate, sentra kain Gambo Muba ramah lingkungan dan sastra tutur lisan Senjang di tepian Sungai Musi.",
+    highlight: "Kabupaten Musi Banyuasin (Muba) dengan ibu kota Sekayu adalah daerah kaya sumber daya energi dan tradisi budaya di Sumatera Selatan. Kabupaten ini berjuluk 'Bumi Serasan Sekate' dan terkenal dengan inovasi adibusana Gambo Muba dari getah gambir alami serta seni sastra tutur Senjang.",
+    paragraphs: [
+      "Inovasi Wastra Gambo Muba:\nGambo Muba merupakan produk tekstil khas Musi Banyuasin yang memanfaatkan limbah getah pohon gambir (Uncaria gambir) sebagai pewarna alami ramah lingkungan. Kain ini telah menembus panggung busana nasional hingga internasional.",
+      "Seni Tutur Lisan Senjang:\nSenjang adalah sastra lisan tradisional kebanggaan Wong Muba berupa seni berbalas pantun berirama yang diiringi tabuhan musik tradisional Melayu Musi, berisi nasihat bijak, ungkapan asmara, maupun kritik sosial konstruktif.",
+      "Kekayaan Alam & Ibu Kota Sekayu:\nMuba dialiri oleh aliran Sungai Musi yang lebar dengan jembatan megah Jembatan Musi Sekayu. Kota Sekayu juga dikenal tertata rapi dengan ikon Danau Ulak Lia serta sirkuit balap Skyland bertaraf internasional."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Serasan Sekate (Sejalan Seia Sekata dalam Kemajuan)" },
+      { label: "Warisan Budaya", text: "Kain Etnik Gambo Muba & Sastra Tutur Senjang" },
+      { label: "Ibu Kota", text: "Sekayu (Tepian Sungai Musi)" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Musi Banyuasin — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Musi_Banyuasin",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan yang kaya migas, perkebunan sawit, dan budaya Gambo Muba.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/senjang_muba.jpg",
+    themeSlug: "pertunjukan-lisan",
+    imageSearchQuery: "Kabupaten Musi Banyuasin Sekayu Gambo",
+    titleWikipediaId: "Kabupaten_Musi_Banyuasin"
+  },
+  {
+    id: "ogan-ilir",
+    name: "Kabupaten Ogan Ilir",
+    aliases: ["ogan ilir", "indralaya", "tanjung batu", "kabupaten ogan ilir"],
+    title: "Kabupaten Ogan Ilir",
+    subtitle: "Bumi Caram Seguguk, pusat pendidikan Universitas Sriwijaya dan sentra kerajinan perak serta pandai besi Tanjung Batu.",
+    highlight: "Kabupaten Ogan Ilir dengan pusat pemerintahan di Indralaya berjuluk 'Bumi Caram Seguguk'. Daerah ini dikenal sebagai kota santri dan pendidikan tempat berdirinya kampus utama Universitas Sriwijaya (Unsri), serta sentra kerajinan emas perak, tembaga, dan pandai besi legendaris di Tanjung Batu.",
+    paragraphs: [
+      "Pusat Pendidikan & Kota Santri:\nOgan Ilir menampung ribuan mahasiswa dari penjuru Indonesia di Kampus Indralaya Universitas Sriwijaya seluas ratusan hektar, serta memiliki pondok-pondok pesantren berpengaruh seperti Ponpes Al-Ittifaqiah dan Raudhatul Ulum.",
+      "Sentra Kerajinan Emas, Perak, & Pandai Besi Tanjung Batu:\nKecamatan Tanjung Batu sejak berabad-abad silam telah tersohor sebagai pusat kerajinan logam mulia, ukiran perak, serta pembuatan senjata tradisional pisau dan parang yang halus buatannya.",
+      "Karakteristik Alam Rawa Lebak:\nWilayah Ogan Ilir dihiasi oleh bentang rawa lebak lebung yang dialiri Sungai Ogan dan Sungai Kelekar, menghidupkan tradisi perikanan tangkap tawar dan aneka olahan pindang lezat seperti Pindang Meranjat dan Pindang Pegagan."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Caram Seguguk (Kebersamaan Menjaga Perdamaian dan Ketenteraman)" },
+      { label: "Sentra Kerajinan", text: "Kerajinan Emas & Perak Tanjung Batu, Rumah Kayu Bongkar Pasang" },
+      { label: "Kuliner Khas", text: "Pindang Meranjat, Pindang Pegagan, & Gula Puan" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Ogan Ilir — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Ogan_Ilir",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan pusat kampus utama Unsri dan kerajinan Tanjung Batu.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/perahu_ketek.jpg",
+    themeSlug: "rumah-adat",
+    imageSearchQuery: "Kabupaten Ogan Ilir Indralaya Tanjung Batu",
+    titleWikipediaId: "Kabupaten_Ogan_Ilir"
+  },
+  {
+    id: "ogan-komering-ilir",
+    name: "Kabupaten Ogan Komering Ilir (OKI)",
+    aliases: ["ogan komering ilir", "oki", "kayuagung", "kayu agung", "pedamaran", "kabupaten oki"],
+    title: "Kabupaten Ogan Komering Ilir (OKI)",
+    subtitle: "Bumi Bende Seguguk, pusat tradisi tikar anyaman Purun Pedamaran dan Rumah Kayuagung pesisir rawa lebak.",
+    highlight: "Kabupaten Ogan Komering Ilir (OKI) dengan ibu kota Kayuagung adalah kabupaten terluas di Sumatera Selatan yang berjuluk 'Bumi Bende Seguguk'. Daerah ini tersohor dengan kekayaan ekosistem rawa gambut, tradisi kerajinan anyaman Purun Pedamaran, Rumah Limas 100 Tiang di Sugih Waras, dan keindahan Danau Teluk Gelam.",
+    paragraphs: [
+      "Kerajinan Anyaman Purun Pedamaran:\nTumbuhan purun yang tumbuh subur di rawa gambut Pedamaran dipanen dan diolah oleh para perajin perempuan menjadi aneka tikar, tas, dan cinderamata bernilai seni tinggi yang diakui sebagai Warisan Budaya Takbenda Indonesia.",
+      "Arsitektur Adat & Rumah Limas 100 Tiang:\nDi desa Sugih Waras Teluk Gelam berdiri Rumah Limas Seratus Tiang yang didirikan pada abad ke-19, mencerminkan kejayaan arsitektur panggung kayu ulin dan tembesu tanpa paku besi peninggalan para pangeran pesisir Komering.",
+      "Kebudayaan Wong Kayuagung & Danau Teluk Gelam:\nMasyarakat Kayuagung memiliki bahasa dan dialek yang khas serta tradisi arak-arakan Midang Morge Siwe saat Hari Raya Idulfitri. OKI juga memiliki destinasi wisata air Danau Teluk Gelam yang asri."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Bende Seguguk (Gong Kebesaran Pengikat Persatuan Masyarakat)" },
+      { label: "Warisan Budaya", text: "Anyaman Purun Pedamaran, Midang Morge Siwe, & Rumah 100 Tiang" },
+      { label: "Ibu Kota", text: "Kayuagung" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Ogan Komering Ilir — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Ogan_Komering_Ilir",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten terluas di Sumatera Selatan dengan kekayaan rawa gambut dan budaya Kayuagung.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/purun_pedamaran.jpg",
+    themeSlug: "kain-pakaian",
+    imageSearchQuery: "Kabupaten Ogan Komering Ilir Kayuagung Purun",
+    titleWikipediaId: "Kabupaten_Ogan_Komering_Ilir"
+  },
+  {
+    id: "ogan-komering-ulu",
+    name: "Kabupaten Ogan Komering Ulu (OKU)",
+    aliases: ["ogan komering ulu", "oku", "baturaja", "kabupaten oku"],
+    title: "Kabupaten Ogan Komering Ulu (OKU)",
+    subtitle: "Bumi Sebimbing Sekundang dengan keajaiban karst Gua Putri dan situs arkeologi prasejarah Gua Harimau di Baturaja.",
+    highlight: "Kabupaten OKU dengan ibu kota Baturaja berjuluk 'Bumi Sebimbing Sekundang'. Daerah ini menyimpan warisan geologi dan arkeologi prasejarah kelas dunia di kawasan karst Padang Bindu, meliputi Gua Putri yang sarat legenda Si Pahit Lidah serta Gua Harimau tempat ditemukannya hunian manusia purba tertua di Sumatera Selatan.",
+    paragraphs: [
+      "Arkeologi Prasejarah Gua Harimau:\nGua Harimau di OKU menjadi situs penemuan puluhan kerangka manusia purba ras Mongoloid dan Australomelanesid berusia hingga 4.000 tahun silam, lengkap dengan lukisan cadas purba (rock art) langka di dinding gua.",
+      "Legenda & Pesona Gua Putri:\nGua Putri merupakan gua karst yang dihiasi stalaktit dan stalagmit berkilauan. Menurut legenda tutur rakyat setempat, gua ini berkaitan dengan sumpah Si Pahit Lidah terhadap Putri Dayang Merindu yang berubah menjadi batu.",
+      "Kota Industri Baturaja & Sungai Ogan:\nBaturaja dialiri oleh aliran Sungai Ogan yang berbatu dan menjadi pusat industri semen terkemuka Semen Baturaja, serta memiliki sentra batu akik Baturaja yang pernah tersohor di seluruh Indonesia."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Sebimbing Sekundang (Saling Membimbing dan Saling Menyayangi)" },
+      { label: "Situs Dunia", text: "Gua Putri & Gua Harimau (Situs Arkeologi Prasejarah Terlengkap Sumsel)" },
+      { label: "Ibu Kota", text: "Baturaja" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Ogan Komering Ulu — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Ogan_Komering_Ulu",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan dengan situs prasejarah Gua Harimau dan kota Baturaja.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/musi_landscape.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kabupaten Ogan Komering Ulu Baturaja Gua Putri",
+    titleWikipediaId: "Kabupaten_Ogan_Komering_Ulu"
+  },
+  {
+    id: "oku-timur",
+    name: "Kabupaten OKU Timur",
+    aliases: ["oku timur", "martapura", "komering", "kabupaten oku timur"],
+    title: "Kabupaten OKU Timur",
+    subtitle: "Bumi Sebiduk Sehaluan, lumbung pangan dan sentra padi terbesar di Sumatera Selatan dengan kebudayaan luhur suku Komering.",
+    highlight: "Kabupaten OKU Timur dengan ibu kota Martapura adalah lumbung padi terbesar di Sumatera Selatan yang berjuluk 'Bumi Sebiduk Sehaluan'. Daerah ini ditopang jaringan irigasi Danau Ranau-Komering yang subur serta menjadi pusat pelestarian bahasa dan adat istiadat Suku Komering.",
+    paragraphs: [
+      "Lumbung Beras Utama Sumatera Selatan:\nBerkat jaringan irigasi teknis Bendung Perjaya di Sungai Komering, lahan persawahan di OKU Timur mampu panen hingga tiga kali setahun, memasok beras berkualitas tinggi untuk Sumatera Selatan dan pulau Jawa.",
+      "Pusat Adat & Bahasa Komering:\nOKU Timur adalah tanah leluhur Suku Komering yang memiliki kekayaan sastra tutur, bahasa Komering yang ekspresif, upacara adat perhelatan perkawinan, serta kain tenun tradisional Tajung.",
+      "Keindahan Alam Bendung Perjaya:\nBendung Perjaya di Martapura tidak hanya berfungsi vital untuk irigasi pertanian, namun juga menjadi destinasi wisata favorit berkat pemandangan aliran Sungai Komering yang membentang luas berlatar perbukitan."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Sebiduk Sehaluan (Satu Perahu Satu Tujuan Pembangunan)" },
+      { label: "Keunggulan", text: "Penghasil Padi Terbesar di Sumatera Selatan & Jaringan Irigasi Perjaya" },
+      { label: "Ibu Kota", text: "Martapura" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Ogan Komering Ulu Timur — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Ogan_Komering_Ulu_Timur",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten agraris di Sumatera Selatan dengan lumbung padi dan budaya Komering.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/komering_culture.jpg",
+    themeSlug: "bahasa-aksara",
+    imageSearchQuery: "Kabupaten OKU Timur Martapura Komering",
+    titleWikipediaId: "Kabupaten_Ogan_Komering_Ulu_Timur"
+  },
+  {
+    id: "oku-selatan",
+    name: "Kabupaten OKU Selatan",
+    aliases: ["oku selatan", "muaradua", "ranau", "danau ranau", "kabupaten oku selatan", "banding agung"],
+    title: "Kabupaten OKU Selatan",
+    subtitle: "Bumi Serasan Seandanan, surga wisata Danau Ranau terbesar kedua di Sumatera di bawah naungan Gunung Seminung.",
+    highlight: "Kabupaten OKU Selatan dengan ibu kota Muaradua berjuluk 'Bumi Serasan Seandanan'. Daerah ini merupakan destinasi pariwisata alam unggulan di Sumatera Selatan berkat pesona Danau Ranau yang anggun membiru, kemegahan Gunung Seminung, mata air panas alami, serta jeram Sungai Selabung.",
+    paragraphs: [
+      "Pesona Spektakuler Danau Ranau:\nDanau Ranau adalah danau vulkanik-tektonik terbesar kedua di Pulau Sumatera setelah Danau Toba. Airnya yang tenang dan jernih berpadu dengan latar belakang kerucut Gunung Seminung (1.888 mdpl) dan Pulau Marisa di tengah danau.",
+      "Arung Jeram Sungai Selabung & Wisata Air Panas:\nAliran Sungai Selabung yang mengalir deras dari Danau Ranau menjadi arena olahraga arung jeram (rafting) favorit tingkat nasional. Di tepian danau di kaki Gunung Seminung juga terdapat sumber air panas alami Subik.",
+      "Kekayaan Perkebunan Kopi & Budaya Ranau:\nMasyarakat OKU Selatan membudidayakan kopi robusta berkualitas prima di lereng perbukitan dan memiliki ragam budaya Melayu Ranau, Semende, dan Daya yang kaya akan keramahan."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Serasan Seandanan (Rukun Damai dan Selaras Menuju Kesejahteraan)" },
+      { label: "Ikon Wisata Dunia", text: "Danau Ranau, Gunung Seminung, & Arung Jeram Selabung" },
+      { label: "Ibu Kota", text: "Muaradua" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Ogan Komering Ulu Selatan — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Ogan_Komering_Ulu_Selatan",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan tempat beradanya Danau Ranau dan Gunung Seminung.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/musi_landscape.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kabupaten OKU Selatan Danau Ranau Seminung",
+    titleWikipediaId: "Kabupaten_Ogan_Komering_Ulu_Selatan"
+  },
+  {
+    id: "musi-rawas",
+    name: "Kabupaten Musi Rawas",
+    aliases: ["musi rawas", "mura", "muara beliti", "kabupaten musi rawas"],
+    title: "Kabupaten Musi Rawas",
+    subtitle: "Bumi Lan Serasan Sekentenan dengan keindahan Danau Aur dan peradaban rumah tradisional Rumah Ulu di hulu Sungai Musi.",
+    highlight: "Kabupaten Musi Rawas di bagian barat Sumatera Selatan berjuluk 'Bumi Lan Serasan Sekentenan' dengan ibu kota Muara Beliti. Kabupaten ini memiliki potensi agraris dan perkebunan sawit karet melimpah, wisata air Danau Aur, serta merawat arsitektur tradisional Rumah Ulu khas hulu Musi.",
+    paragraphs: [
+      "Pariwisata Danau Aur:\nDanau Aur di Kecamatan Sumber Harta menyajikan panorama danau asri yang dikelilingi rimbunnya pohon karet dan sawit, dilengkapi fasilitas rumah makan terapung kapal hias yang menjadi destinasi rekreasi keluarga.",
+      "Arsitektur Adat Rumah Ulu:\nMusi Rawas merupakan salah satu daerah pelestari Rumah Ulu, yaitu rumah panggung kayu tradisional khas pedalaman Sumatera Selatan yang dibangun dengan sistem pasak kayu elastis tanpa paku untuk merespons kondisi banjir dan gempa.",
+      "Potensi Agraris & Muara Beliti:\nSebagai simpul penghubung antara Palembang, Bengkulu, dan Jambi, Musi Rawas terus berkembang dengan pusat pemerintahan modern di Muara Beliti serta bentang alam Bukit Cogong yang asri."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Lan Serasan Sekentenan (Selaras Sepakat dan Sejalan)" },
+      { label: "Ikon Wisata", text: "Danau Aur, Bukit Cogong, & Rumah Adat Ulu" },
+      { label: "Ibu Kota", text: "Muara Beliti" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Musi Rawas — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Musi_Rawas",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan dengan pesona Danau Aur dan Rumah Ulu.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/rumah_ulu.jpg",
+    themeSlug: "rumah-adat",
+    imageSearchQuery: "Kabupaten Musi Rawas Danau Aur",
+    titleWikipediaId: "Kabupaten_Musi_Rawas"
+  },
+  {
+    id: "musi-rawas-utara",
+    name: "Kabupaten Musi Rawas Utara (Muratara)",
+    aliases: ["musi rawas utara", "muratara", "rupit", "kabupaten muratara"],
+    title: "Kabupaten Musi Rawas Utara (Muratara)",
+    subtitle: "Bumi Beselang Serundingan di hulu Sungai Rawas dengan keajaiban Danau Rayo dan stalaktit Gua Napalicin.",
+    highlight: "Kabupaten Muratara dengan ibu kota Rupit adalah kabupaten pemekaran di perbatasan utara Sumatera Selatan yang berjuluk 'Bumi Beselang Serundingan'. Daerah ini memiliki pesona alam perawan Danau Rayo di dalam kawasan suaka margasatwa serta Gua Napalicin yang memesona.",
+    paragraphs: [
+      "Keajaiban Alam Danau Rayo:\nDanau Rayo terletak di kawasan Suaka Margasatwa Danau Kelingi/Rayo, menyajikan perairan alami seluas puluhan hektar yang dikelilingi hutan rawa berhawa sejuk dan dihuni aneka burung liar.",
+      "Gua Karst Napalicin:\nGua Napalicin merupakan gua batu kapur alami yang berada di atas bukit karang di tepi Sungai Rawas, dihiasi formasi stalaktit dan stalagmit yang menawan serta lorong tembus ke puncak bukit.",
+      "Tradisi Luhur & Aliran Sungai Rawas:\nMasyarakat Muratara hidup berdampingan dengan aliran Sungai Rawas yang kaya ikan sungai, memelihara tradisi gotong royong Beselang serta seni kerajinan lokal."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Beselang Serundingan (Gotong Royong dan Musyawarah Mufakat)" },
+      { label: "Destinasi Ikonik", text: "Danau Rayo, Gua Napalicin, & Sungai Rawas" },
+      { label: "Ibu Kota", text: "Rupit" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Musi Rawas Utara — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Musi_Rawas_Utara",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan dengan Danau Rayo dan Gua Napalicin.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/sungai_musi_sekayu.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kabupaten Musi Rawas Utara Danau Rayo",
+    titleWikipediaId: "Kabupaten_Musi_Rawas_Utara"
+  },
+  {
+    id: "pali",
+    name: "Kabupaten Penukal Abab Lematang Ilir (PALI)",
+    aliases: ["penukal abab lematang ilir", "pali", "talang ubi", "candi bumi ayu", "kabupaten pali"],
+    title: "Kabupaten Penukal Abab Lematang Ilir (PALI)",
+    subtitle: "Bumi Serepat Serasan, lokasi percandian Hindu kuno Candi Bumi Ayu peninggalan abad ke-9 hingga ke-13 Masehi.",
+    highlight: "Kabupaten PALI dengan pusat di Talang Ubi berjuluk 'Bumi Serepat Serasan'. Kabupaten ini menyimpan pusaka sejarah mahapenting berupa Kompleks Candi Bumi Ayu, satu-satunya kompleks percandian bata merah peninggalan era peralihan Hindu-Buddha di Sumatera Selatan, sekaligus sentra minyak bumi dan perkebunan karet.",
+    paragraphs: [
+      "Kompleks Percandian Candi Bumi Ayu:\nCandi Bumi Ayu terletak di tepi Sungai Lematang di Desa Bumi Ayu. Kompleks ini terdiri dari belasan runtuhan candi bata merah yang membuktikan bahwa wilayah pedalaman Sumatera Selatan pernah menjadi pusat peradaban dan keagamaan penting semasa dengan era Mataram Kuno hingga Sriwijaya.",
+      "Kekayaan Energi Migas & Karet:\nWilayah Pendopo di Talang Ubi telah menjadi ladang pengeboran minyak bumi sejak era kolonial (dikenal sebagai Pendopo lumbung minyak Stanvac/Pertamina) yang dilengkapi fasilitas perumahan energi bersejarah.",
+      "Masyarakat Melayu Penukal & Abab:\nMasyarakat PALI menjunjung adat Melayu Penukal dan Abab yang akrab dengan perairan Sungai Lematang, menghasilkan tradisi kuliner fermentasi khas seperti Sagarurung (ikan asap bumbu pedas khas PALI)."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Serepat Serasan (Sepakat Bersama dalam Persatuan)" },
+      { label: "Pusaka Sejarah", text: "Kompleks Percandian Candi Bumi Ayu (Abad ke-9 s.d. 13 M)" },
+      { label: "Ibu Kota", text: "Talang Ubi" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Penukal Abab Lematang Ilir — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Penukal_Abab_Lematang_Ilir",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di Sumatera Selatan tempat berdirinya Candi Bumi Ayu.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/sungai_lematang.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kabupaten PALI Candi Bumi Ayu",
+    titleWikipediaId: "Kabupaten_Penukal_Abab_Lematang_Ilir"
+  },
+  {
+    id: "empat-lawang",
+    name: "Kabupaten Empat Lawang",
+    aliases: ["empat lawang", "tebing tinggi", "tebing tinggi empat lawang", "kabupaten empat lawang"],
+    title: "Kabupaten Empat Lawang",
+    subtitle: "Bumi Saling Keruani Sangi Kerawati di hulu Ayek Musi, sentra perkebunan kopi robusta dan kearifan masyarakat adat Lintang.",
+    highlight: "Kabupaten Empat Lawang dengan ibu kota Tebing Tinggi berjuluk 'Bumi Saling Keruani Sangi Kerawati'. Terletak di kawasan perbukitan hulu Sungai Musi (Ayek Musi), daerah ini tersohor dengan sentra perkebunan kopi robusta bermutu tinggi serta tradisi kebudayaan masyarakat suku Lintang dan Besemah.",
+    paragraphs: [
+      "Hulu Sungai Musi & Bentang Alam Perbukitan:\nEmpat Lawang dialiri oleh aliran Sungai Musi bagian hulu yang jernih berarus deras dengan bebatuan besar alami, serta dilalui jalur rel kereta api lintang Sumatera yang melintasi jembatan-jembatan jurang peninggalan kolonial Belanda yang dramatis.",
+      "Sentra Kopi Robusta & Pertanian:\nKondisi tanah vulkanik yang subur menjadikan Empat Lawang salah satu pemasok biji kopi robusta terbesar di Sumatera Selatan dengan aroma khas yang kuat.",
+      "Adat Masyarakat Suku Lintang:\nNama Empat Lawang konon berasal dari empat pendekar pelindung empat gerbang (lawang). Masyarakatnya memelihara tradisi adat, seni tari, serta sastra pantun rejung yang diwariskan leluhur."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Kabupaten di Provinsi Sumatera Selatan" },
+      { label: "Semboyan", text: "Saling Keruani Sangi Kerawati (Saling Mengayomi dan Saling Menghormati)" },
+      { label: "Ibu Kota", text: "Tebing Tinggi" },
+      { label: "Komoditas Unggulan", text: "Kopi Robusta Empat Lawang & Karet" }
+    ],
+    sources: [
+      {
+        title: "Kabupaten Empat Lawang — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Kabupaten_Empat_Lawang",
+        domain: "id.wikipedia.org",
+        excerpt: "Kabupaten di perbukitan hulu Sungai Musi Sumatera Selatan.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "/images/sungai_lematang.jpg",
+    themeSlug: "sejarah",
+    imageSearchQuery: "Kabupaten Empat Lawang Tebing Tinggi",
+    titleWikipediaId: "Kabupaten_Empat_Lawang"
+  }
+];
+
+// ─── Database Entitas dan Landmark Populer di Luar Sumsel ─────────────────────
+export interface OutsideSumselEntity {
+  id: string;
+  aliases: string[];
+  title: string;
+  subtitle: string;
+  highlight: string;
+  paragraphs: string[];
+  bulletPoints: { label: string; text: string }[];
+  sources: SearchSource[];
+  image: string;
+  imageSearchQuery: string;
+  titleWikipediaId: string;
+}
+
+export const outsideSumselEntities: OutsideSumselEntity[] = [
+  {
+    id: "bundaran-hi",
+    aliases: [
+      "bundaran hi", "bundaran hotel indonesia", "bunderan hi",
+      "monumen selamat datang", "patung selamat datang", "hotel indonesia jakarta"
+    ],
+    title: "Bundaran Hotel Indonesia (Bundaran HI)",
+    subtitle: "Landmark bersejarah di pusat metropolitan Jakarta dengan Monumen Selamat Datang megah warisan Presiden Soekarno.",
+    highlight: "Bundaran Hotel Indonesia (Bundaran HI) adalah salah satu tengara (landmark) ruang terbuka paling terkenal di Jakarta Pusat, dengan Monumen Selamat Datang berdiri megah di tengah kolam air mancurnya.",
+    paragraphs: [
+      "Latar Belakang & Monumen Selamat Datang:\nBundaran HI digagas oleh Presiden pertama Republik Indonesia, Ir. Soekarno, sebagai pintu gerbang ibu kota dalam menyambut delegasi, atlet, dan tamu mancanegara pada perhelatan Asian Games IV tahun 1962. Patung sepasang pemuda-pemudi perunggu yang melambaikan tangan ke arah utara dirancang oleh seniman Henk Ngantung dan dipahat oleh pematung Trubus Soedarsono di bawah koordinasi Edhi Sunarso.",
+      "Pusat Bisnis, Sejarah, & Diplomasi:\nDi sekeliling bundaran terdapat bangunan ikonik Hotel Indonesia (hotel bertaraf internasional pertama di Indonesia yang diresmikan tahun 1962), Wisma Nusantara, serta pusat perbelanjaan papan atas Grand Indonesia dan Plaza Indonesia. Kawasan ini menjadi salah satu pusat ekonomi, bisnis, dan pariwisata tersibuk di Asia Tenggara.",
+      "Transformasi Ruang Publik Modern:\nDalam beberapa tahun terakhir, Bundaran HI mengalami revitalisasi besar melalui integrasi sistem transportasi massal modern, seperti Stasiun MRT Bundaran HI di bawah tanah dan Halte Transjakarta berlantai dua yang menyerupai geladak kapal pesiar megah. Kawasan ini juga menjadi arena favorit berkumpulnya warga saat Hari Bebas Kendaraan Bermotor (Car Free Day)."
+    ],
+    bulletPoints: [
+      { label: "Lokasi", text: "Menteng, Jakarta Pusat, DKI Jakarta" },
+      { label: "Ikon Utama", text: "Monumen Selamat Datang & Air Mancur Bundaran HI" },
+      { label: "Tahun Pembangunan", text: "1962 (Dalam rangka Asian Games IV)" },
+      { label: "Perancang & Penggagas", text: "Presiden Soekarno, Henk Ngantung, & Edhi Sunarso" }
+    ],
+    sources: [
+      {
+        title: "Bundaran Hotel Indonesia — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Bundaran_Hotel_Indonesia",
+        domain: "id.wikipedia.org",
+        excerpt: "Bundaran bersejarah di pusat Jakarta Pusat dengan Monumen Selamat Datang di tengahnya.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      },
+      {
+        title: "Monumen Selamat Datang — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Monumen_Selamat_Datang",
+        domain: "id.wikipedia.org",
+        excerpt: "Monumen yang dibangun pada tahun 1962 untuk menyambut atlet Asian Games IV.",
+        icon: "🏛",
+        iconStyle: "bg-[#6b1d2f] text-white",
+        img: ""
+      }
+    ],
+    image: "https://thumb.wikimedia.org/wikipedia/id/thumb/3/35/Monumen_Selamat_Datang_%28Maret_2025%29.jpg/330px-Monumen_Selamat_Datang_%28Maret_2025%29.jpg",
+    imageSearchQuery: "Bundaran Hotel Indonesia Monumen Selamat Datang Jakarta",
+    titleWikipediaId: "Bundaran_Hotel_Indonesia"
+  },
+  {
+    id: "monas",
+    aliases: ["monas", "monumen nasional", "tugu monas"],
+    title: "Monumen Nasional (Monas)",
+    subtitle: "Tugu peringatan setinggi 132 meter di Jakarta Pusat yang melambangkan semangat perjuangan kemerdekaan bangsa Indonesia.",
+    highlight: "Monumen Nasional (Monas) adalah monumen peringatan yang didirikan untuk mengenang perlawanan dan perjuangan rakyat Indonesia dalam merebut kemerdekaan dari pemerintah kolonial Hindia Belanda, dihiasi lidah api berlapis emas di puncaknya.",
+    paragraphs: [
+      "Sejarah & Pembangunan:\nPembangunan Monas dimulai pada 17 Agustus 1961 atas perintah Presiden Soekarno dan diresmikan dibuka untuk umum pada 12 Juli 1975 oleh Presiden Soeharto. Tugu berbentuk lingga dan yoni ini melambangkan kesuburan dan kesatuan abadi rakyat Indonesia.",
+      "Museum Sejarah & Puncak Lidah Api:\nDi bagian cawan bawah Monas terdapat Museum Sejarah Nasional yang menampilkan puluhan diorama perjuangan bangsa Indonesia sejak era prasejarah hingga kemerdekaan. Di puncaknya terdapat pelataran pandang setinggi 115 meter dan lidah api perunggu berlapis emas seberat puluhan kilogram.",
+      "Pusat Ruang Terbuka Hijau Ibu Kota:\nDikelilingi Lapangan Medan Merdeka seluas puluhan hektar, kawasan Monas menjadi ruang rekreasi publik, olahraga, dan upacara kenegaraan terpenting di Republik Indonesia."
+    ],
+    bulletPoints: [
+      { label: "Lokasi", text: "Gambir, Jakarta Pusat, DKI Jakarta" },
+      { label: "Tinggi Monumen", text: "132 Meter (Dengan lidah api berlapis emas murni)" },
+      { label: "Fasilitas Utama", text: "Pelataran Puncak, Museum Sejarah Nasional, & Ruang Kemerdekaan" },
+      { label: "Arsitek", text: "Soedarsono, Frederich Silaban, & Ir. Rooseno" }
+    ],
+    sources: [
+      {
+        title: "Monumen Nasional — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Monumen_Nasional",
+        domain: "id.wikipedia.org",
+        excerpt: "Tugu peringatan setinggi 132 meter di Jakarta Pusat lambang kemerdekaan Indonesia.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/National_Monument_%28Monas%29%2C_Jakarta.jpg/800px-National_Monument_%28Monas%29%2C_Jakarta.jpg",
+    imageSearchQuery: "Monumen Nasional Monas Jakarta",
+    titleWikipediaId: "Monumen_Nasional"
+  },
+  {
+    id: "borobudur",
+    aliases: ["borobudur", "candi borobudur"],
+    title: "Candi Borobudur",
+    subtitle: "Candi Buddha terbesar di dunia peninggalan wangsa Syailendra di Magelang, Jawa Tengah, Warisan Dunia UNESCO.",
+    highlight: "Candi Borobudur adalah candi atau kuil Buddha Mahayana terbesar di dunia yang dibangun pada abad ke-8 dan ke-9 Masehi oleh wangsa Syailendra di Magelang, Jawa Tengah.",
+    paragraphs: [
+      "Arsitektur Mahakarya Dunia:\nBorobudur dirancang dengan struktur punden berundak tanpa perekat semen, terdiri dari enam teras bujur sangkar dan tiga pelataran melingkar yang dihiasi ribuan panel relief pahatan batu andesit serta ratusan arca Buddha.",
+      "Makna Filosofis Kosmologi Buddha:\nStruktur Borobudur melambangkan tingkatan kosmologi Buddha: Kamadhatu (alam hawa nafsu), Rupadhatu (alam wujud), dan Arupadhatu (alam tanpa wujud) yang berpuncak pada stupa induk agung.",
+      "Pusat Wisata & Perayaan Waisak:\nSebagai Situs Warisan Dunia UNESCO, Candi Borobudur menjadi tujuan ziarah umat Buddha dunia saat puncak perayaan Hari Raya Waisak dan salah satu destinasi pariwisata super prioritas Indonesia."
+    ],
+    bulletPoints: [
+      { label: "Lokasi", text: "Magelang, Jawa Tengah" },
+      { label: "Status Global", text: "Situs Warisan Dunia UNESCO (World Heritage Site)" },
+      { label: "Dibangun", text: "Sekitar abad ke-8 s.d. 9 Masehi (Wangsa Syailendra)" },
+      { label: "Jumlah Panel Relief", text: "2.672 Panel relief pahatan batu andesit" }
+    ],
+    sources: [
+      {
+        title: "Borobudur — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Borobudur",
+        domain: "id.wikipedia.org",
+        excerpt: "Candi Buddha Mahayana terbesar di dunia yang terletak di Magelang, Jawa Tengah.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Borobudur-Nothwest-view.jpg/800px-Borobudur-Nothwest-view.jpg",
+    imageSearchQuery: "Candi Borobudur Magelang Jawa Tengah",
+    titleWikipediaId: "Borobudur"
+  },
+  {
+    id: "prambanan",
+    aliases: ["prambanan", "candi prambanan", "candi roro jonggrang"],
+    title: "Candi Prambanan",
+    subtitle: "Kompleks candi Hindu terbesar di Indonesia di perbatasan Sleman, D.I. Yogyakarta dan Klaten, Jawa Tengah.",
+    highlight: "Candi Prambanan (atau Candi Roro Jonggrang) adalah kompleks candi Hindu terbesar di Indonesia yang dibangun pada abad ke-9 Masehi oleh raja Rakai Pikatan dari Kerajaan Mataram Kuno.",
+    paragraphs: [
+      "Kemegahan Arsitektur Trimurti:\nKompleks Prambanan dipersembahkan untuk Trimurti, tiga dewa utama dalam Hinduisme: Brahma (Sang Pencipta), Wisnu (Sang Pemelihara), dan Siwa (Sang Pemusnah). Candi Siwa berdiri paling megah di tengah dengan ketinggian mencapai 47 meter.",
+      "Relief Kisah Ramayana:\nDinding candi dihiasi pahatan relief naratif epos Ramayana dan Krishnayana yang menceritakan petualangan Rama membebaskan Dewi Sita dari cengkeraman Rahwana.",
+      "Situs Warisan Dunia UNESCO:\nDiakui sebagai Situs Warisan Dunia UNESCO, pelataran Candi Prambanan juga menjadi panggung terbuka megah pertunjukan Sendratari Ramayana Prambanan bertaraf internasional."
+    ],
+    bulletPoints: [
+      { label: "Lokasi", text: "Perbatasan Sleman (DIY) & Klaten (Jawa Tengah)" },
+      { label: "Status Global", text: "Situs Warisan Dunia UNESCO" },
+      { label: "Tinggi Candi Utama", text: "47 Meter (Candi Siwa)" },
+      { label: "Pembangunan", text: "Abad ke-9 Masehi (Rakai Pikatan, Mataram Kuno)" }
+    ],
+    sources: [
+      {
+        title: "Candi Prambanan — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Candi_Prambanan",
+        domain: "id.wikipedia.org",
+        excerpt: "Kompleks percandian Hindu terbesar di Indonesia Warisan Dunia UNESCO.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Prambanan_Temple_Complex.jpg/800px-Prambanan_Temple_Complex.jpg",
+    imageSearchQuery: "Candi Prambanan Yogyakarta Sleman",
+    titleWikipediaId: "Candi_Prambanan"
+  },
+  {
+    id: "bali",
+    aliases: ["bali", "pulau bali", "provinsi bali", "pulau dewata", "denpasar"],
+    title: "Provinsi Bali (Pulau Dewata)",
+    subtitle: "Provinsi kepulauan di timur Pulau Jawa yang tersohor di dunia dengan keagungan budaya Hindu Dharma, pura megah, dan pariwisata alam.",
+    highlight: "Bali adalah salah satu provinsi terkemuka di Indonesia dengan ibu kota Denpasar, berjuluk 'Pulau Dewata' dan 'Pulau Seribu Pura' berkat keluhuran tradisi adat, seni pertunjukan sakral, serta lanskap pantai dan perbukitannya yang mendunia.",
+    paragraphs: [
+      "Geografi & Peradaban Luhur:\nPulau Bali diapit oleh Selat Bali di barat dan Selat Lombok di timur. Sebagian besar masyarakatnya memeluk agama Hindu Dharma yang terintegrasi erat dengan sistem kekerabatan adat banjar, filosofi Tri Hita Karana (keharmonisan antara manusia, alam, dan Sang Pencipta), serta sistem irigasi persawahan tradisional Subak yang diakui sebagai Warisan Budaya Dunia UNESCO.",
+      "Kekayaan Seni Tradisi & Pura Ikonik:\nIdentitas budaya Bali terpancar dari arsitektur pura-pura suci seperti Pura Besakih di lereng Gunung Agung, Pura Ulun Danu di Danau Bratan, serta Pura Luhur Uluwatu di tebing Samudra Hindia. Dalam seni pertunjukan, Bali memiliki ragam tarian sakral dan profan seperti Tari Pendet, Tari Legong, Tari Barong, dan Tari Kecak, berdampingan dengan alunan gamelan gong kebyar.",
+      "Ikon Pariwisata Internasional:\nSebagai gerbang utama pariwisata Nusantara, Bali menawarkan perpaduan atraksi wisata bahari di Kuta, Seminyak, Sanur, dan Nusa Dua, serta keteduhan pusat seni budaya dan alam Ubud yang menjadi magnet wisatawan mancanegara."
+    ],
+    bulletPoints: [
+      { label: "Ibu Kota", text: "Kota Denpasar" },
+      { label: "Julukan", text: "Pulau Dewata, Pulau Seribu Pura, The Island of Gods" },
+      { label: "Filosofi Luhur", text: "Tri Hita Karana & Lanskap Budaya Subak (UNESCO)" },
+      { label: "Tengara Terkenal", text: "Pura Besakih, Ubud, Pura Uluwatu, Tanah Lot, Danau Bratan" }
+    ],
+    sources: [
+      {
+        title: "Bali — Wikipedia Bahasa Indonesia",
+        url: "https://id.wikipedia.org/wiki/Bali",
+        domain: "id.wikipedia.org",
+        excerpt: "Provinsi kepulauan di Indonesia yang tersohor dengan budaya dan pariwisatanya.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      },
+      {
+        title: "Portal Resmi Pemerintah Provinsi Bali",
+        url: "https://baliprov.go.id",
+        domain: "baliprov.go.id",
+        excerpt: "Layanan informasi publik dan kepariwisataan resmi Pemerintah Provinsi Bali.",
+        icon: "🏛",
+        iconStyle: "bg-[#6b1d2f] text-white",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Pura_Ulun_Danu_Bratan%2C_2022.jpg/800px-Pura_Ulun_Danu_Bratan%2C_2022.jpg",
+    imageSearchQuery: "Pura Ulun Danu Bratan Bedugul Bali",
+    titleWikipediaId: "Bali"
+  },
+  {
+    id: "padang",
+    aliases: ["padang", "kota padang", "padang kota", "ranah minang"],
+    title: "Kota Padang",
+    subtitle: "Ibu kota Provinsi Sumatera Barat, kota terbesar di pesisir barat Pulau Sumatra, dan pusat kebudayaan Minangkabau.",
+    highlight: "Kota Padang adalah ibu kota Provinsi Sumatera Barat dan kota terbesar di pantai barat Pulau Sumatra. Menghadap langsung ke Samudra Hindia dengan latar Bukit Barisan, Padang tersohor sebagai pusat kebudayaan Minangkabau, kawasan niaga bahari bersejarah, dan kiblat kuliner legendaris yang mendunia.",
+    paragraphs: [
+      "Pintu Gerbang Barat Sumatra & Sejarah:\nSecara historis, Padang berkembang pesat sejak abad ke-17 sebagai pelabuhan lada dan rempah-rempah yang dikelola oleh Kesultanan Aceh dan VOC di tepian Muara Batang Arau. Kawasan Kota Tua Padang kini masih mempertahankan deretan bangunan kolonial bernilai pusaka arsitektur tinggi berdampingan dengan Pelabuhan Teluk Bayur yang melegenda.",
+      "Pusat Budaya Minangkabau & Kuliner Global:\nPadang identik dengan kelezatan tradisi memasak Minangkabau, terutama Rendang yang berulang kali dinobatkan sebagai salah satu makanan terlezat di dunia oleh media internasional. Selain rendang, hidangan sate padang, dendeng balado, gulai tunjang, dan ayam pop dengan sajian 'hidang' di rumah makan Minang telah menjadi simbol diplomasi kuliner Nusantara di seantero dunia.",
+      "Destinasi Wisata Pesisir & Alam:\nKota Padang menawarkan pesona wisata bahari yang menawan seperti Pantai Padang (Taplau), Pantai Air Manis dengan legenda Batu Malin Kundang, Jembatan Siti Nurbaya yang ikonik, serta gugusan pulau eksotis Mandeh dan Sirandah."
+    ],
+    bulletPoints: [
+      { label: "Status Wilayah", text: "Ibu Kota Provinsi Sumatera Barat" },
+      { label: "Letak Geografis", text: "Pesisir Barat Sumatra (Menghadap Samudra Hindia)" },
+      { label: "Kuliner Ikonik", text: "Rendang Minangkabau, Sate Padang, Dendeng Batokok, Es Tebak" },
+      { label: "Tengara Terkenal", text: "Jembatan Siti Nurbaya, Pelabuhan Teluk Bayur, Masjid Raya Sumbar" }
+    ],
+    sources: [
+      {
+        title: "Kota Padang — Wikipedia Bahasa Indonesia",
+        url: "https://id.wikipedia.org/wiki/Kota_Padang",
+        domain: "id.wikipedia.org",
+        excerpt: "Kota terbesar di pesisir barat Pulau Sumatra dan ibu kota Provinsi Sumatera Barat.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      },
+      {
+        title: "Portal Resmi Pemerintah Kota Padang",
+        url: "https://padang.go.id",
+        domain: "padang.go.id",
+        excerpt: "Pusat informasi publik dan layanan pemerintah Kota Padang.",
+        icon: "🏛",
+        iconStyle: "bg-[#6b1d2f] text-white",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Padang_Kota_yang_Dikelilingi_Bukit_dan_Lautan.jpg/800px-Padang_Kota_yang_Dikelilingi_Bukit_dan_Lautan.jpg",
+    imageSearchQuery: "Kota Padang Pantai Padang Jembatan Siti Nurbaya",
+    titleWikipediaId: "Kota_Padang"
+  },
+  {
+    id: "tari-kecak",
+    aliases: ["tari kecak", "tari kecak bali", "tari cak"],
+    title: "Tari Kecak Bali",
+    subtitle: "Seni tari sakral dan drama musikal spektakuler khas Bali yang diiringi paduan suara vokal 'cak-cak-cak'.",
+    highlight: "Tari Kecak adalah seni pertunjukan drama musikal khas Bali yang dibawakan oleh puluhan penari pria bertelanjang dada duduk melingkar dengan lantunan irama paduan suara vokal 'cak-cak-cak'.",
+    paragraphs: [
+      "Asal-Usul Tradisi Sanghyang:\nTari Kecak berakar dari ritual Sanghyang, yakni tarian sakral penolak bala di mana penari berkomunikasi dengan roh leluhur dalam keadaan trans (trance). Pada dekade 1930-an, seniman Bali Wayan Limbak bersama pelukis Jerman Walter Spies menyusunnya menjadi drama tari kisah Ramayana yang memukau publik dunia.",
+      "Karakteristik Paduan Suara Tanpa Alat Musik:\nKeunikan Tari Kecak terletak pada absennya instrumen gamelan. Irama musik sepenuhnya dihasilkan oleh ritme vokal dinamis puluhan penari pria yang menggerakkan tangan ke angkasa di sekeliling kobaran api obor di tengah lingkaran.",
+      "Pertunjukan Ikonik Pura Uluwatu:\nPementasan Tari Kecak berlatar matahari terbenam (sunset) di tebing karang Pura Luhur Uluwatu menjadi salah satu atraksi seni budaya paling populer di dunia."
+    ],
+    bulletPoints: [
+      { label: "Asal Daerah", text: "Bali, Indonesia" },
+      { label: "Alat Musik", text: "Akustik Vokal Tanpa Gamelan (Paduan suara penari)" },
+      { label: "Lakon Cerita", text: "Epos Ramayana (Penculikan Shinta & Hanoman)" },
+      { label: "Fungsi Budaya", text: "Seni Pertunjukan Tradisional & Daya Tarik Wisata Dunia" }
+    ],
+    sources: [
+      {
+        title: "Tari Kecak — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Tari_Kecak",
+        domain: "id.wikipedia.org",
+        excerpt: "Seni tari dan drama musikal tradisional khas Bali berlatar kisah Ramayana.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Kecak_Dance_Uluwatu.jpg/800px-Kecak_Dance_Uluwatu.jpg",
+    imageSearchQuery: "Tari Kecak Bali Uluwatu",
+    titleWikipediaId: "Tari_Kecak"
+  },
+  {
+    id: "danau-toba",
+    aliases: ["danau toba", "danau toba sumut", "pulau samosir"],
+    title: "Danau Toba & Pulau Samosir",
+    subtitle: "Danau vulkanik kaldera terbesar di dunia dan UNESCO Global Geopark di Sumatera Utara.",
+    highlight: "Danau Toba adalah danau vulkanik terbesar di dunia yang terbentuk akibat letusan mahadasyat (supervolcano) Gunung Toba purba sekitar 74.000 tahun silam, dengan Pulau Samosir terbentang megah di tengah perairannya.",
+    paragraphs: [
+      "Geologi Letusan Supervolcano:\nLetusan supervolcano Toba diperkirakan mengubah iklim bumi purba. Kaldera raksasa yang terbentuk kini terisi air jernih sepanjang 100 kilometer dengan kedalaman mencapai lebih dari 500 meter.",
+      "Kekayaan Budaya Batak Toba:\nPulau Samosir dan pesisir Danau Toba merupakan pusat kebudayaan suku Batak Toba, terkenal dengan rumah adat Rumah Bolon, patung Sigale-gale, serta kain tenun Ulos.",
+      "Destinasi Super Prioritas:\nDanau Toba telah ditetapkan sebagai UNESCO Global Geopark dan Destinasi Pariwisata Super Prioritas Indonesia yang menawarkan lanskap perbukitan hijau spektakuler."
+    ],
+    bulletPoints: [
+      { label: "Lokasi", text: "Sumatera Utara, Indonesia" },
+      { label: "Status Internasional", text: "UNESCO Global Geopark" },
+      { label: "Luas Danau", text: "Panjang 100 km, lebar 30 km (Danau vulkanik terbesar dunia)" },
+      { label: "Pulau di Tengah", text: "Pulau Samosir (Pusat kebudayaan Batak Toba)" }
+    ],
+    sources: [
+      {
+        title: "Danau Toba — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Danau_Toba",
+        domain: "id.wikipedia.org",
+        excerpt: "Danau vulkanik terbesar di dunia di Sumatera Utara.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Indonesia_-_Lake_Toba_%282622412750%29.jpg/800px-Indonesia_-_Lake_Toba_%282622412750%29.jpg",
+    imageSearchQuery: "Danau Toba Pulau Samosir Sumatera Utara",
+    titleWikipediaId: "Danau_Toba"
+  },
+  {
+    id: "gedung-sate",
+    aliases: ["gedung sate", "gedung sate bandung"],
+    title: "Gedung Sate Bandung",
+    subtitle: "Ikon arsitektur neo-klasik berpadu ornamen lokal di Kota Bandung, pusat kantor Gubernur Jawa Barat.",
+    highlight: "Gedung Sate adalah gedung bersejarah di Kota Bandung yang dirancang oleh arsitek J. Gerber pada tahun 1920, terkenal dengan ornamen ornamen tusuk sate enam ornamen bundar di pucuk atapnya.",
+    paragraphs: [
+      "Arsitektur Hibrida Indisch Empire:\nGedung Sate menggabungkan gaya arsitektur klasik Eropa dengan elemen atap pura tradisional Bali dan ornamen lokal Nusantara, menjadi mahakarya arsitektur kolonial tropis.",
+      "Enam Ornamen Tusuk Sate:\nOrnamen 6 bulatan menyerupai tusuk sate di puncak menara melambangkan biaya pembangunan gedung senilai 6 juta gulden pada era Hindia Belanda.",
+      "Pusat Pemerintahan & Museum Modern:\nSaat ini Gedung Sate berfungsi sebagai kantor Gubernur Jawa Barat dan dilengkapi Museum Gedung Sate interaktif berbasis teknologi augmented reality."
+    ],
+    bulletPoints: [
+      { label: "Lokasi", text: "Kota Bandung, Jawa Barat" },
+      { label: "Tahun Dibangun", text: "1920 - 1924 (Arsitek J. Gerber)" },
+      { label: "Fungsi Saat Ini", text: "Kantor Gubernur Jawa Barat & Museum Publik" },
+      { label: "Ciri Khas", text: "Menara atap berornamen enam bulatan tusuk sate" }
+    ],
+    sources: [
+      {
+        title: "Gedung Sate — Wikipedia",
+        url: "https://id.wikipedia.org/wiki/Gedung_Sate",
+        domain: "id.wikipedia.org",
+        excerpt: "Gedung peninggalan kolonial ikon Kota Bandung Jawa Barat.",
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: ""
+      }
+    ],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Gedung_Sate_Bandung_Jawa_Barat.jpg/800px-Gedung_Sate_Bandung_Jawa_Barat.jpg",
+    imageSearchQuery: "Gedung Sate Bandung Jawa Barat",
+    titleWikipediaId: "Gedung_Sate"
+  }
+];
+
+// ─── Helpers pencocokan Wilayah Sumsel & Luar Sumsel ──────────────────────────
+export function findSumselRegion(query: string): SumselRegionInfo | null {
+  const q = query.toLowerCase().replace(/['".,?!]/g, " ").replace(/\s+/g, " ").trim();
+  if (!q) return null;
+
+  // Jika query menanyakan subtopik spesifik (makanan, kain, lagu, tarian spesifik),
+  // jangan cegat sebagai profil kota
+  const isSpecificSubtopic = [
+    "pempek", "resep", "cara membuat", "cara masak", "cuko", "tekwan", "lirik", "syair",
+    "kain", "songket", "tenun", "tari", "lagu", "aksara", "rumah limas", "dulmuluk"
+  ].some((kw) => q.includes(kw));
+
+  if (isSpecificSubtopic && !q.startsWith("kota ") && !q.startsWith("kabupaten ")) {
+    return null;
+  }
+
+  // 1. Cocokkan alias persis atau dengan prefiks kota/kabupaten
+  for (const reg of sumselRegionsData) {
+    for (const alias of reg.aliases) {
+      if (
+        q === alias ||
+        q === `kota ${alias}` ||
+        q === `kabupaten ${alias}` ||
+        q === `kab ${alias}` ||
+        q === `profil ${alias}` ||
+        q === `tentang ${alias}` ||
+        q === `daerah ${alias}`
+      ) {
+        return reg;
+      }
+    }
+  }
+
+  // 2. Cocokkan jika kueri mengandung nama alias yang cukup panjang (>= 4 karakter)
+  for (const reg of sumselRegionsData) {
+    for (const alias of reg.aliases) {
+      if (alias.length >= 4 && (q.startsWith(alias + " ") || q.endsWith(" " + alias))) {
+        return reg;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function findOutsideSumselEntity(query: string): OutsideSumselEntity | null {
+  const q = query.toLowerCase().replace(/['".,?!]/g, " ").replace(/\s+/g, " ").trim();
+  if (!q) return null;
+
+  // 1. Cocokkan alias persis atau dengan awalan umum (kota/provinsi/pulau/tentang)
+  for (const ent of outsideSumselEntities) {
+    for (const alias of ent.aliases) {
+      if (
+        q === alias ||
+        q === `kota ${alias}` ||
+        q === `provinsi ${alias}` ||
+        q === `pulau ${alias}` ||
+        q === `daerah ${alias}` ||
+        q === `tentang ${alias}`
+      ) {
+        return ent;
+      }
+    }
+  }
+
+  // 2. Cocokkan jika kueri mengandung alias sebagai kata utuh (bukan sebaliknya)
+  for (const ent of outsideSumselEntities) {
+    for (const alias of ent.aliases) {
+      if (
+        alias.length >= 4 &&
+        (q.startsWith(alias + " ") || q.endsWith(" " + alias) || q.includes(" " + alias + " "))
+      ) {
+        return ent;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function buildRegionSearchResult(reg: SumselRegionInfo, query: string): SearchResult {
+  const theme = themes.find((t) => t.slug === reg.themeSlug) || themes[0];
+  return {
+    status: "ok",
+    query,
+    card1: {
+      isDedicatedTour: false,
+      title: reg.title,
+      subtitle: reg.subtitle,
+      image: reg.image,
+      badge: "Profil Wilayah Sumatera Selatan",
+      href: `/tema/${theme.slug}`,
+    },
+    card2: {
+      title: reg.title,
+      highlight: reg.highlight,
+      paragraphs: reg.paragraphs,
+      bulletPoints: reg.bulletPoints,
+      sources: reg.sources,
+    },
+    card3: {
+      themeSlug: theme.slug,
+      themeTitle: theme.title,
+      themeLabel: theme.tagline,
+      themeDesc: theme.intro,
+      themeImg: theme.heroImage,
+      themeHref: `/tema/${theme.slug}`,
+      relatedItems: theme.items.slice(0, 4).map((it) => ({
+        name: it.name,
+        desc: it.desc,
+        image: it.image || theme.image,
+        slug: it.slug,
+        link: it.slug ? `/tur/${it.slug}` : `/tema/${theme.slug}`,
+      })),
+    },
+  };
+}
+
+export function buildOutsideSumselSearchResult(ent: OutsideSumselEntity, query: string): SearchResult {
+  return {
+    status: "outside_sumsel",
+    query,
+    note: "Topik ini berada di luar wilayah Sumatera Selatan, namun SORA tetap menyajikan ringkasannya untuk menambah wawasan Nusantara Anda.",
+    card1: {
+      isDedicatedTour: false,
+      title: ent.title,
+      subtitle: ent.subtitle,
+      image: ent.image,
+      badge: "Landmark & Wawasan Nusantara",
+      href: "/jelajahi",
+    },
+    card2: {
+      title: ent.title,
+      highlight: ent.highlight,
+      paragraphs: ent.paragraphs,
+      bulletPoints: ent.bulletPoints,
+      sources: ent.sources,
+    },
+    card3: {
+      themeSlug: "",
+      themeTitle: "",
+      themeLabel: "",
+      themeDesc: "",
+      themeImg: "",
+      themeHref: "",
+      relatedItems: [],
+    },
+  };
+}
+
+// ─── Local match helper (Safe & Presisi: Bebas False Positive Kota) ──────────
 export function findLocalMatch(query: string) {
   const q = query.toLowerCase().trim();
 
-  // 1. Dedicated tours
+  // 0. Cegah query nama kota/daerah atau landmark luar Sumsel dibajak oleh tur/item
+  if (findSumselRegion(query) || findOutsideSumselEntity(query)) {
+    return null;
+  }
+
+  // 1. Dedicated tours: HANYA cocok jika kata kunci pemicu spesifik terpenuhi
   for (const [slug, tour] of Object.entries(dedicatedTours)) {
-    const titleMatch = tour.title.toLowerCase().includes(q) || q.includes(tour.title.toLowerCase());
-    const idMatch = slug.includes(q) || q.includes(slug);
-    if (titleMatch || idMatch) {
+    const triggers = tourTriggerKeywords[slug] || [tour.title.toLowerCase()];
+    const matchesTrigger = triggers.some((tw) => q.includes(tw));
+    const exactMatch = tour.title.toLowerCase() === q || slug === q;
+    if (exactMatch || matchesTrigger) {
       return { type: "tour" as const, tour, slug };
     }
   }
 
-  // 2. Specific items inside themes
+  // 2. Specific items inside themes: HANYA cocokkan nama item, HINDARI kata bebas di deskripsi
   for (const theme of themes) {
     for (const item of theme.items) {
-      const nameMatch = item.name.toLowerCase().includes(q) || q.includes(item.name.toLowerCase());
-      const descMatch = item.desc.toLowerCase().includes(q);
-      if (nameMatch || descMatch) {
+      const name = item.name.toLowerCase();
+      if (q === name || (name.length >= 5 && q.includes(name))) {
         return { type: "item" as const, item, theme };
       }
     }
@@ -136,7 +1275,7 @@ export function findLocalMatch(query: string) {
 
   // 3. Exact theme title / tagline matches
   for (const theme of themes) {
-    if (theme.title.toLowerCase().includes(q) || theme.tagline.toLowerCase().includes(q)) {
+    if (theme.title.toLowerCase() === q || (q.length >= 6 && theme.title.toLowerCase().includes(q))) {
       return { type: "theme" as const, theme };
     }
   }
@@ -327,6 +1466,34 @@ export function resolveContextualImage(
   }
 
   // ── PRIORITAS 2: Pemetaan topik lokal yang akurat ────────────────────────────
+  // Bundaran HI / Hotel Indonesia Jakarta / Monumen Selamat Datang
+  if (
+    q.includes("bundaran hi") ||
+    q.includes("bunderan hi") ||
+    q.includes("hotel indonesia") ||
+    q.includes("monumen selamat datang") ||
+    q.includes("patung selamat datang")
+  ) {
+    return "https://thumb.wikimedia.org/wikipedia/id/thumb/3/35/Monumen_Selamat_Datang_%28Maret_2025%29.jpg/330px-Monumen_Selamat_Datang_%28Maret_2025%29.jpg";
+  }
+
+  // Prabumulih / Kota Nanas
+  if (q.includes("prabumulih") || q.includes("kota nanas")) {
+    return "/images/musi_landscape.jpg";
+  }
+
+  // Palembang profil kota (bukan kuliner pempek / busana songket / rumah limas)
+  if (
+    (q.includes("palembang") || q.includes("kota palembang") || q.includes("bumi sriwijaya")) &&
+    !q.includes("pempek") &&
+    !q.includes("songket") &&
+    !q.includes("limas") &&
+    !q.includes("tekwan") &&
+    !q.includes("cuko")
+  ) {
+    return "/images/ampera_hero.jpg";
+  }
+
   // Wilayah & Geografi spesifik Sumatera Selatan
 
   // Semendo / Semende / Kopi Semendo
@@ -559,7 +1726,51 @@ export function expandQueryKeywords(rawQuery: string): {
 } {
   const q = rawQuery.toLowerCase().trim();
 
+  // ── Landmark Populer Luar Sumsel ──────────────────────────────────────────
+  // Bundaran HI / Hotel Indonesia / Monumen Selamat Datang
+  if (
+    q.includes("bundaran hi") ||
+    q.includes("bunderan hi") ||
+    q.includes("hotel indonesia") ||
+    q.includes("monumen selamat datang") ||
+    q.includes("patung selamat datang")
+  ) {
+    return {
+      primaryTerms: ["Bundaran Hotel Indonesia", "Monumen Selamat Datang", "Hotel Indonesia"],
+      searchTerms: ["Bundaran Hotel Indonesia Jakarta Pusat", "Monumen Selamat Datang landmark Jakarta"],
+      commonsTerms: ["Bundaran HI Jakarta", "Monumen Selamat Datang"],
+      regionalContext: "Jakarta Pusat",
+    };
+  }
+
   // ── Wilayah & Geografi Spesifik Sumatera Selatan ────────────────────────────
+
+  // Kota Palembang (bukan makanan pempek atau kain songket)
+  if (
+    (q.includes("palembang") || q.includes("kota palembang") || q.includes("bumi sriwijaya")) &&
+    !q.includes("pempek") &&
+    !q.includes("songket") &&
+    !q.includes("limas") &&
+    !q.includes("tekwan") &&
+    !q.includes("cuko")
+  ) {
+    return {
+      primaryTerms: ["Kota Palembang", "Palembang", "Jembatan Ampera"],
+      searchTerms: ["Kota Palembang South Sumatra capital", "Jembatan Ampera Palembang city"],
+      commonsTerms: ["Palembang city", "Jembatan Ampera"],
+      regionalContext: "Kota Palembang",
+    };
+  }
+
+  // Prabumulih / Kota Nanas
+  if (q.includes("prabumulih") || q.includes("kota nanas")) {
+    return {
+      primaryTerms: ["Kota Prabumulih", "Prabumulih"],
+      searchTerms: ["Kota Prabumulih South Sumatra", "Prabumulih nanas"],
+      commonsTerms: ["Prabumulih", "Kota Prabumulih"],
+      regionalContext: "Prabumulih Sumatera Selatan",
+    };
+  }
 
   // Semendo / Semende
   if (q.includes("semendo") || q.includes("semende")) {
@@ -1133,34 +2344,27 @@ PANDUAN UTAMA PENJAWABAN (WAJIB TEPAT PADA INTI PERTANYAAN):
        - Paragraf 3: Karakteristik musikal (tempo, irama, instrumen khas seperti rebana, gendang, gitar tunggal Batanghari Sembilan) dan pelestariannya sebagai Warisan Budaya Takbenda.
      * Di bagian bulletPoints: Asal Daerah, Karakter Musik & Instrumen, Nilai Budaya & Pesan Moral.
    - JIKA MENANYAKAN RESEP / CARA MEMBUAT / CARA MASAK (contoh: "resep pempek", "resep pempek kapal selam", "resep pempek keriting", "resep tekwan", "cara membuat cuko pempek", "cara masak pindang patin"):
-     * DILARANG HANYA MEMBERIKAN PENJELASAN SEJARAH! Pengguna meminta RESEP DAN PANDUAN CARA MEMASAK!
-     * Pada "title": "Resep & Cara Membuat [Nama Masakan]" (contoh: "Resep Pempek Kapal Selam Asli Palembang", "Resep Pempek Keriting Gurih").
-     * Pada "badge": "Resep Kuliner Tradisional".
-     * Pada "highlight": Ringkasan hidangan dan rahasia kelezatan/tips suksesnya (contoh: takaran perbandingan ikan dan tepung sagu, atau cara memasukkan telur tanpa bocor).
-     * Pada "paragraphs":
-       - Paragraf 1: Daftar bahan utama dan bumbu lengkap beserta takaran/ukurannya yang presisi.
-       - Paragraf 2 & 3: Langkah-langkah pembuatan step-by-step secara terurut mulai dari mengadon, membentuk, merebus/menggoreng, hingga membuat kuah cuko pendampingnya.
-   - JIKA MENANYAKAN SEJARAH / MAKNA / ASAL-USUL / PENJELASAN UMUM:
-     * Sajikan sejarah kronologis, filosofi mendalam, dan fakta autentik.
-   - JIKA MENANYAKAN LOKASI / RUTE / TIKET / WISATA:
-     * Berikan informasi lokasi geografis, alamat, jam operasional, harga tiket, dan rute perjalanan.
-   - JIKA MENANYAKAN CIRI KHAS / DAFTAR / PERBEDAAN:
-     * Uraikan poin-poin karakteristik spesifiknya secara berbobot.
-
-ATURAN KLASIFIKASI:
-1. "status":"ok" — HANYA untuk entitas/topik yang BENAR-BENAR NYATA & FAKTUAL:
-   - Segala hal yang nyata ada di Sumatera Selatan: kuliner khas (pempek, tekwan, pindang patin, laksan, maksuba, dll.), tempat wisata/landmark (Monpera, Jembatan Ampera, Jembatan Musi II/IV/VI, Benteng Kuto Besak, Danau Ranau, Gunung Dempo Pagaralam, Pulau Kemaro), sejarah (Sriwijaya, Kesultanan Palembang), busana (songket), adat, seni, budaya, tokoh, alam, kota, hotel, atau rekomendasi umum wisata/kuliner nyata di Sumsel.
-   - Pertanyaan umum edukatif yang faktual (sains, geografi, sejarah dunia, teknologi, pengetahuan umum, bahasa, dll.).
-   - Pertanyaan tentang Indonesia di luar Sumsel (jawab secara informatif).
-2. "status":"outside_sumsel" — HANYA jika pengguna menanyakan tradisi/seni khas spesifik dari luar Sumsel (contoh: "tari kecak bali", "angklung sunda", "batik solo"). Berikan jawaban dan sertakan catatan ("note") menghubungkan kembali ke warisan Sumsel.
-3. "status":"no_result" — WAJIB untuk:
-   - Entitas/subjek/nama tempat yang FIKTIF, TIDAK NYATA, atau TIDAK PERNAH ADA di dunia nyata (contoh konkret: "jembatan musi 100" -> WAJIB no_result karena jembatan ini tidak ada; "candi borobudur di palembang" -> WAJIB no_result; "pantai salju musi" -> WAJIB no_result).
-   - DILARANG MENGARANG atau MENGGANTI ke entitas lain yang mirip jika subjek yang ditanyakan tidak ada (DILARANG KERAS mengganti "jembatan musi 100" menjadi "jembatan musi 6"!). Jika subjek spesifik tersebut fiktif/tidak ada, WAJIB jawab "no_result".
+     * DILARANG HANYA MEMBERIKAN PENJELASAN SEJARATURAN KLASIFIKASI:
+1. "status":"ok" — HANYA untuk entitas/topik yang BENAR-BENAR NYATA & FAKTUAL DI SUMATERA SELATAN:
+   - Segala hal yang nyata ada di Sumatera Selatan: kabupaten/kota (Palembang, Prabumulih, Lahat, Pagar Alam, Muara Enim, Ogan Ilir, OKI, OKU, Banyuasin, Muba, Musi Rawas, dll.), kuliner khas (pempek, tekwan, pindang patin, laksan, maksuba, dll.), tempat wisata/landmark (Monpera, Jembatan Ampera, Benteng Kuto Besak, Danau Ranau, Gunung Dempo, Bukit Serelo, Pulau Kemaro), sejarah (Sriwijaya, Kesultanan Palembang), busana (songket), adat, seni, budaya, tokoh, alam, dan hotel di Sumsel.
+   - PANDUAN PENTING NAMA DAERAH / KOTA DI SUMSEL (contoh: "Palembang", "Prabumulih", "Lahat", "Pagar Alam", dll):
+     * WAJIB sajikan profil kota/kabupaten tersebut secara komprehensif (sejarah pendirian, letak geografis, semboyan, ikon daerah, kekayaan budaya, dan perannya di Sumsel)!
+     * DILARANG KERAS membelokkan pertanyaan tentang Kota Palembang menjadi hanya resep pempek! Pempek hanya boleh disebut sebagai salah satu ikon kuliner dalam profil kota!
+     * DILARANG KERAS membelokkan pertanyaan tentang Kabupaten Lahat menjadi hanya bahasa lematang! Jelaskan Bukit Serelo, peradaban megalitikum Pasemah, Sungai Lematang, dan sejarah Lahat!
+     * DILARANG KERAS mengembalikan status no_result untuk kota/kabupaten nyata di Sumsel seperti Prabumulih! Prabumulih adalah kota otonom, sentra nanas, dan lumbung migas penting di Sumsel!
+2. "status":"outside_sumsel" — WAJIB untuk entitas/tempat/landmark/tradisi NYATA di Indonesia yang berlokasi DI LUAR SUMATERA SELATAN:
+   - Contoh: "Bundaran HI", "Monas", "Candi Borobudur", "Candi Prambanan", "Tari Kecak Bali", "Gedung Sate Bandung", "Danau Toba", "Angklung Sunda", "Batik Solo", kota lain (Jakarta, Bandung, Surabaya, Yogyakarta, dll.).
+   - DILARANG KERAS mengembalikan status "no_result" untuk landmark/tempat nyata di Indonesia seperti Bundaran HI! Bundaran HI adalah landmark nyata dan sangat terkenal di Jakarta!
+   - JAWABLAH SECARA LENGKAP, AKURAT, DAN INFORMATIF tentang sejarah dan fakta subjek tersebut!
+   - Pada field "note": Berikan kalimat peringatan ramah: "Topik ini berada di luar wilayah Sumatera Selatan, namun SORA tetap menyajikan ringkasannya untuk menambah wawasan Nusantara Anda."
+3. "status":"no_result" — HANYA dan WAJIB untuk:
+   - Entitas/subjek/nama tempat yang BENAR-BENAR FIKTIF, TIDAK NYATA, KHAYALAN, atau TIDAK PERNAH ADA di dunia nyata (contoh konkret: "jembatan musi 100" -> WAJIB no_result karena jembatan ini fiktif; "candi borobudur di palembang" -> WAJIB no_result; "pantai salju musi" -> WAJIB no_result).
+   - DILARANG MENGARANG atau MENGGANTI ke entitas lain jika subjek yang ditanyakan fiktif (DILARANG KERAS mengganti "jembatan musi 100" menjadi "jembatan musi 6"!).
    - Spam acak (contoh: "asdfghjkl"), kata tanpa arti, judi online, obat terlarang, konten dewasa, atau ujaran kebencian.
 
 PENTING:
-- Sertakan 2-3 sumber referensi NYATA dengan URL valid (Wikipedia, portal resmi pemprov sumselprov.go.id, indonesia.travel, situs berita kredibel kompas.com, detik.com).
-- Berikan "imageSearchQuery": kata kunci spesifik terbaik untuk mencari foto asli (contoh: "Pempek Palembang", "Lagu Cuk Mak Ilang Palembang", "Songket Palembang", "Jembatan Ampera").
+- Sertakan 2-3 sumber referensi NYATA dengan URL valid (Wikipedia, portal resmi pemda, indonesia.travel, situs berita kredibel kompas.com, detik.com).
+- Berikan "imageSearchQuery": kata kunci spesifik terbaik untuk mencari foto asli (contoh: "Bundaran Hotel Indonesia Jakarta", "Kota Palembang Jembatan Ampera", "Kota Prabumulih", "Kabupaten Lahat Bukit Serelo").
 
 Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
 {
@@ -1196,11 +2400,11 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
   try {
     // Priority order: valid Gemini API model IDs (free-tier available)
     const models = [
+      "gemini-2.0-flash",
+      "gemini-2.0-flash-lite",
+      "gemini-1.5-flash",
+      "gemini-2.5-flash",
       "gemini-flash-lite-latest",
-      "gemini-3.5-flash-lite",
-      "gemini-3.1-flash-lite",
-      "gemini-3.8-flash",
-      "gemini-3.5-flash",
     ];
     let jsonText = "";
 
@@ -1412,15 +2616,114 @@ Output HANYA JSON valid (tanpa backtick, tanpa kata pengantar):
   }
 }
 
-// ─── Local fallback (used if Gemini is unreachable) ─────────────────────────
-export function generateLocalFallback(query: string): SearchResult {
-  // Cek lagu daerah Sumsel secara langsung
+// ─── Dynamic Wikipedia Real-time Search (Faktual, Akurat, Tanpa Template Palsu) ────
+export async function fetchDynamicWikipediaResult(query: string): Promise<SearchResult | null> {
+  const qClean = query.trim();
+  if (!qClean || qClean.length < 2) return null;
+
+  try {
+    const searchUrl = `https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(qClean)}&utf8=&format=json`;
+    const searchRes = await fetch(searchUrl, {
+      headers: { "User-Agent": "KateknamoBot/1.0 (https://kateknamo.id; contact@kateknamo.id)" },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!searchRes.ok) return null;
+    const searchData = await searchRes.json();
+    const firstHit = searchData.query?.search?.[0];
+    if (!firstHit || !firstHit.title) return null;
+
+    const summaryUrl = `https://id.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstHit.title)}`;
+    const sumRes = await fetch(summaryUrl, {
+      headers: { "User-Agent": "KateknamoBot/1.0 (https://kateknamo.id; contact@kateknamo.id)" },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!sumRes.ok) return null;
+    const sumData = await sumRes.json();
+    if (!sumData.extract || sumData.extract.length < 30) return null;
+
+    const pageTitle = sumData.title || firstHit.title;
+    const extractText = sumData.extract.trim();
+    const descText = sumData.description || `Wawasan seputar ${pageTitle}`;
+
+    // Buat paragraf yang rapi dan terstruktur dari extract ensiklopedia asli
+    const sentences = extractText.split(/(?<=[.!?])\s+/);
+    let p1 = "";
+    let p2 = "";
+    if (sentences.length <= 2) {
+      p1 = sentences.join(" ");
+    } else {
+      const mid = Math.ceil(sentences.length / 2);
+      p1 = sentences.slice(0, mid).join(" ");
+      p2 = sentences.slice(mid).join(" ");
+    }
+
+    const paragraphs = [p1, p2].filter(Boolean);
+    const highlight = sentences.slice(0, 2).join(" ");
+
+    const sources: SearchSource[] = [
+      {
+        title: `${pageTitle} — Ensiklopedia Bebas Wikipedia`,
+        url: `https://id.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`,
+        domain: "id.wikipedia.org",
+        excerpt: extractText.length > 140 ? extractText.slice(0, 137) + "..." : extractText,
+        icon: "W",
+        iconStyle: "bg-white text-slate-900",
+        img: sumData.thumbnail?.source || "",
+      },
+    ];
+
+    const bulletPoints = [
+      { label: "Topik Pembahasan", text: pageTitle },
+      { label: "Karakteristik", text: descText },
+      { label: "Klasifikasi", text: "Khazanah & Wawasan Pengetahuan Nusantara" },
+    ];
+
+    return {
+      status: "outside_sumsel",
+      query,
+      note: "Topik ini berada di luar wilayah Sumatera Selatan, namun SORA tetap menyajikan ringkasannya untuk menambah wawasan Nusantara Anda.",
+      card1: {
+        isDedicatedTour: false,
+        title: pageTitle,
+        subtitle: descText,
+        image: sumData.thumbnail?.source || "/images/sora_about_hero.jpg",
+        badge: "Wawasan Nusantara",
+        href: "/jelajahi",
+      },
+      card2: {
+        title: pageTitle,
+        highlight,
+        paragraphs,
+        bulletPoints,
+        sources,
+      },
+      card3: {
+        themeSlug: "",
+        themeTitle: "",
+        themeLabel: "",
+        themeDesc: "",
+        themeImg: "",
+        themeHref: "",
+        relatedItems: [],
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ─── Local fallback (used if Gemini is unreachable or key limit) ─────────────
+export async function generateLocalFallback(query: string): Promise<SearchResult> {
+  const qClean = query.toLowerCase().replace(/['".,?!]/g, " ").replace(/\s+/g, " ").trim();
+
+  // 1. Cek lagu daerah Sumsel secara langsung (Zero Halusinasi)
   const matchedSong = findSumselSong(query);
   if (matchedSong) {
     const isLyric = isLyricQuery(query);
     return buildSongSearchResult(matchedSong, query, isLyric ? "lyrics" : "explanation");
   }
 
+  // 2. Blacklist kueri terlarang (judi, konten dewasa, malware)
   if (isClearlyOffTopic(query)) {
     return {
       status: "no_result",
@@ -1431,7 +2734,19 @@ export function generateLocalFallback(query: string): SearchResult {
     };
   }
 
-  // Try to find a local match
+  // 3. PRIORITAS UTAMA SUMSEL: Cek apakah kueri adalah Daerah/Kota di Sumatera Selatan (17 Kab/Kota)
+  const regionMatch = findSumselRegion(query);
+  if (regionMatch) {
+    return buildRegionSearchResult(regionMatch, query);
+  }
+
+  // 4. PRIORITAS LUAR SUMSEL: Cek apakah kueri adalah Landmark/Budaya Populer Luar Sumsel (Bundaran HI, Monas, dll.)
+  const outsideMatch = findOutsideSumselEntity(query);
+  if (outsideMatch) {
+    return buildOutsideSumselSearchResult(outsideMatch, query);
+  }
+
+  // 5. Cek kecocokan konten lokal (Dedicated Tour, Item Tema, atau Tema Kebudayaan)
   const match = findLocalMatch(query);
 
   if (match?.type === "tour") {
@@ -1598,14 +2913,17 @@ export function generateLocalFallback(query: string): SearchResult {
     };
   }
 
-  // General fallback ONLY for broad general inquiries about South Sumatra
-  const qClean = query.toLowerCase().trim();
+  // 6. Coba cari ensiklopedia faktual real-time (Wikipedia) untuk daerah lain di Indonesia / wawasan Nusantara
+  const wikiResult = await fetchDynamicWikipediaResult(query);
+  if (wikiResult) {
+    return wikiResult;
+  }
+
+  // 7. General broad inquiries about South Sumatra
   const isBroadGeneralQuery = [
     "sumsel",
     "sumatera selatan",
     "provinsi sumatera selatan",
-    "palembang",
-    "kota palembang",
     "kebudayaan sumsel",
     "budaya sumsel",
     "wisata sumsel",
@@ -1666,7 +2984,7 @@ export function generateLocalFallback(query: string): SearchResult {
     };
   }
 
-  // Fictitious or unfindable item -> return no_result
+  // 8. Fictitious or unfindable item -> return no_result
   return {
     status: "no_result",
     query,
