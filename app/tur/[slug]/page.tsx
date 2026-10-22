@@ -181,7 +181,7 @@ export default function TourDetailPage({ params }: TourPageProps) {
   };
 
   const handleShare = async () => {
-    const shareTitle = tour?.title ? `${tour.title} — SORA Arts & Culture` : "SORA Arts & Culture";
+    const shareTitle = tour?.title ? `${tour.title} — SORA.Culture` : "SORA.Culture";
     const shareText = tour?.subtitle || t(
       "Jelajahi warisan seni dan budaya Sumatera Selatan di SORA!",
       "Explore the arts and cultural heritage of South Sumatra on SORA!"

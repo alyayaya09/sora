@@ -5,7 +5,10 @@ import Footer from "../components/Footer";
 import { LanguageProvider } from "../contexts/LanguageContext";
 
 export const metadata: Metadata = {
-  title: "SORA Arts & Culture — Pelestarian Seni & Budaya Sumatera Selatan",
+  title: {
+    default: "SORA.Culture — Pelestarian Seni & Budaya Sumatera Selatan",
+    template: "%s — SORA.Culture",
+  },
   description:
     "Eksplorasi warisan seni, arsitektur rumah adat, kuliner khas, tari sakral, kain songket lepus, dan tradisi lisan Sumatera Selatan bertenaga AI.",
   icons: {
